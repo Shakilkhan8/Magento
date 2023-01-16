@@ -1,0 +1,61 @@
+<odoo>
+  <data>
+    <record id="api_ar_id" model="ir.cron">
+      <field name="name">API sync products to Aramix</field>
+      <field name="model_id" ref="product.model_product_template"/>
+      <field name="state">code</field>
+      <field name="code">model.sync_product_data()</field>
+      <field name='interval_number'>1</field>
+      <field name='interval_type'>hours</field>
+      <field name="numbercall">-1</field>
+      <field name="doall" eval="False"/>
+    </record>
+
+   <record id="view_purchase_form_id" model="ir.ui.view">
+        <field name="name">view.purchase.form.new</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='currency_id']" position="after">
+                <field name="po_check"/>
+                <field name="asn_check"/>
+            </xpath>
+        </field>
+   </record>
+
+
+    <record id="api_sync_po_yyu_id" model="ir.cron">
+      <field name="name">API sync PO to Aramix</field>
+      <field name="model_id" ref="purchase.model_purchase_order"/>
+      <field name="state">code</field>
+      <field name="code">model.sync_purchase_order()</field>
+      <field name='interval_number'>1</field>
+      <field name='interval_type'>hours</field>
+      <field name="numbercall">-1</field>
+      <field name="doall" eval="False"/>
+    </record>
+
+      <record id="api_sync_asn_id" model="ir.cron">
+      <field name="name">API sync ASN to Aramix</field>
+      <field name="model_id" ref="purchase.model_purchase_order"/>
+      <field name="state">code</field>
+      <field name="code">model.sync_asn()</field>
+      <field name='interval_number'>1</field>
+      <field name='interval_type'>hours</field>
+      <field name="numbercall">-1</field>
+      <field name="doall" eval="False"/>
+    </record>
+
+<!--    <record id="api_sync_asn_update_id" model="ir.cron">-->
+<!--      <field name="name">API sync Update ASN</field>-->
+<!--      <field name="model_id" ref="purchase.model_purchase_order"/>-->
+<!--      <field name="state">code</field>-->
+<!--      <field name="code">model.update_asn_sku()</field>-->
+<!--      <field name='interval_number'>1</field>-->
+<!--      <field name='interval_type'>hours</field>-->
+<!--      <field name="numbercall">-1</field>-->
+<!--      <field name="doall" eval="False"/>-->
+<!--    </record>-->
+
+  </data>
+</odoo>
