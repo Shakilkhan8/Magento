@@ -11,6 +11,7 @@
                                 padding-left:30px
                                 }
                                 .datatd{padding:10px}
+                                .thdata{padding:10px}
                             </style>
                             <div class="row">
                                 <div class="col-5">
@@ -70,7 +71,6 @@
                                                     <span t-field="o.payment_reference"/>
                                                 </td>
                                             </tr>
-
                                         </thead>
                                         <tbody>
 
@@ -129,14 +129,14 @@
                             <table class="table-borderless" width="100%">
                                 <thead>
                                     <tr style="border-style: solid;">
-                                        <th style="text-align:center;">Product Code</th>
-                                        <th>Product Name</th>
-                                        <th>Quantity</th>
-                                        <th>Price</th>
-                                        <th>Price per box</th>
-                                        <th>Discount</th>
-                                        <th>VAT</th>
-                                        <th>Total</th>
+                                        <th class="thdata" style="text-align:center;">Product Code</th>
+                                        <th class="thdata">Product Name</th>
+                                        <th class="thdata">Quantity</th>
+                                        <th class="thdata">Price</th>
+                                        <th class="thdata">Price per box</th>
+                                        <th class="thdata">Discount</th>
+                                        <th class="thdata">VAT</th>
+                                        <th class="thdata">Total</th>
                                     </tr>
                                 </thead>
                                 <t t-foreach="o.invoice_line_ids" t-as="line">
@@ -156,7 +156,7 @@
                                             </td>
                                             <td class="datatd">Price per box</td>
                                             <td class="datatd">
-                                                <span t-field="line.discount"/>
+                                                <t t-esc="line.discount"/>
                                             </td>
                                             <td class="datatd">
                                                 <t t-esc="line.tax_ids.amount"/>
@@ -173,7 +173,7 @@
                             <div class="row">
                                 <div class="col-8"/>
                                 <div class="col-4">
-                                    <table width="100%">
+                                    <table class="table table-borderless" width="100%">
                                         <tr style="border-bottom:1px solid black;">
                                             <th>Untaxed Amount</th>
                                             <td>
