@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="invoice_template_report_id">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <t t-foreach="docs" t-as="o">
+                        <div class="page">
+                            <style>
+                                .tdstyle {
+                                padding-left:30px
+                                }
+                                .datatd{padding:10px}
+                            </style>
+                            <div class="row">
+                                <div class="col-5">
+                                    <table class="table-borderless">
+                                        <thead>
+                                            <tr>
+                                                <th>Invoice No</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <t t-esc="o.name"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Invoice Date</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <t t-esc="o.invoice_date"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Delivery Date</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <t t-if="o.invoice_origin">
+                                                        <t t-esc="request.env['stock.picking'].search([('origin', '=', o.invoice_origin)]).scheduled_date.date()"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        -
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Saleperson</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <t t-esc="o.user_id.name"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Payment Method</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <span t-field="o.invoice_payment_term_id.name"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Order Date</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <t t-esc="request.env['sale.order'].search([('name', '=', o.invoice_origin)]).name"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Reference</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <span t-field="o.payment_reference"/>
+                                                </td>
+                                            </tr>
+
+                                        </thead>
+                                        <tbody>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-2"></div>
+                                <div class="col-5">
+                                    <table class="table-borderless">
+                                        <thead>
+                                            <tr>
+                                                <th>Customer Code</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle"></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Company Name</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <t t-esc="o.partner_id.name"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Address</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <span t-field="o.partner_id.street"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>City</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <t t-esc="o.partner_id.city"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Country</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <span t-field="o.partner_id.country_id.name"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Tel No#</th>
+                                                <td class="tdstyle">:</td>
+                                                <td class="tdstyle">
+                                                    <span t-field="o.partner_id.phone"/>
+                                                </td>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                            <br/>
+                            <table class="table-borderless" width="100%">
+                                <thead>
+                                    <tr style="border-style: solid;">
+                                        <th style="text-align:center;">Product Code</th>
+                                        <th>Product Name</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Price per box</th>
+                                        <th>Discount</th>
+                                        <th>VAT</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <t t-foreach="o.invoice_line_ids" t-as="line">
+                                    <tbody>
+                                        <tr>
+                                            <td class="datatd">
+                                                <span t-field="line.product_id.default_code"/>
+                                            </td>
+                                            <td class="datatd">
+                                                <span t-field="line.product_id.name"/>
+                                            </td>
+                                            <td class="datatd">
+                                                <span t-field="line.quantity"/>
+                                            </td>
+                                            <td class="datatd">
+                                                <span t-field="line.price_unit"/>
+                                            </td>
+                                            <td class="datatd">Price per box</td>
+                                            <td class="datatd">
+                                                <span t-field="line.discount"/>
+                                            </td>
+                                            <td class="datatd">
+                                                <t t-esc="line.tax_ids.amount"/>
+                                            </td>
+                                            <td class="datatd">
+                                                <span t-field="line.price_subtotal"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </t>
+                            </table>
+                            <br/>
+                            <br/>
+                            <div class="row">
+                                <div class="col-8"/>
+                                <div class="col-4">
+                                    <table width="100%">
+                                        <tr style="border-bottom:1px solid black;">
+                                            <th>Untaxed Amount</th>
+                                            <td>
+                                                <span t-field="o.amount_untaxed"/>
+                                            </td>
+                                        </tr>
+                                        <tr style="border-bottom:1px solid black;">
+                                            <td>VAT</td>
+                                            <td>
+                                                <span t-field="o.amount_tax"/>
+                                            </td>
+                                        </tr>
+                                        <tr style="border-bottom:1px solid black;">
+                                            <td>Total</td>
+                                            <td>
+                                                <span t-field="o.amount_total"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

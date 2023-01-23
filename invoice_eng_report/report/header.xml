@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="header_inherit_invoice_eng_id" inherit_id="web.external_layout_standard">
+            <xpath expr="//div[@t-att-style='report_header_style']" position="replace">
+                <div t-attf-class="header o_company_#{company.id}_layout" t-att-style="report_header_style">
+                    <div class="row">
+                        <div class="col-3 mt-2 pl-2">
+                            <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" width="180px" height="100"
+                                 alt="Logo"/>
+                        </div>
+                        <div class="col-9 text-center">
+                            <h3>
+                                <span t-if="company.name" t-field="company.name"/>
+                            </h3>
+
+                            <div class="row">
+                                <div class="col-6">
+                                    <span t-if="company.street" t-field="company.street"/>
+                                </div>
+                                <div class="col-6 text-left">T:
+                                    <span t-if="company.phone" t-field="company.phone"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">F:
+                                    <span t-if="company.city" t-field="company.city"/>
+                                </div>
+                                <div class="col-6 text-left">
+                                    <span t-if="company.mobile" t-field="company.mobile"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span t-if="company.state_id" t-field="company.state_id.name"/>
+                                </div>
+                                <div class="col-6 text-left">
+                                    <span t-if="company.mobile" t-field="company.mobile"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span t-if="company.country_id" t-field="company.country_id.name"/>
+                                </div>
+                                <div class="col-6 text-left">
+                                    <span t-if="company.website" t-field="company.website"/>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer text-center">
+                    <span> <t t-esc="o.company_id.phone"/> ,</span>
+                    <span> <t t-esc="o.company_id.city"/> ,</span>
+                    <span> <t t-esc="o.company_id.country_id.name"/>, </span>
+                    <span> <t t-esc="o.company_id.website"/>, </span>
+                    <span> <t t-esc="o.company_id.website"/> </span>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>
