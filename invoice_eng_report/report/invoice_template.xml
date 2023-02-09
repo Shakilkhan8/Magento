@@ -12,27 +12,28 @@
                                 }
                                 .datatd{padding:10px}
                                 .thdata{padding:10px}
+                                .align{text-align: left;"}
                             </style>
                             <div class="row">
                                 <div class="col-5">
                                     <table class="table-borderless">
                                         <thead>
                                             <tr>
-                                                <th>Invoice No</th>
+                                                <th class="align">Invoice No</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
                                                     <t t-esc="o.name"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>Invoice Date</th>
+                                                <th class="align">Invoice Date</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
                                                     <t t-esc="o.invoice_date"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>Delivery Date</th>
+                                                <th class="align">Delivery Date</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
                                                     <t t-if="o.invoice_origin">
@@ -44,28 +45,30 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>Saleperson</th>
+                                                <th class="align">Saleperson</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
                                                     <t t-esc="o.user_id.name"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>Payment Method</th>
+                                                <th class="align">Payment Method</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
                                                     <span t-field="o.invoice_payment_term_id.name"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>Order Date</th>
+                                                <th class="align">Order Date</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
+                                                    <t t-if="o.invoice_origin">
                                                     <t t-esc="request.env['sale.order'].search([('name', '=', o.invoice_origin)]).name"/>
+                                                    </t>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>Reference</th>
+                                                <th class="align">Reference</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
                                                     <span t-field="o.payment_reference"/>
@@ -82,40 +85,40 @@
                                     <table class="table-borderless">
                                         <thead>
                                             <tr>
-                                                <th>Customer Code</th>
+                                                <th class="align">Customer Code</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle"></td>
                                             </tr>
                                             <tr>
-                                                <th>Company Name</th>
+                                                <th class="align">Company Name</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
                                                     <t t-esc="o.partner_id.name"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>Address</th>
+                                                <th class="align">Address</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
                                                     <span t-field="o.partner_id.street"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>City</th>
+                                                <th class="align">City</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
                                                     <t t-esc="o.partner_id.city"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>Country</th>
+                                                <th class="align">Country</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
                                                     <span t-field="o.partner_id.country_id.name"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>Tel No#</th>
+                                                <th class="align">Tel No#</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
                                                     <span t-field="o.partner_id.phone"/>
