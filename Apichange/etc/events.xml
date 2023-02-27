@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="checkout_submit_all_after">
+        <observer name="emipro_webhook_new_order" instance="Emipro\Apichange\Observer\AfterOrder"/>
+    </event>
+    <event name="order_cancel_after">
+        <observer name="emipro_webhook_cancel_order" instance="Emipro\Apichange\Observer\AfterCancelOrder"/>
+    </event>
+</config>
