@@ -8,16 +8,17 @@
                         <div class="page">
                             <style>
                                 .tdstyle {
-                                padding-left:30px
+                                padding-left:30px;
+
                                 }
                                 .datatd{padding:10px}
-                                .thdata{padding:10px}
+                                .thdata{padding:10px,}
                                 .align{text-align: left;"}
                             </style>
                             <div class="row">
                                 <div class="col-5">
                                     <table class="table-borderless">
-                                        <thead>
+                                        <thead >
                                             <tr>
                                                 <th class="align">Invoice No</th>
                                                 <td class="tdstyle">:</td>
@@ -25,7 +26,7 @@
                                                     <t t-esc="o.name"/>
                                                 </td>
                                             </tr>
-                                            <tr>
+                                            <tr style="margin-top:-50px;padding-top:-50px;">
                                                 <th class="align">Invoice Date</th>
                                                 <td class="tdstyle">:</td>
                                                 <td class="tdstyle">
@@ -131,8 +132,8 @@
                             <br/>
                             <table class="table-borderless" width="100%">
                                 <thead>
-                                    <tr style="border-style: solid;">
-                                        <th class="thdata" style="text-align:center;">Product Code</th>
+                                    <tr style="border:1px solid black;height:35px;">
+                                        <th class="thdata" style="text-align:center;padding-top:10px;">Product Code</th>
                                         <th class="thdata">Product Name</th>
                                         <th class="thdata">Quantity</th>
                                         <th class="thdata">Price</th>
@@ -151,17 +152,17 @@
                                             <td class="datatd">
                                                 <span t-field="line.product_id.name"/>
                                             </td>
-                                            <td class="datatd">
+                                            <td class="datatd" style="text-align:center;">
                                                 <span t-field="line.quantity"/>
                                             </td>
                                             <td class="datatd">
                                                 <span t-field="line.price_unit"/>
                                             </td>
-                                            <td class="datatd">Price per box</td>
-                                            <td class="datatd">
+                                            <td class="datatd"><span t-field="line.account_price_per_box"/> </td>
+                                            <td class="datatd" style="text-align:center;">
                                                 <t t-esc="line.discount"/>
                                             </td>
-                                            <td class="datatd">
+                                            <td class="datatd" style="text-align:center;">
                                                 <t t-esc="line.tax_ids.amount"/>
                                             </td>
                                             <td class="datatd">
