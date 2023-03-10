@@ -10,7 +10,7 @@
     'depends': ['base','sale','stock','account'],
     'data': [
         # 'security/ir.model.access.csv',
-        # 'report/invoice_action.xml',
+        'report/invoice_action.xml',
         'report/invoice_template.xml',
         'report/header.xml',
         'report/inherit_sale_order_report.xml',
