@@ -7,16 +7,16 @@ class SaleOrder(models.Model):
 
     installer_id = fields.Many2one('res.users', string="Installer")
 
-    def action_confirm(self):
-        """
-        This method inherited for identify the Magento order and pass the context
-        to manage the BOM.
-        :return: super call.
-        """
-        res = super(SaleOrder, self).action_confirm()
-        for rec in self:
-            rec.send_products_to_installer()
-        return res
+#     def action_confirm(self):
+#         """
+#         This method inherited for identify the Magento order and pass the context
+#         to manage the BOM.
+#         :return: super call.
+#         """
+#         res = super(SaleOrder, self).action_confirm()
+#         for rec in self:
+#             rec.send_products_to_installer()
+#         return res
 
     def send_products_to_installer(self):
         """
