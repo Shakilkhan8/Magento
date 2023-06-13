@@ -69,7 +69,7 @@
 <!--                                            <div name="standard_price_uom">-->
 <!--                                                <field name="standard_price" attrs="{'readonly':['&amp;', ('valuation','=','real_time'), ('cost_method', 'in', ['standard', 'average'])]}" class="oe_inline" widget="monetary" options="{'currency_field': 'currency_id'}" modifiers="{'readonly': ['&amp;', ['valuation', '=', 'real_time'], ['cost_method', 'in', ['standard', 'average']]]}"/>-->
 <!--                                            </div>-->
-                                            <button string="Set standard price" type="action" name="311" class="oe_link oe_read_only" colspan="2" invisible="1" modifiers="{'invisible': true}"/>
+<!--                                             <button string="Set standard price" type="action" name="311" class="oe_link oe_read_only" colspan="2" invisible="1" modifiers="{'invisible': true}"/> -->
 <!--                                            <button string="Set standard price" type="action" name="311" class="oe_link oe_read_only" colspan="2" invisible="1" modifiers="{'invisible': true}"/>-->
 <!--                                            <field name="company_id" options="{'no_create': True}" can_create="true" can_write="true" invisible="1" modifiers="{'invisible': true}"/>-->
 <!--                                            <field name="uom_id" options="{'no_create': True}" on_change="1" can_create="true" can_write="true" invisible="1" modifiers="{'invisible': true, 'required': true}"/>-->
