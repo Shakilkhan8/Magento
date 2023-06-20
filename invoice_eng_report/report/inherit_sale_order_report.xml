@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="inherit_sale_order_report_form_id" inherit_id="sale.report_saleorder_document">
+            <xpath expr="//table[1]" position="replace">
+                <table class="table table-sm o_main_table mt-4">
+                    <!-- In case we want tOrder Date:o repeat the header, remove "display: table-row-group" -->
+                    <thead style="display: table-row-group">
+                        <tr>
+                            <th name="th_description" class="text-start">Description</th>
+                            <th name="th_quantity" class="text-end">Quantity</th>
+                            <th name="th_priceunit" class="text-end">Unit Price</th>
+                            <th name="th_priceunit" class="text-end">Price Per Box</th>
+                            <th name="th_discount" t-if="display_discount" class="text-end"
+                                groups="product.group_discount_per_so_line">
+                                <span>Disc.%</span>
+                            </th>
+                            <th name="th_taxes" class="text-end">Taxes</th>
+                            <th name="th_subtotal" class="text-end">
+                                <span groups="account.group_show_line_subtotals_tax_excluded">Amount</span>
+                                <span groups="account.group_show_line_subtotals_tax_included">Total Price</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="sale_tbody">
+
+                        <t t-set="current_subtotal" t-value="0"/>
+
+                        <t t-foreach="lines_to_report" t-as="line">
+
+                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
+                               groups="account.group_show_line_subtotals_tax_excluded"/>
+                            <t t-set="current_subtotal" t-value="current_subtotal + line.price_total"
+                               groups="account.group_show_line_subtotals_tax_included"/>
+
+                            <tr t-att-class="'bg-200 fw-bold o_line_section' if line.display_type == 'line_section' else 'fst-italic o_line_note' if line.display_type == 'line_note' else ''">
+                                <t t-if="not line.display_type">
+                                    <td name="td_name">
+                                        <span t-field="line.product_id.name"/>
+                                    </td>
+                                    <td name="td_quantity" class="text-end">
+                                        <span t-field="line.product_uom_qty"/>
+                                        <span t-field="line.product_uom"/>
+                                    </td>
+                                    <td name="td_priceunit" class="text-end">
+                                        <span t-field="line.price_unit"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="line.sale_price_per_box"/>
+                                    </td>
+                                    <td t-if="display_discount" class="text-end"
+                                        groups="product.group_discount_per_so_line">
+                                        <span t-field="line.discount"/>
+                                    </td>
+                                    <td name="td_taxes" class="text-end">
+                                        <span t-out="', '.join(map(lambda x: (x.description or x.name), line.tax_id))"/>
+                                    </td>
+                                    <td t-if="not line.is_downpayment" name="td_subtotal"
+                                        class="text-end o_price_total">
+                                        <span t-field="line.price_subtotal"
+                                              groups="account.group_show_line_subtotals_tax_excluded"/>
+                                        <span t-field="line.price_total"
+                                              groups="account.group_show_line_subtotals_tax_included"/>
+                                    </td>
+                                </t>
+                                <t t-elif="line.display_type == 'line_section'">
+                                    <td name="td_section_line" colspan="99">
+                                        <span t-field="line.name"/>
+                                    </td>
+                                    <t t-set="current_section" t-value="line"/>
+                                    <t t-set="current_subtotal" t-value="0"/>
+                                </t>
+                                <t t-elif="line.display_type == 'line_note'">
+                                    <td name="td_note_line" colspan="99">
+                                        <span t-field="line.name"/>
+                                    </td>
+                                </t>
+                            </tr>
+
+                            <t t-if="current_section and (line_last or doc.order_line[line_index+1].display_type == 'line_section') and not line.is_downpayment">
+                                <tr class="is-subtotal text-end">
+                                    <td name="td_section_subtotal" colspan="99">
+                                        <strong class="mr16">Subtotal</strong>
+                                        <span
+                                                t-out="current_subtotal"
+                                                t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'
+                                        />
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </tbody>
+                </table>
+            </xpath>
+            <xpath expr="//div[1]" position="replace">
+            </xpath>
+            <!--                Sale Order Form-->
+            <xpath expr="//div[2]" position="replace">
+                <div class="row">
+                    <div t-if="doc.date_order" class="col-4" name="informations_date">
+                        <strong t-if="doc.state in ['draft', 'sent']">Quotation Date:</strong>
+                        <strong t-else="">Order Date:</strong>
+                        <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>
+                    </div>
+
+                    <div t-if="doc.user_id.name" class="col-4">
+                        <strong>Salesperson:</strong>
+                        <p class="m-0" t-field="doc.user_id"/>
+                    </div>
+                    <div class="col-4">
+<!--                        <strong>Delivery Date :</strong>-->
+<!--                        <p>-->
+<!--                            <t t-if="doc.invoice_origin">-->
+<!--                                <t t-esc="request.env['stock.picking'].search([('origin', '=', o.invoice_origin)]).scheduled_date.date()"/>-->
+<!--                            </t>-->
+<!--                            <t t-else="">-->
+<!--                                - -->
+<!--                            </t>-->
+<!--                        </p>-->
+                    </div>
+
+
+                    <!--                    <div class="col-auto col-3 mw-100 mb-2" t-if="o.invoice_origin" name="origin">-->
+                    <!--                        <strong>Source:</strong>-->
+                    <!--                        <p class="m-0" t-field="o.invoice_origin"/>-->
+                    <!--                    </div>-->
+                    <!--                    <div class="col-auto col-3 mw-100 mb-2" t-if="o.partner_id.ref" name="customer_code">-->
+                    <!--                        <strong>Customer Code:</strong>-->
+                    <!--                        <p class="m-0" t-field="o.partner_id.ref"/>-->
+                    <!--                    </div>-->
+                    <!--                    <div class="col-auto col-3 mw-100 mb-2" t-if="o.ref" name="reference">-->
+                    <!--                        <strong>Reference:</strong>-->
+                    <!--                        <p class="m-0" t-field="o.ref"/>-->
+                    <!--                    </div>-->
+                </div>
+                <div class="row">
+<!--                    <div class="col-4">-->
+<!--                        <strong>Sale Person :</strong>-->
+<!--                        <p>-->
+<!--                            <t t-esc="o.user_id.name"/>-->
+<!--                        </p>-->
+<!--                    </div>-->
+<!--                    <div class="col-4">-->
+<!--                        <strong>Payment Method :</strong>-->
+<!--&lt;!&ndash;                        <p>&ndash;&gt;-->
+<!--&lt;!&ndash;                            <t t-esc="doc.invoice_payment_term_id.name"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                        </p>&ndash;&gt;-->
+<!--                    </div>-->
+<!--                    <div class="col-4">-->
+<!--                        <strong>Order Date :</strong>-->
+<!--                        <p>-->
+<!--&lt;!&ndash;                            <t t-if="doc.invoice_origin">&ndash;&gt;-->
+<!--&lt;!&ndash;                                <t t-esc="request.env['sale.order'].search([('name', '=', o.invoice_origin)]).name"/>&ndash;&gt;-->
+<!--&lt;!&ndash;                            </t>&ndash;&gt;-->
+<!--                        </p>-->
+<!--                    </div>-->
+                </div>
+
+                <div class="row">
+                    <div class="col-4">
+                        <strong>Customer Code :</strong>
+                        <p>
+
+                            <t t-esc="doc.partner_id.customer_code"/>
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <strong>Customer Name :</strong>
+                        <p>
+                            <t t-esc="doc.partner_id.name"/>
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <strong>Address :</strong>
+                        <p>
+                            <t t-esc="doc.partner_id.street"/>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4">
+                        <strong>City :</strong>
+                        <p>
+                            <t t-esc="doc.partner_id.city"/>
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <strong>Country :</strong>
+                        <p>
+                            <t t-esc="doc.partner_id.country_id.name"/>
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <strong>Tel No# :</strong>
+                        <p>
+                            <t t-esc="doc.partner_id.phone"/>
+                        </p>
+                    </div>
+                </div>
+
+            </xpath>
+        </template>
+
+
+    </data>
+</odoo>
