@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Inherit Form View to Modify it -->
+        <record id="inherit_customer_form_id" model="ir.ui.view">
+            <field name="name">Inherit Customer</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='category_id']" position="before">
+                    <field name="postal_code"/>
+                </xpath>
+                <xpath expr="//field[@name='category_id']" position="after">
+                    <field name="customer_code"/>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</odoo>
