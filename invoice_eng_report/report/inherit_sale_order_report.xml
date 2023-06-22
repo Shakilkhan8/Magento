@@ -143,15 +143,15 @@
                                     <span t-esc="doc.partner_id.name"/>
                                 </td>
                             </tr>
-                            <tr>
-                                <td>
-                                    <strong>Payment Method</strong>
-                                </td>
-                                <td>:</td>
-                                <td>
-                                    <span t-esc="doc.partner_id.property_payment_method_id"/>
-                                </td>
-                            </tr>
+<!--                            <tr>-->
+<!--                                <td>-->
+<!--                                    <strong>Payment Method</strong>-->
+<!--                                </td>-->
+<!--                                <td>:</td>-->
+<!--                                <td>-->
+<!--                                    <span t-esc="doc.partner_id.property_payment_method_id"/>-->
+<!--                                </td>-->
+<!--                            </tr>-->
                             <tr>
                                 <td>
                                     <strong>Customer Code</strong>
