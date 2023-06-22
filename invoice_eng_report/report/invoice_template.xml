@@ -6,7 +6,11 @@
                 <t t-call="web.external_layout">
                     <t t-foreach="docs" t-as="o">
                         <div class="page">
-
+                            <div class="row">
+                                <strong>
+                                    <h1 style=" font-family: Roboto;">INVOICE</h1>
+                                </strong>
+                            </div>
 
                             <div class="row ">
                                 <div class="col-5">

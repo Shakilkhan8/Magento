@@ -5,24 +5,21 @@
             <xpath expr="//table[1]" position="replace">
                 <table class="table table-sm o_main_table mt-4">
                     <!-- In case we want tOrder Date:o repeat the header, remove "display: table-row-group" -->
-                    <thead style="display: table-row-group">
+                    <thead style=" border: 1px solid black; font-size: 18px; font-family: Roboto;">
                         <tr>
+                            <th name="th_description" class="text-start">Product Code</th>
                             <th name="th_description" class="text-start">Description</th>
-                            <th name="th_quantity" class="text-end">Quantity</th>
-                            <th name="th_priceunit" class="text-end">Unit Price</th>
-                            <th name="th_priceunit" class="text-end">Price Per Box</th>
-                            <th name="th_discount" t-if="display_discount" class="text-end"
-                                groups="product.group_discount_per_so_line">
-                                <span>Disc.%</span>
-                            </th>
-                            <th name="th_taxes" class="text-end">Taxes</th>
+                            <th name="th_quantity" class="text-end">Qty</th>
+                            <th name="th_priceunit" class="text-end">Price</th>
+                            <th name="th_priceunit" class="text-end">Discount</th>
+                            <th name="th_taxes" class="text-end">VAT</th>
                             <th name="th_subtotal" class="text-end">
                                 <span groups="account.group_show_line_subtotals_tax_excluded">Amount</span>
                                 <span groups="account.group_show_line_subtotals_tax_included">Total Price</span>
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="sale_tbody">
+                    <tbody style="border: 1px solid #ffffff;">
 
                         <t t-set="current_subtotal" t-value="0"/>
 
@@ -36,6 +33,9 @@
                             <tr t-att-class="'bg-200 fw-bold o_line_section' if line.display_type == 'line_section' else 'fst-italic o_line_note' if line.display_type == 'line_note' else ''">
                                 <t t-if="not line.display_type">
                                     <td name="td_name">
+                                        <span t-field="line.product_id.default_code"/>
+                                    </td>
+                                    <td name="td_name">
                                         <span t-field="line.product_id.name"/>
                                     </td>
                                     <td name="td_quantity" class="text-end">
@@ -45,11 +45,7 @@
                                     <td name="td_priceunit" class="text-end">
                                         <span t-field="line.price_unit"/>
                                     </td>
-                                    <td>
-                                        <span t-field="line.sale_price_per_box"/>
-                                    </td>
-                                    <td t-if="display_discount" class="text-end"
-                                        groups="product.group_discount_per_so_line">
+                                    <td class="text-end">
                                         <span t-field="line.discount"/>
                                     </td>
                                     <td name="td_taxes" class="text-end">
@@ -92,113 +88,144 @@
                     </tbody>
                 </table>
             </xpath>
-            <xpath expr="//div[1]" position="replace">
+            <xpath expr="//t[@t-set='address']" position="replace">
             </xpath>
             <!--                Sale Order Form-->
             <xpath expr="//div[2]" position="replace">
-                <div class="row">
-                    <div t-if="doc.date_order" class="col-4" name="informations_date">
-                        <strong t-if="doc.state in ['draft', 'sent']">Quotation Date:</strong>
-                        <strong t-else="">Order Date:</strong>
-                        <p class="m-0" t-field="doc.date_order" t-options='{"widget": "date"}'/>
+                <div class="row ">
+                    <div class="col-6">
+                        <table class="w-75 h-15"
+                               style="border: 1px solid #ffffff; font-size: 14px; font-family: Roboto;">
+                            <tr>
+                                <td>
+                                    <strong>Quotation Date:</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.date_order"/>
+                                </td>
+                            </tr>
+                            <!--                             <tr> -->
+                            <!--                                 <td> -->
+                            <!--                                     <strong>Invoice Date</strong> -->
+                            <!--                                 </td> -->
+                            <!--                                 <td>:</td> -->
+                            <!--                                 <td> -->
+                            <!--                                     <span t-esc="doc.invoice_date"/> -->
+                            <!--                                 </td> -->
+                            <!--                             </tr> -->
+                            <!--                             <tr> -->
+                            <!--                                 <td> -->
+                            <!--                                     <strong>Delivery Date</strong> -->
+                            <!--                                 </td> -->
+                            <!--                                 <td>:</td> -->
+                            <!--                                 <td> -->
+                            <!--                                     <t t-if="doc.invoice_origin"> -->
+                            <!--                                                     <t t-esc="request.env['sale.order'].search([('name', '=', doc.invoice_origin)]).commitment_date"/> -->
+                            <!--                                                 </t> -->
+                            <!--                                 </td> -->
+                            <!--                             </tr> -->
+                            <tr>
+                                <td>
+                                    <strong>Saleperson</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.user_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Customer Name</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.partner_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Payment Method</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.partner_id.property_payment_method_id"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Customer Code</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.partner_id.customer_code"/>
+                                </td>
+                            </tr>
+                            <!--                             <tr> -->
+                            <!--                                 <td> -->
+                            <!--                                     <strong>Order Date</strong> -->
+                            <!--                                 </td> -->
+                            <!--                                 <td>:</td> -->
+                            <!--                                 <td> -->
+                            <!--                                     <t t-if="doc.invoice_origin"> -->
+                            <!--                                                     <t t-esc="request.env['sale.order'].search([('name', '=', doc.invoice_origin)]).date_order"/> -->
+                            <!--                                                 </t> -->
+                            <!--                                 </td> -->
+                            <!--                             </tr> -->
+                        </table>
                     </div>
-
-                    <div t-if="doc.user_id.name" class="col-4">
-                        <strong>Salesperson:</strong>
-                        <p class="m-0" t-field="doc.user_id"/>
+                    <div class="col-1"/>
+                    <div class="col-5">
+                        <table class="w-75 h-15"
+                               style="border: 1px solid #ffffff; font-size: 14px; font-family: Roboto;">
+                            <tr>
+                                <td>
+                                    <strong>Company Name</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.company_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Address</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.partner_id.street"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>City</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.partner_id.city"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Country</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.partner_id.country_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Tel No #</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.partner_id.phone"/>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
-                    <div class="col-4">
-<!--                        <strong>Delivery Date :</strong>-->
-<!--                        <p>-->
-<!--                            <t t-if="doc.invoice_origin">-->
-<!--                                <t t-esc="request.env['stock.picking'].search([('origin', '=', o.invoice_origin)]).scheduled_date.date()"/>-->
-<!--                            </t>-->
-<!--                            <t t-else="">-->
-<!--                                - -->
-<!--                            </t>-->
-<!--                        </p>-->
-                    </div>
-
-
-                    <!--                    <div class="col-auto col-3 mw-100 mb-2" t-if="o.invoice_origin" name="origin">-->
-                    <!--                        <strong>Source:</strong>-->
-                    <!--                        <p class="m-0" t-field="o.invoice_origin"/>-->
-                    <!--                    </div>-->
-                    <!--                    <div class="col-auto col-3 mw-100 mb-2" t-if="o.partner_id.ref" name="customer_code">-->
-                    <!--                        <strong>Customer Code:</strong>-->
-                    <!--                        <p class="m-0" t-field="o.partner_id.ref"/>-->
-                    <!--                    </div>-->
-                    <!--                    <div class="col-auto col-3 mw-100 mb-2" t-if="o.ref" name="reference">-->
-                    <!--                        <strong>Reference:</strong>-->
-                    <!--                        <p class="m-0" t-field="o.ref"/>-->
-                    <!--                    </div>-->
                 </div>
-                <div class="row">
-<!--                    <div class="col-4">-->
-<!--                        <strong>Sale Person :</strong>-->
-<!--                        <p>-->
-<!--                            <t t-esc="o.user_id.name"/>-->
-<!--                        </p>-->
-<!--                    </div>-->
-<!--                    <div class="col-4">-->
-<!--                        <strong>Payment Method :</strong>-->
-<!--&lt;!&ndash;                        <p>&ndash;&gt;-->
-<!--&lt;!&ndash;                            <t t-esc="doc.invoice_payment_term_id.name"/>&ndash;&gt;-->
-<!--&lt;!&ndash;                        </p>&ndash;&gt;-->
-<!--                    </div>-->
-<!--                    <div class="col-4">-->
-<!--                        <strong>Order Date :</strong>-->
-<!--                        <p>-->
-<!--&lt;!&ndash;                            <t t-if="doc.invoice_origin">&ndash;&gt;-->
-<!--&lt;!&ndash;                                <t t-esc="request.env['sale.order'].search([('name', '=', o.invoice_origin)]).name"/>&ndash;&gt;-->
-<!--&lt;!&ndash;                            </t>&ndash;&gt;-->
-<!--                        </p>-->
-<!--                    </div>-->
-                </div>
-
-                <div class="row">
-                    <div class="col-4">
-                        <strong>Customer Code :</strong>
-                        <p>
-
-                            <t t-esc="doc.partner_id.customer_code"/>
-                        </p>
-                    </div>
-                    <div class="col-4">
-                        <strong>Customer Name :</strong>
-                        <p>
-                            <t t-esc="doc.partner_id.name"/>
-                        </p>
-                    </div>
-                    <div class="col-4">
-                        <strong>Address :</strong>
-                        <p>
-                            <t t-esc="doc.partner_id.street"/>
-                        </p>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-4">
-                        <strong>City :</strong>
-                        <p>
-                            <t t-esc="doc.partner_id.city"/>
-                        </p>
-                    </div>
-                    <div class="col-4">
-                        <strong>Country :</strong>
-                        <p>
-                            <t t-esc="doc.partner_id.country_id.name"/>
-                        </p>
-                    </div>
-                    <div class="col-4">
-                        <strong>Tel No# :</strong>
-                        <p>
-                            <t t-esc="doc.partner_id.phone"/>
-                        </p>
-                    </div>
-                </div>
-
             </xpath>
         </template>
 
