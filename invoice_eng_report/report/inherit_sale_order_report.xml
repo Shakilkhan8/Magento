@@ -1,35 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
         <template id="inherit_sale_order_report_form_id" inherit_id="sale.report_saleorder_document">
             <xpath expr="//table[1]" position="replace">
                 <table class="table table-sm o_main_table mt-4">
-                    <!-- In case we want tOrder Date:o repeat the header, remove "display: table-row-group" -->
+                    <!--  In case we want tOrder Date:o repeat the header, remove "display: table-row-group"  -->
                     <thead style=" border: 1px solid black; font-size: 18px; font-family: Roboto;">
                         <tr>
-                            <th name="th_description" class="text-start">Product Code</th>
-                            <th name="th_description" class="text-start">Description</th>
-                            <th name="th_quantity" class="text-end">Qty</th>
-                            <th name="th_priceunit" class="text-end">Price</th>
-                            <th name="th_priceunit" class="text-end">Discount</th>
-                            <th name="th_taxes" class="text-end">VAT</th>
-                            <th name="th_subtotal" class="text-end">
+                            <th name="th_description" class="text-center">Product Code</th>
+                            <th name="th_description" class="text-center">Description</th>
+                            <th name="th_quantity" class="text-center">Qty</th>
+                            <th name="th_priceunit" class="text-center">Price</th>
+                            <th name="th_priceunit" class="text-center">Discount</th>
+                            <th name="th_taxes" class="text-center">VAT</th>
+                            <th name="th_subtotal" class="text-center">
                                 <span groups="account.group_show_line_subtotals_tax_excluded">Amount</span>
                                 <span groups="account.group_show_line_subtotals_tax_included">Total Price</span>
                             </th>
                         </tr>
                     </thead>
                     <tbody style="border: 1px solid #ffffff;">
-
                         <t t-set="current_subtotal" t-value="0"/>
-
                         <t t-foreach="lines_to_report" t-as="line">
-
                             <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
                                groups="account.group_show_line_subtotals_tax_excluded"/>
                             <t t-set="current_subtotal" t-value="current_subtotal + line.price_total"
                                groups="account.group_show_line_subtotals_tax_included"/>
-
                             <tr t-att-class="'bg-200 fw-bold o_line_section' if line.display_type == 'line_section' else 'fst-italic o_line_note' if line.display_type == 'line_note' else ''">
                                 <t t-if="not line.display_type">
                                     <td name="td_name">
@@ -72,28 +67,17 @@
                                     </td>
                                 </t>
                             </tr>
-
                             <t t-if="current_section and (line_last or doc.order_line[line_index+1].display_type == 'line_section') and not line.is_downpayment">
-                                <tr class="is-subtotal text-end">
-                                    <td name="td_section_subtotal" colspan="99">
-                                        <strong class="mr16">Subtotal</strong>
-                                        <span
-                                                t-out="current_subtotal"
-                                                t-options='{"widget": "monetary", "display_currency": doc.pricelist_id.currency_id}'
-                                        />
-                                    </td>
-                                </tr>
                             </t>
                         </t>
                     </tbody>
                 </table>
             </xpath>
-            <xpath expr="//t[@t-set='address']" position="replace">
-            </xpath>
-            <!--                Sale Order Form-->
+            <xpath expr="//t[@t-set='address']" position="replace"></xpath>
+            <!--                 Sale Order Form -->
             <xpath expr="//div[2]" position="replace">
                 <div class="row ">
-                    <div class="col-6">
+                    <div class="col-5">
                         <table class="w-75 h-15"
                                style="border: 1px solid #ffffff; font-size: 14px; font-family: Roboto;">
                             <tr>
@@ -105,26 +89,6 @@
                                     <span t-esc="doc.date_order"/>
                                 </td>
                             </tr>
-                            <!--                             <tr> -->
-                            <!--                                 <td> -->
-                            <!--                                     <strong>Invoice Date</strong> -->
-                            <!--                                 </td> -->
-                            <!--                                 <td>:</td> -->
-                            <!--                                 <td> -->
-                            <!--                                     <span t-esc="doc.invoice_date"/> -->
-                            <!--                                 </td> -->
-                            <!--                             </tr> -->
-                            <!--                             <tr> -->
-                            <!--                                 <td> -->
-                            <!--                                     <strong>Delivery Date</strong> -->
-                            <!--                                 </td> -->
-                            <!--                                 <td>:</td> -->
-                            <!--                                 <td> -->
-                            <!--                                     <t t-if="doc.invoice_origin"> -->
-                            <!--                                                     <t t-esc="request.env['sale.order'].search([('name', '=', doc.invoice_origin)]).commitment_date"/> -->
-                            <!--                                                 </t> -->
-                            <!--                                 </td> -->
-                            <!--                             </tr> -->
                             <tr>
                                 <td>
                                     <strong>Saleperson</strong>
@@ -143,15 +107,6 @@
                                     <span t-esc="doc.partner_id.name"/>
                                 </td>
                             </tr>
-<!--                            <tr>-->
-<!--                                <td>-->
-<!--                                    <strong>Payment Method</strong>-->
-<!--                                </td>-->
-<!--                                <td>:</td>-->
-<!--                                <td>-->
-<!--                                    <span t-esc="doc.partner_id.property_payment_method_id"/>-->
-<!--                                </td>-->
-<!--                            </tr>-->
                             <tr>
                                 <td>
                                     <strong>Customer Code</strong>
@@ -161,21 +116,10 @@
                                     <span t-esc="doc.partner_id.customer_code"/>
                                 </td>
                             </tr>
-                            <!--                             <tr> -->
-                            <!--                                 <td> -->
-                            <!--                                     <strong>Order Date</strong> -->
-                            <!--                                 </td> -->
-                            <!--                                 <td>:</td> -->
-                            <!--                                 <td> -->
-                            <!--                                     <t t-if="doc.invoice_origin"> -->
-                            <!--                                                     <t t-esc="request.env['sale.order'].search([('name', '=', doc.invoice_origin)]).date_order"/> -->
-                            <!--                                                 </t> -->
-                            <!--                                 </td> -->
-                            <!--                             </tr> -->
                         </table>
                     </div>
                     <div class="col-1"/>
-                    <div class="col-5">
+                    <div class="col-6">
                         <table class="w-75 h-15"
                                style="border: 1px solid #ffffff; font-size: 14px; font-family: Roboto;">
                             <tr>
@@ -227,8 +171,43 @@
                     </div>
                 </div>
             </xpath>
+            <xpath expr="//div[@name='so_total_summary']" position="replace">
+                <!-- Your custom content here -->
+                <!-- For example, let's add a new paragraph below the existing content -->
+                <div name="custom_total_summary">
+                    <div class="float-right row">
+                        <div class="col-8"/>
+                        <div class="col-4">
+                            <table class="w-100" style="text-align:center;">
+                                <t t-foreach="docs" t-as="doc">
+                                    <tr>
+                                        <td>Subtotal:</td>
+                                        <td>
+                                            <span t-field="doc.amount_untaxed"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Taxes:</td>
+                                        <td>
+                                            <span t-field="doc.amount_tax"/>
+                                        </td>
+                                        <tr style="background-color:rgb(240, 240, 240);">
+                                            <td>
+                                                <strong>Total:</strong>
+                                            </td>
+                                            <td>
+                                                <strong>
+                                                    <span t-field="doc.amount_total"/>
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                    </tr>
+                                </t>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
         </template>
-
-
     </data>
 </odoo>

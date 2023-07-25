@@ -2,44 +2,44 @@
 <odoo>
     <data>
         <!--         Inherit Sale Order Form-->
-        <record id="inherit_sale_order_line_form_id" model="ir.ui.view">
-            <field name="name">Inherit Sale</field>
-            <field name="model">sale.order</field>
-            <field name="inherit_id" ref="sale.view_order_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="//page[@name='order_lines']//tree/field[@name='qty_invoiced']" position="after">
-                    <field name="sale_price_per_box"/>
-                </xpath>
-            </field>
-        </record>
+<!--        <record id="inherit_sale_order_line_form_id" model="ir.ui.view">-->
+<!--            <field name="name">Inherit Sale</field>-->
+<!--            <field name="model">sale.order</field>-->
+<!--            <field name="inherit_id" ref="sale.view_order_form"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//page[@name='order_lines']//tree/field[@name='qty_invoiced']" position="after">-->
+<!--                    <field name="sale_price_per_box"/>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
 
         <!--          Inherit Stock Picking Form-->
-        <record id="inherit_stock_picking_form_id" model="ir.ui.view">
-            <field name="name">Inherit Stock Picking</field>
-            <field name="model">stock.picking</field>
-            <field name="inherit_id" ref="stock.view_picking_form"/>
-            <field name="arch" type="xml">
+<!--        <record id="inherit_stock_picking_form_id" model="ir.ui.view">-->
+<!--            <field name="name">Inherit Stock Picking</field>-->
+<!--            <field name="model">stock.picking</field>-->
+<!--            <field name="inherit_id" ref="stock.view_picking_form"/>-->
+<!--            <field name="arch" type="xml">-->
 
-                <xpath expr="//page[@name='operations']//tree/field[@name='product_uom_qty']" position="after">
-                    <field name="stock_price_per_box"/>
-                </xpath>
+<!--                <xpath expr="//page[@name='operations']//tree/field[@name='product_uom_qty']" position="after">-->
+<!--                    <field name="stock_price_per_box"/>-->
+<!--                </xpath>-->
 
-            </field>
-        </record>
+<!--            </field>-->
+<!--        </record>-->
 
         <!--         Inherit Account Move Line Form-->
-        <record id="inherit_account_move_line_form_id" model="ir.ui.view">
-            <field name="name">Inherit Account Move Line</field>
-            <field name="model">account.move</field>
-            <field name="inherit_id" ref="account.view_move_form"/>
-            <field name="arch" type="xml">
+<!--        <record id="inherit_account_move_line_form_id" model="ir.ui.view">-->
+<!--            <field name="name">Inherit Account Move Line</field>-->
+<!--            <field name="model">account.move</field>-->
+<!--            <field name="inherit_id" ref="account.view_move_form"/>-->
+<!--            <field name="arch" type="xml">-->
 
-                <xpath expr="//page[@name='invoice_tab']//tree/field[@name='account_id']" position="after">
-                    <field name="account_price_per_box"/>
-                </xpath>
+<!--                <xpath expr="//page[@name='invoice_tab']//tree/field[@name='account_id']" position="after">-->
+<!--                    <field name="account_price_per_box"/>-->
+<!--                </xpath>-->
 
-            </field>
-        </record>
+<!--            </field>-->
+<!--        </record>-->
 
 
     </data>

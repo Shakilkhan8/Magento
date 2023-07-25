@@ -11,7 +11,6 @@
                                     <h1 style=" font-family: Roboto;">INVOICE</h1>
                                 </strong>
                             </div>
-
                             <div class="row ">
                                 <div class="col-5">
                                     <table class="w-75 h-15"
@@ -56,11 +55,13 @@
                                         </tr>
                                         <tr>
                                             <td>
-                                                <strong>Payment Method</strong>
+                                                <strong>Payment Terms</strong>
                                             </td>
                                             <td>:</td>
                                             <td>
-                                                <span t-field="o.partner_id.property_payment_term_id.name"/>
+                                                <t t-if="o.invoice_origin">
+                                                    <t t-esc="request.env['sale.order'].search([('name', '=', o.invoice_origin)]).payment_term_id.name"/>
+                                                </t>
                                             </td>
                                         </tr>
                                         <tr>
@@ -74,31 +75,30 @@
                                                 </t>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Reference</strong>
-                                            </td>
-                                            <td>:</td>
-                                            <td>
-                                                <span t-field="o.payment_reference"/>
-                                            </td>
-                                        </tr>
+<!--                                        <tr>-->
+<!--                                            <td>-->
+<!--                                                <strong>Reference</strong>-->
+<!--                                            </td>-->
+<!--                                            <td>:</td>-->
+<!--                                            <td>-->
+<!--                                                <span t-field="o.payment_reference"/>-->
+<!--                                            </td>-->
+<!--                                        </tr>-->
                                     </table>
                                 </div>
-                                <div class="col-2"></div>
-
+                                <div class="col-2"/>
                                 <div class="col-5">
                                     <table class="w-75 h-15"
                                            style="border: 1px solid #ffffff; font-size: 12px; font-family: Roboto;">
-                                        <tr>
-                                            <td>
-                                                <strong>Customer Code</strong>
-                                            </td>
-                                            <td>:</td>
-                                            <td>
-                                                <span t-esc="o.partner_id.customer_code"/>
-                                            </td>
-                                        </tr>
+<!--                                        <tr>-->
+<!--                                            <td>-->
+<!--                                                <strong>Customer Code</strong>-->
+<!--                                            </td>-->
+<!--                                            <td>:</td>-->
+<!--                                            <td>-->
+<!--                                                <span t-esc="o.partner_id.customer_code"/>-->
+<!--                                            </td>-->
+<!--                                        </tr>-->
                                         <tr>
                                             <td>
                                                 <strong>Company Name</strong>
@@ -132,7 +132,7 @@
                                             </td>
                                             <td>:</td>
                                             <td>
-                                                <span t-esc="o.partner_id.postal_code"/>
+                                                <span t-esc="o.partner_id.zip"/>
                                             </td>
                                         </tr>
                                         <tr>
@@ -154,11 +154,9 @@
                                             </td>
                                         </tr>
                                     </table>
-
                                 </div>
                             </div>
-
-                            <!--                            this is main table of the report-->
+                            <!--                             this is main table of the report -->
                             <br/>
                             <br/>
                             <div class="row">
@@ -202,15 +200,12 @@
                                         </tbody>
                                     </t>
                                 </table>
-
                             </div>
-
-
-                            <!--                            this div is for the Total Amount-->
+                            <!--                             this div is for the Total Amount -->
                             <br/>
                             <div class="float-right row">
-                                <div class="col-6"></div>
-                                <div class="col-6">
+                                <div class="col-8"/>
+                                <div class="col-4">
                                     <table class="w-100" style="text-align:center;">
                                         <tr>
                                             <td>Subtotal:</td>
@@ -237,13 +232,12 @@
                                     </table>
                                 </div>
                             </div>
-
                         </div>
-
-
                     </t>
                 </t>
             </t>
         </template>
+
+
     </data>
 </odoo>

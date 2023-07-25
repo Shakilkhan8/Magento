@@ -9,9 +9,6 @@
             <field name="inherit_id" ref="base.view_partner_form"/>
             <field name="arch" type="xml">
 
-                <xpath expr="//field[@name='category_id']" position="before">
-                    <field name="postal_code"/>
-                </xpath>
                 <xpath expr="//field[@name='category_id']" position="after">
                     <field name="customer_code"/>
                 </xpath>

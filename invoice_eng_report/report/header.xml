@@ -6,39 +6,62 @@
             <xpath expr="//div[@t-att-style='report_header_style']" position="replace">
                 <div t-attf-class="header o_company_#{company.id}_layout" t-att-style="report_header_style">
                     <div class="row">
-                        <div class="col-3 mt-2 pl-2">
+                        <div class="col-3 mt-2 pl-2" style="margin-left:50px;">
                             <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" width="150px" height="130"
                                  alt="Logo"/>
                         </div>
                         <div class="col-9 text-left">
-                            <h5 style="text-align:left;font-size:15px;margin-left:380px;">
+                            <div class="row">
+                                <div class="col-7"></div>
+                                <div class="col-5">
 
-                                Target Mart Wholesale B.V.
-                                <br/>
-                                Grote Esch 810
-                                <br/>
-                                2841 MJ Moordrecht
-                                <br/>
-                                NETHERLAND
-                                <br/>
-                                Tel: (31)-(0)85 0478342
-                                <br/>
-                                Wholesale@targetmart.nl
-                                <br/>
-                                www.targetmartwholesale.eu
+                                    <table
+                                           style="border: 1px solid #ffffff; font-size: 15px; font-family: Roboto;">
+                                        <tr>
+                                            <td>
+                                                Target Mart Wholesale B.V.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Grote Esch 810
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                2841 MJ Moordrecht
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>NETHERLAND</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Tel: (31)-(0)85 0478342</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Wholesale@targetmart.nl</td>
+                                        </tr>
+                                        <tr>
+                                            <td>www.targetmartwholesale.eu</td>
+                                        </tr>
+                                    </table>
 
-                            </h5>
+
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </xpath>
-            <xpath expr="//div[@t-attf-class='footer o_standard_footer o_company_#{company.id}_layout']//div[@class='text-center']"
+            <xpath expr="//div[@t-attf-class='footer o_standard_footer o_company_#{company.id}_layout']//div[@class='text-center']//div[@class='text-muted']"
                    position="before">
                 <div>
                     <div class="row">
-                        <h6 style="text-align:left;font-size:14px; ">Target Mart Wholesale B.V - KvK: 76409899- VAT:
-                            NL8600615182B01 - BANK:I NG BANK- IBAN: NL69INGB0006151003- BIC: INGBNL2A
-                        </h6>
+                        <div class="col-12" style="text-align:center;font-size:14px; ">
+                            <p>Target Mart Wholesale B.V - KvK: 76409899- VAT:
+                                NL8600615182B01 - BANK:I NG BANK- IBAN: NL69INGB0006151003- BIC: INGBNL2A
+                            </p>
+                        </div>
                     </div>
                 </div>
             </xpath>
