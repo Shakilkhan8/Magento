@@ -53,18 +53,19 @@
                     </div>
                 </div>
             </xpath>
-            <xpath expr="//div[@t-attf-class='footer o_standard_footer o_company_#{company.id}_layout']//div[@class='text-center']//div[@class='text-muted']"
-                   position="before">
-                <div>
-                    <div class="row">
-                        <div class="col-10" style="text-align:center;font-size:14px; ">
-                            <p>Target Mart Wholesale B.V - KvK: 76409899- VAT:
-                                NL8600615182B01 - BANK:I NG BANK- IBAN: NL69INGB0006151003- BIC: INGBNL2A
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </xpath>
+            
+<!--            <xpath expr="//div[@t-attf-class='footer o_standard_footer o_company_#{company.id}_layout']//div[@class='text-center']//div[@class='text-muted']"-->
+<!--                   position="before">-->
+<!--                <div>-->
+<!--                    <div class="row">-->
+<!--                        <div class="col-12" style="text-align:center;font-size:14px; ">-->
+<!--                            <p>Target Mart Wholesale B.V - KvK: 76409899- VAT:-->
+<!--                                NL8600615182B01 - BANK:I NG BANK- IBAN: NL69INGB0006151003- BIC: INGBNL2A-->
+<!--                            </p>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </xpath>-->
         </template>
     </data>
 </odoo>
