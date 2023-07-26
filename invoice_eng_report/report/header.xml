@@ -53,7 +53,6 @@
                     </div>
                 </div>
             </xpath>
-            
 <!--            <xpath expr="//div[@t-attf-class='footer o_standard_footer o_company_#{company.id}_layout']//div[@class='text-center']//div[@class='text-muted']"-->
 <!--                   position="before">-->
 <!--                <div>-->
