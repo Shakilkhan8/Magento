@@ -55,6 +55,24 @@
                                         </tr>
                                         <tr>
                                             <td>
+                                                <strong>Tax ID</strong>
+                                            </td>
+                                            <td>:</td>
+                                            <td>
+                                                <span t-esc="o.partner_id.vat"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Company ID</strong>
+                                            </td>
+                                            <td>:</td>
+                                            <td>
+                                                <span t-esc="o.partner_id.company_registry"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
                                                 <strong>Payment Terms</strong>
                                             </td>
                                             <td>:</td>
