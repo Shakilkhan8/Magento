@@ -89,9 +89,9 @@
                                         </tr>
                                     </table>
                                 </div>
-                                <div class="col-2"/>
-                                <div class="col-5">
-                                    <table class="w-75 h-15"
+                                <div class="col-1"/>
+                                <div class="col-6">
+                                    <table class="w-100 h-15"
                                            style="border: 1px solid #ffffff; font-size: 12px; font-family: Roboto;">
 <!--                                        <tr>-->
 <!--                                            <td>-->
