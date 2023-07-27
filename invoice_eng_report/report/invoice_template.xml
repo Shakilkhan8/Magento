@@ -102,17 +102,18 @@
 <!--                                                <span t-esc="o.partner_id.customer_code"/>-->
 <!--                                            </td>-->
 <!--                                        </tr>-->
-<!--                                        <tr>-->
-<!--                                            <td>-->
-<!--                                                <strong>Payment Method</strong>-->
-<!--                                            </td>-->
-<!--                                            <td>:</td>-->
-<!--                                            <td>-->
-<!--                                                <t t-if="o.invoice_origin">-->
-<!--                                                    <t t-esc="request.env['sale.order'].search([('name', '=', o.invoice_origin)]).magento_payment_method_id.name"/>-->
-<!--                                                </t>-->
-<!--                                            </td>-->
-<!--                                        </tr>-->
+                                        <tr>
+                                            <td>
+                                                <strong>Payment Method</strong>
+                                            </td>
+                                            <td>:</td>
+                                            <td>
+                                                <t t-if="o.invoice_origin">
+                                                    <t t-esc="request.env['sale.order'].search([('name', '=', o.invoice_origin)]).magento_payment_method_id.payment_method_name"/>
+                                                </t>
+                                                <t t-else=""/>
+                                            </td>
+                                        </tr>
                                         <tr>
                                             <td>
                                                 <strong>Company Name</strong>
