@@ -98,22 +98,32 @@
                                     <span t-esc="doc.user_id.name"/>
                                 </td>
                             </tr>
-                            <tr>
-                                <td>
-                                    <strong>Customer Name</strong>
-                                </td>
-                                <td>:</td>
-                                <td>
-                                    <span t-esc="doc.partner_id.name"/>
-                                </td>
-                            </tr>
+
                             <tr>
                                 <td>
                                     <strong>Customer Code</strong>
                                 </td>
                                 <td>:</td>
                                 <td>
-                                    <span t-esc="doc.partner_id.customer_code"/>
+                                    <span t-esc="doc.partner_id.id"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Tax ID</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.partner_id.vat"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Company ID</strong>
+                                </td>
+                                <td>:</td>
+                                <td>
+                                    <span t-esc="doc.partner_id.company_registry"/>
                                 </td>
                             </tr>
                         </table>
@@ -128,7 +138,7 @@
                                 </td>
                                 <td>:</td>
                                 <td>
-                                    <span t-esc="doc.company_id.name"/>
+                                    <span t-esc="doc.partner_id.name"/>
                                 </td>
                             </tr>
                             <tr>
