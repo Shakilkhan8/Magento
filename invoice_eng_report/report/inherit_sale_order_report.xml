@@ -73,8 +73,6 @@
                     </tbody>
                 </table>
             </xpath>
-            <xpath expr="//t[@t-set='address']" position="replace"></xpath>
-            <!--                 Sale Order Form -->
             <xpath expr="//div[2]" position="replace">
                 <div class="row ">
                     <div class="col-5">

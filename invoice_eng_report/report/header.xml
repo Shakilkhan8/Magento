@@ -6,17 +6,34 @@
             <xpath expr="//div[@t-att-style='report_header_style']" position="replace">
                 <div t-attf-class="header o_company_#{company.id}_layout" t-att-style="report_header_style">
                     <div class="row">
-                        <div class="col-3 mt-2 pl-2" style="margin-left:50px;">
-                            <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" width="150px" height="130"
-                                 alt="Logo"/>
+                        <div class="col-4 mt-2 pl-2">
+                            <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)"
+                                 style="max-height: 150px; max-width: 150px;" alt="Logo"/>
                         </div>
                         <div class="col-9 text-left">
                             <div class="row">
                                 <div class="col-7"></div>
                                 <div class="col-5">
 
-                                    <table
-                                           style="border: 1px solid #ffffff; font-size: 15px; font-family: Roboto;">
+                                    <style>
+                                        /* Apply border to table header cells within the custom_table class */
+                                        .custom_table thead th {
+                                        border: 1px solid white;
+                                        font-size:14px;
+                                        }
+
+                                        /* Apply border to all cells (th and td) within the custom_table class */
+                                        .custom_table thead tr th{
+                                        border: 1px solid white;
+                                        font-size:14px;
+                                        }
+                                        .custom_table tbody tr td {
+                                        border: 1px solid white;
+                                        font-size:14px;
+                                        }
+                                    </style>
+
+                                    <table class="w-100 h-15 custom_table table-sm">
                                         <tr>
                                             <td>
                                                 Target Mart Wholesale B.V.
@@ -53,18 +70,18 @@
                     </div>
                 </div>
             </xpath>
-<!--            <xpath expr="//div[@t-attf-class='footer o_standard_footer o_company_#{company.id}_layout']//div[@class='text-center']//div[@class='text-muted']"-->
-<!--                   position="before">-->
-<!--                <div>-->
-<!--                    <div class="row">-->
-<!--                        <div class="col-12" style="text-align:center;font-size:14px; ">-->
-<!--                            <p>Target Mart Wholesale B.V - KvK: 76409899- VAT:-->
-<!--                                NL8600615182B01 - BANK:I NG BANK- IBAN: NL69INGB0006151003- BIC: INGBNL2A-->
-<!--                            </p>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </xpath>-->
+            <!--            <xpath expr="//div[@t-attf-class='footer o_standard_footer o_company_#{company.id}_layout']//div[@class='text-center']//div[@class='text-muted']"-->
+            <!--                   position="before">-->
+            <!--                <div>-->
+            <!--                    <div class="row">-->
+            <!--                        <div class="col-12" style="text-align:center;font-size:14px; ">-->
+            <!--                            <p>Target Mart Wholesale B.V - KvK: 76409899- VAT:-->
+            <!--                                NL8600615182B01 - BANK:I NG BANK- IBAN: NL69INGB0006151003- BIC: INGBNL2A-->
+            <!--                            </p>-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <!--            </xpath>-->
         </template>
     </data>
 </odoo>
