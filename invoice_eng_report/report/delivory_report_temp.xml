@@ -12,9 +12,6 @@
                             <th name="th_sm_ordered">
                                 <strong>Ordered</strong>
                             </th>
-                            <th>
-                                <strong>Price Per Box</strong>
-                            </th>
                             <th name="th_sm_quantity">
                                 <strong>Delivered</strong>
                             </th>

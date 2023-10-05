@@ -3,54 +3,6 @@
     <data>
         <template id="inherit_invoice_order_report_temp_id" inherit_id="account.report_invoice_document">
             <xpath expr="//div[@id='informations']" position="replace">
-                <div id="informations_custom" class="row">
-                    <div class="col-4" t-if="o.invoice_date" name="invoice_date">
-                        <t t-if="o.move_type == 'out_invoice'">
-                            <strong>Invoice Date:</strong>
-                        </t>
-                        <t t-elif="o.move_type == 'out_refund'">
-                            <strong>Credit Note Date:</strong>
-                        </t>
-                        <t t-elif="o.move_type == 'out_receipt'">
-                            <strong>Receipt Date:</strong>
-                        </t>
-                        <t t-else="">
-                            <strong>Date:</strong>
-                        </t>
-                        <p class="m-0" t-field="o.invoice_date"/>
-                    </div>
-                    <div class="col-4"
-                         t-if="o.invoice_date_due and o.move_type == 'out_invoice' and o.state == 'posted'"
-                         name="due_date">
-                        <strong>Due Date:</strong>
-                        <p class="m-0" t-field="o.invoice_date_due"/>
-                    </div>
-                    <div class="col-4">
-                        <strong>Delivery Date :</strong>
-                        <p>
-                            <t t-if="o.invoice_origin">
-                                <t t-esc="request.env['stock.picking'].search([('origin', '=', o.invoice_origin)]).scheduled_date.date()"/>
-                            </t>
-                            <t t-else="">
-                                -
-                            </t>
-                        </p>
-                    </div>
-
-
-                    <!--                    <div class="col-auto col-3 mw-100 mb-2" t-if="o.invoice_origin" name="origin">-->
-                    <!--                        <strong>Source:</strong>-->
-                    <!--                        <p class="m-0" t-field="o.invoice_origin"/>-->
-                    <!--                    </div>-->
-                    <!--                    <div class="col-auto col-3 mw-100 mb-2" t-if="o.partner_id.ref" name="customer_code">-->
-                    <!--                        <strong>Customer Code:</strong>-->
-                    <!--                        <p class="m-0" t-field="o.partner_id.ref"/>-->
-                    <!--                    </div>-->
-                    <!--                    <div class="col-auto col-3 mw-100 mb-2" t-if="o.ref" name="reference">-->
-                    <!--                        <strong>Reference:</strong>-->
-                    <!--                        <p class="m-0" t-field="o.ref"/>-->
-                    <!--                    </div>-->
-                </div>
                 <div class="row">
                     <div class="col-4">
                         <strong>Sale Person :</strong>

@@ -6,11 +6,14 @@
                 <t t-call="web.external_layout">
                     <t t-foreach="docs" t-as="o">
                         <div class="page">
-
-
+                            <div class="row">
+                                <strong>
+                                    <h1 style=" font-family: Roboto;">INVOICE</h1>
+                                </strong>
+                            </div>
                             <div class="row ">
                                 <div class="col-5">
-                                    <table class="w-75 h-15"
+                                    <table class="w-100 h-15"
                                            style="border: 1px solid #ffffff; font-size: 12px; font-family: Roboto;">
                                         <tr>
                                             <td>
@@ -52,11 +55,31 @@
                                         </tr>
                                         <tr>
                                             <td>
-                                                <strong>Payment Method</strong>
+                                                <strong>Tax ID</strong>
                                             </td>
                                             <td>:</td>
                                             <td>
-                                                <span t-field="o.partner_id.property_payment_term_id.name"/>
+                                                <span t-esc="o.partner_id.vat"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Company ID</strong>
+                                            </td>
+                                            <td>:</td>
+                                            <td>
+                                                <span t-esc="o.partner_id.company_registry"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <strong>Payment Terms</strong>
+                                            </td>
+                                            <td>:</td>
+                                            <td>
+                                                <t t-if="o.invoice_origin">
+                                                    <t t-esc="request.env['sale.order'].search([('name', '=', o.invoice_origin)]).payment_term_id.name"/>
+                                                </t>
                                             </td>
                                         </tr>
                                         <tr>
@@ -70,29 +93,43 @@
                                                 </t>
                                             </td>
                                         </tr>
+
                                         <tr>
                                             <td>
-                                                <strong>Reference</strong>
+                                                <strong>Customer Reference</strong>
                                             </td>
                                             <td>:</td>
                                             <td>
-                                                <span t-field="o.payment_reference"/>
+                                                <t t-esc="request.env['sale.order'].search([('name', '=', o.invoice_origin)]).client_order_ref"/>
+
+                                                <!--                                                <span t-field="o.client_order_reference"/>-->
                                             </td>
                                         </tr>
                                     </table>
                                 </div>
-                                <div class="col-2"></div>
-
+                                <div class="col-2"/>
                                 <div class="col-5">
-                                    <table class="w-75 h-15"
+                                    <table class="w-100 h-15"
                                            style="border: 1px solid #ffffff; font-size: 12px; font-family: Roboto;">
+                                        <!--                                        <tr>-->
+                                        <!--                                            <td>-->
+                                        <!--                                                <strong>Customer Code</strong>-->
+                                        <!--                                            </td>-->
+                                        <!--                                            <td>:</td>-->
+                                        <!--                                            <td>-->
+                                        <!--                                                <span t-esc="o.partner_id.customer_code"/>-->
+                                        <!--                                            </td>-->
+                                        <!--                                        </tr>-->
                                         <tr>
                                             <td>
-                                                <strong>Customer Code</strong>
+                                                <strong>Payment Method</strong>
                                             </td>
                                             <td>:</td>
                                             <td>
-                                                <span t-esc="o.partner_id.customer_code"/>
+                                                <t t-if="o.invoice_origin">
+                                                    <t t-esc="request.env['sale.order'].search([('name', '=', o.invoice_origin)]).magento_payment_method_id.payment_method_name"/>
+                                                </t>
+                                                <t t-else=""/>
                                             </td>
                                         </tr>
                                         <tr>
@@ -101,7 +138,7 @@
                                             </td>
                                             <td>:</td>
                                             <td>
-                                                <span t-esc="o.company_id.name"/>
+                                                <span t-esc="o.partner_id.name"/>
                                             </td>
                                         </tr>
                                         <tr>
@@ -128,7 +165,7 @@
                                             </td>
                                             <td>:</td>
                                             <td>
-                                                <span t-esc="o.partner_id.postal_code"/>
+                                                <span t-esc="o.partner_id.zip"/>
                                             </td>
                                         </tr>
                                         <tr>
@@ -150,96 +187,117 @@
                                             </td>
                                         </tr>
                                     </table>
-
                                 </div>
                             </div>
-
-                            <!--                            this is main table of the report-->
+                            <!--                             this is main table of the report -->
                             <br/>
                             <br/>
                             <div class="row">
-                                <table class="table">
-                                    <thead style="border: 1px solid black; font-size: 18px; font-family: Roboto;">
-                                        <tr>
-                                            <th>Product Code</th>
+                                <style>
+                                    /* Apply border to table header cells within the custom_table class */
+                                    .custom_table thead th {
+                                    border: 2px solid white;
+                                    }
+
+                                    /* Apply border to all cells (th and td) within the custom_table class */
+                                    .custom_table thead tr th{
+                                    border: 1px solid white;
+                                    }
+                                    .custom_table tbody tr td {
+                                    border: 1px solid white;
+                                    }
+                                </style>
+                                <table class="w-100 h-15 custom_table table-sm">
+
+                                    <thead>
+                                        <tr style="text-align:left; border-bottom:2px solid black;">
+                                            <th width="15%">Product Code</th>
                                             <th>Product Name</th>
-                                            <th>Qty</th>
-                                            <th>Price</th>
-                                            <th>Discount</th>
-                                            <th>VAT</th>
-                                            <th>Total</th>
+                                            <th width="5%">Qty</th>
+                                            <th width="10%">Price</th>
+                                            <th width="8%">Discount</th>
+                                            <th width="8%">VAT</th>
+                                            <th style="text-align:right" width="10%">Total</th>
                                         </tr>
                                     </thead>
                                     <t t-foreach="o.invoice_line_ids" t-as="line">
-                                        <tbody style="border: 1px solid #ffffff;">
+                                        <tbody id="my-table" style=" font-size: 12px; font-family: Roboto;">
                                             <tr>
-                                                <td>
+                                                <td width="15%">
                                                     <span t-field="line.product_id.default_code"/>
                                                 </td>
                                                 <td>
                                                     <span t-field="line.product_id.name"/>
                                                 </td>
-                                                <td>
+                                                <td width="5%">
                                                     <span t-field="line.quantity"/>
                                                 </td>
-                                                <td>
+                                                <td width="10%">
                                                     <span t-field="line.price_unit"/>
                                                 </td>
-                                                <td>
+                                                <td width="8%">
                                                     <t t-esc="line.discount"/>
                                                 </td>
-                                                <td>
+                                                <td width="8%">
                                                     <t t-esc="line.tax_ids.amount"/>
                                                 </td>
-                                                <td>
+                                                <td style="text-align:right" width="10%">
                                                     <span t-field="line.price_subtotal"/>
                                                 </td>
                                             </tr>
                                         </tbody>
                                     </t>
                                 </table>
-
                             </div>
-
-
-                            <!--                            this div is for the Total Amount-->
+                            <!--                             this div is for the Total Amount -->
                             <br/>
                             <div class="float-right row">
-                                <div class="col-6"></div>
-                                <div class="col-6">
-                                    <table class="w-100" style="text-align:center;">
+                                <div class="col-8"/>
+                                <div class="col-4">
+                                    <style>
+                                        /* Apply border to table header cells within the custom_table class */
+                                        .mycustom_table thead th {
+                                        font-size:14px;
+                                        }
+
+                                        /* Apply border to all cells (th and td) within the custom_table class */
+                                        .mycustom_table thead tr th{
+                                        font-size:14px;
+                                        }
+                                        .mycustom_table tbody tr td {
+                                        font-size:14px;
+                                        }
+                                    </style>
+                                    <table style="border:1px solid white; text-align:right" class="w-100 h-15 mycustom_table table-sm">
                                         <tr>
-                                            <td>Subtotal:</td>
-                                            <td>
+                                            <th width="60%">Subtotal:</th>
+                                            <td width="40%">
                                                 <span t-field="o.amount_untaxed"/>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Taxes:</td>
-                                            <td>
+                                            <th width="60%">Taxes:</th>
+                                            <td width="40%">
                                                 <span t-field="o.amount_tax"/>
                                             </td>
-                                            <tr style="background-color:rgb(240, 240, 240);">
-                                                <td>
-                                                    <strong>Total:</strong>
-                                                </td>
-                                                <td>
-                                                    <strong>
-                                                        <span t-field="o.amount_total"/>
-                                                    </strong>
+                                            <tr>
+                                                <th width="60%">
+                                                    Total:
+                                                </th>
+                                                <td width="40%" style="border-top:2px solid #333;">
+                                                    <span t-field="o.amount_total"/>
                                                 </td>
                                             </tr>
                                         </tr>
                                     </table>
                                 </div>
                             </div>
-
                         </div>
-
-
                     </t>
                 </t>
             </t>
         </template>
+
+
     </data>
 </odoo>
