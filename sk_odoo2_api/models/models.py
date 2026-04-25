@@ -16,8 +16,8 @@ class StockPicking(models.Model):
     def button_validate(self):
         res = super().button_validate()
         for rec in self.move_ids_without_package:
-            if rec.product_id and rec.quantity_done:
-                rec.product_id.send_product_data()
+            if rec.product_tmpl_id and rec.quantity_done:
+                rec.product_tmpl_id.send_product_data()
         return res
 
 class ProductProductInherit(models.Model):
