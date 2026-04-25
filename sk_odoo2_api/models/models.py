@@ -21,12 +21,12 @@ class StockPicking(models.Model):
         return res
 
 class ProductProductInherit(models.Model):
-    _inherit = "product.product"
+    _inherit = "product.template"
 
-    # def _compute_quantities(self):
-    #     res = super()._compute_quantities()
-    #     self.send_product_data()
-    #     return res
+    def _compute_quantities(self):
+        res = super()._compute_quantities()
+        self.send_product_data()
+        return res
 
 
     def send_product_data(self):
