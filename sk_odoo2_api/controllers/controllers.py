@@ -44,11 +44,12 @@ class OdooSyncController(http.Controller):
 
             lines = request.httprequest.json['data']['lines']
 
+
             if lines and partner_id:
                 sale_order = sale_order.create({
                     'partner_id': partner_id.id,
                     'order_line': [(0,0, {
-                        'product_id': line.get('product_id'),
+                        'product_id': request.env['product.product'].sudo().search([('product_tmpl_id', '=', line.get('product_template_id'))], limit=1).id,
                         'name': line.get('name'),
                         'price_unit': line.get('price_unit'),
                         'product_uom_qty': line.get('product_uom_qty'),
