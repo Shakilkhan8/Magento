@@ -1,12 +1,11 @@
-import base64
+# -*- coding: utf-8 -*-
+import logging
 
-import requests
-
-from odoo import http, _
+from odoo import http
 from odoo.http import request
-from datetime import datetime
-from odoo.http import request, Response
-import json
+
+_logger = logging.getLogger(__name__)
+
 
 class OdooSyncController(http.Controller):
 
@@ -14,59 +13,65 @@ class OdooSyncController(http.Controller):
     def authenticate(self, db, login, password, base_location=None):
         try:
             request.session.authenticate(db, login, password)
-
             return {
                 'status': 200,
                 'message': 'Authentication successful',
                 'Token_id': request.session.sid,
             }
         except Exception as e:
-            # Authentication failed due to other errors
             return {
                 'status': 500,
                 'error': str(e),
             }
 
-    @http.route('/api/create-sale-order', auth='user', csrf=False, methods=['POST'])
+    @http.route('/api/create-sale-order', type='json', auth='user', csrf=False, methods=['POST'])
     def create_sale_order_data(self, **kwargs):
-        sale_order = request.env['sale.order']
-
         try:
-            partner_id = request.env['res.partner'].sudo().search([
+            data = kwargs.get('data') or {}
+            lines = data.get('lines', [])
+
+            partner = request.env['res.partner'].sudo().search([
                 ('is_biller_partner', '=', True),
             ], limit=1)
-            if not partner_id:
-                response = {
-                    'status': 'error',
-                    'message': 'No partner found',
-                }
-                return http.Response(json.dumps(response), content_type='application/json')
+            if not partner:
+                return {'status': 'error', 'message': 'No partner found with is_biller_partner=True'}
 
-            lines = request.httprequest.json['data']['lines']
+            if not lines:
+                return {'status': 'error', 'message': 'No order lines provided'}
 
+            order_lines = []
+            for line in lines:
+                product = request.env['product.product'].sudo().search(
+                    [('product_tmpl_id', '=', line.get('product_template_id'))], limit=1
+                )
+                if not product:
+                    return {
+                        'status': 'error',
+                        'message': 'Product not found for template id: %s' % line.get('product_template_id'),
+                    }
+                order_lines.append((0, 0, {
+                    'product_id': product.id,
+                    'name': line.get('name', product.name),
+                    'price_unit': line.get('price_unit', 0),
+                    'product_uom_qty': line.get('product_uom_qty', 1),
+                }))
 
-            if lines and partner_id:
-                sale_order = sale_order.create({
-                    'partner_id': partner_id.id,
-                    'order_line': [(0,0, {
-                        'product_id': request.env['product.product'].sudo().search([('product_tmpl_id', '=', line.get('product_template_id'))], limit=1).id,
-                        'name': line.get('name'),
-                        'price_unit': line.get('price_unit'),
-                        'product_uom_qty': line.get('product_uom_qty'),
-                    }) for line in lines]
-                })
-                response = {
-                    'status': 200,
-                    'message': f'Sale order {sale_order.name} created',
-                }
-                return http.Response(json.dumps(response), content_type='application/json')
-        except Exception as e:
-            error_message = "An error occurred while creating of sale order: {}".format(e)
-            response = {
-                'status': 'error',
-                'message': error_message
+            sale_order = request.env['sale.order'].sudo().create({
+                'partner_id': partner.id,
+                'order_line': order_lines,
+            })
+
+            _logger.info("Sale order %s created via API", sale_order.name)
+            return {
+                'status': 200,
+                'message': 'Sale order %s created' % sale_order.name,
+                'sale_order_id': sale_order.id,
+                'sale_order_name': sale_order.name,
             }
 
-            return http.Response(json.dumps(response), content_type='application/json')
-
-
+        except Exception as e:
+            _logger.error("Error creating sale order via API: %s", e)
+            return {
+                'status': 'error',
+                'message': 'Error creating sale order: %s' % str(e),
+            }
