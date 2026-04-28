@@ -27,7 +27,7 @@ class OdooSyncController(http.Controller):
     @http.route('/api/create-sale-order', type='json', auth='user', csrf=False, methods=['POST'])
     def create_sale_order_data(self, **kwargs):
         try:
-            data = request.httprequest.json['data']
+            data = request.httprequest.json['params']['data']
             lines = data.get('lines', [])
 
             partner = request.env['res.partner'].sudo().search([
