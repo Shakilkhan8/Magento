@@ -23,7 +23,7 @@ class StockPicking(models.Model):
         return res
 
 class ProductProductInherit(models.Model):
-    _inherit = "product.product"
+    _inherit = "product.template"
 
     # def _compute_quantities(self):
     #     res = super()._compute_quantities()
@@ -60,6 +60,9 @@ class ProductProductInherit(models.Model):
 
             headers['Token_id'] = session_id
             url = api_config.url + PRODUCT_URL
+            variant = self.env['product.product'].search([
+                ('product_tmpl_id', '=', rec.id),
+            ])
             payload = {
                 "data": {
                     "id": rec.id,
