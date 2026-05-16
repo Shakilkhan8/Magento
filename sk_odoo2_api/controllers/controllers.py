@@ -47,7 +47,7 @@ class OdooSyncController(http.Controller):
                 if not product:
                     return {
                         'status': 'error',
-                        'message': 'Product not found for template id: %s' % line.get(product.id),
+                        'message': f'Product not found for {lines}',
                     }
                 order_lines.append((0, 0, {
                     'product_id': product.id,
