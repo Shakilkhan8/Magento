@@ -6,7 +6,7 @@
             <field name="model_id" ref="product.model_product_template"/>
             <field name="binding_model_id" ref="product.model_product_template"/>
             <field name="state">code</field>
-            <field name="binding_view_types">list,form</field>
+            <field name="binding_view_types">tree,form</field>
             <field name="code">
                 action = records.send_product_data()
             </field>

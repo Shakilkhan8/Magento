@@ -65,7 +65,7 @@ class ProductProductInherit(models.Model):
             ])
             payload = {
                 "data": {
-                    "id": rec.id,
+                    "id": variant.id,
                     "name": rec.name,
                     "default_code": rec.default_code,
                     "list_price": rec.list_price,
