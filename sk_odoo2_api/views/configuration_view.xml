@@ -35,6 +35,6 @@
         </record>
 
         <!-- This Menu Item must have a parent and an action -->
-        <menuitem id="api_configuration_menu" web_icon="sk_odo21_api,static/description/api_png.png" name="API Configuration" action="api_config_action" sequence="1"/>
+        <menuitem id="api_configuration_menu" web_icon="sk_odo2_api,static/description/api_png.png" name="API Configuration" action="api_config_action" sequence="1"/>
     </data>
 </odoo>
