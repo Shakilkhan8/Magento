@@ -1,2 +1,2 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_sk_odoo2_api_sk_odoo2_api,sk_odoo2_api.sk_odoo2_api,model_sk_odoo2_api_sk_odoo2_api,base.group_user,1,1,1,1
+access_api.configuration,sk_api.configuration,model_api_configuration,base.group_user,1,1,1,1

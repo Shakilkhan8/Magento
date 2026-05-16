@@ -42,7 +42,7 @@ class OdooSyncController(http.Controller):
             order_lines = []
             for line in lines:
                 product = request.env['product.product'].sudo().search(
-                    [('product_tmpl_id', '=', line.get('product_template_id'))], limit=1
+                    [('id', '=', line.get('product_id'))], limit=1
                 )
                 if not product:
                     return {
@@ -75,3 +75,79 @@ class OdooSyncController(http.Controller):
                 'status': 'error',
                 'message': 'Error creating sale order: %s' % str(e),
             }
+
+class ProductAPI(http.Controller):
+
+    @http.route('/api/create_product', type='json', auth='public', methods=['POST'], csrf=False)
+    def create_product(self, **kwargs):
+        try:
+            vals = request.httprequest.json['data']
+
+            sku = vals.get('default_code')
+            qty = float(vals.get('qty', 0))
+
+            # Product Search
+            product = request.env['product.template'].sudo().search([
+                ('default_code', '=', sku)
+            ], limit=1)
+
+            if not product:
+                product = request.env['product.template'].sudo().create({
+                    'api_id': vals.get('id'),
+                    'name': vals.get('name') or sku,
+                    'default_code': sku,
+                    'list_price': vals.get('list_price', 0),
+                    'detailed_type': vals.get('detailed_type') or 'product',
+                })
+            else:
+                product.sudo().write({
+                    'name': vals.get('name') or product.name,
+                    'list_price': vals.get('list_price', product.list_price),
+                })
+
+            variant = product.product_variant_ids[:1]
+            if not variant:
+                return {'status': 'error', 'message': 'No product variant'}
+
+            # Warehouse
+            warehouse = request.env['stock.warehouse'].sudo().search([
+                ('code', '=', 'IMR')
+            ], limit=1)
+
+            if not warehouse:
+                return {'status': 'error', 'message': 'Warehouse not found'}
+
+            location = warehouse.lot_stock_id
+
+            # Inventory adjustments only apply when inventory_mode=True (stock.quant inverse).
+            inv_ctx = dict(request.env.context or {}, inventory_mode=True)
+            Quant = request.env['stock.quant'].sudo().with_context(inv_ctx)
+
+            quant = Quant.search([
+                ('product_id', '=', variant.id),
+                ('location_id', '=', location.id),
+            ], limit=1)
+
+            if not quant:
+                quant = Quant.create({
+                    'product_id': variant.id,
+                    'location_id': location.id,
+                })
+
+            # Check for tracking
+            if variant.tracking != 'none':
+                return {'status': 'error', 'message': f'Product {sku} is tracked by {variant.tracking}. Lot/Serial required.'}
+
+            # Sets counted qty and creates stock moves (Directly apply as SUPERUSER to bypass permission/UI checks).
+            from odoo import SUPERUSER_ID
+            quant.with_user(SUPERUSER_ID).write({'inventory_quantity': qty})
+            quant.with_user(SUPERUSER_ID)._apply_inventory()
+
+            return {
+                'status': 'success',
+                'product_id': variant.id,
+                'qty': qty,
+                'quant': quant.id,
+            }
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}

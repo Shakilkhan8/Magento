@@ -2,11 +2,13 @@ from odoo import api, fields, models
 import json
 import requests
 
-DB = 'shakilkhan8-aladin-beauty-uat-30856289'
-UserName = 'api'
-Password = 'admin'
+from odoo.exceptions import ValidationError
 
-BASE_URL = 'https://shakilkhan8-aladin-beauty-uat-30856289.dev.odoo.com'
+# DB = 'shakilkhan8-aladin-beauty-uat-30856289'
+# UserName = 'api'
+# Password = 'admin'
+#
+# BASE_URL = 'https://shakilkhan8-aladin-beauty-uat-30856289.dev.odoo.com'
 AUTH_URL = '/web/session/authenticate'
 PRODUCT_URL = '/api/create_product'
 
@@ -21,24 +23,32 @@ class StockPicking(models.Model):
         return res
 
 class ProductProductInherit(models.Model):
-    _inherit = "product.template"
+    _inherit = "product.product"
 
-    def _compute_quantities(self):
-        res = super()._compute_quantities()
-        self.send_product_data()
-        return res
+    # def _compute_quantities(self):
+    #     res = super()._compute_quantities()
+    #     self.send_product_data()
+    #     return res
+
 
 
     def send_product_data(self):
         for rec in self:
-            url = BASE_URL + AUTH_URL
+            api_config = self.env['api.configuration'].sudo().search([], limit=1)
+            if not api_config:
+                raise ValidationError('Please create API configuration and add all API required parameters !')
+
+            if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
+                raise ValidationError('Please add all API required parameters !')
+
+            url = api_config.url + AUTH_URL
             payload = {
                 "jsonrpc": "2.0",
                 "method": "call",
                 "params": {
-                    "db": DB,
-                    "login": UserName,
-                    "password": Password
+                    "db": api_config.db_name,
+                    "login": api_config.user_name,
+                    "password": api_config.password,
                 }
             }
             headers = {
@@ -49,7 +59,7 @@ class ProductProductInherit(models.Model):
             session_id = response.cookies.get_dict()['session_id']
 
             headers['Token_id'] = session_id
-            url = BASE_URL + PRODUCT_URL
+            url = api_config.url + PRODUCT_URL
             payload = {
                 "data": {
                     "id": rec.id,
