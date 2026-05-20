@@ -55,34 +55,37 @@ class ProductProductInherit(models.Model):
                 'Content-Type': 'application/json',
             }
             response = requests.request(method='GET', url=url, headers=headers, json=payload)
+            if response.status_code == 200 and response.cookies.values():
+                session_id = response.cookies.values()[0]
 
-            session_id = response.cookies.get_dict()['session_id']
+                headers['Token_id'] = session_id
+                url = api_config.url + PRODUCT_URL
+                variant = self.env['product.product'].search([
+                    ('product_tmpl_id', '=', rec.id),
+                ])
+                if variant:
+                    payload = {
+                        "data": {
+                            "id": variant.id,
+                            "name": rec.name,
+                            "default_code": rec.default_code,
+                            "list_price": rec.list_price,
+                            "detailed_type": "product",
+                            "qty": rec.qty_available,
+                        }
+                    }
 
-            headers['Token_id'] = session_id
-            url = api_config.url + PRODUCT_URL
-            variant = self.env['product.product'].search([
-                ('product_tmpl_id', '=', rec.id),
-            ])
-            payload = {
-                "data": {
-                    "id": variant.id,
-                    "name": rec.name,
-                    "default_code": rec.default_code,
-                    "list_price": rec.list_price,
-                    "detailed_type": "product",
-                    "qty": rec.qty_available,
-                }
-            }
-
-            response = requests.post(
-                url=url,
-                json=payload,
-                headers={
-                    "Content-Type": "application/json",
-                    "Token_id": session_id
-                },
-                timeout=30
-            )
+                    response = requests.post(
+                        url=url,
+                        json=payload,
+                        headers={
+                            "Content-Type": "application/json",
+                            "Token_id": session_id
+                        },
+                        timeout=30
+                    )
+            else:
+                raise ValidationError('Un-Autherized request !')
 
 
 class ResPartnerInherit(models.Model):
