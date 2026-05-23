@@ -58,6 +58,7 @@ class OdooSyncController(http.Controller):
 
             sale_order = request.env['sale.order'].sudo().create({
                 'partner_id': partner.id,
+                'api_order_id': data.get('order_Id'),
                 'order_line': order_lines,
             })
 
@@ -74,6 +75,44 @@ class OdooSyncController(http.Controller):
             return {
                 'status': 'error',
                 'message': 'Error creating sale order: %s' % str(e),
+            }
+
+    @http.route('/api/update-sale-order', type='json', auth='user', csrf=False, methods=['POST'])
+    def update_sale_order_data(self, **kwargs):
+        try:
+            data = request.httprequest.json['data']
+            order_id = data.get('order_id', [])
+            state = data.get('state', [])
+
+            order = request.env['sale.order'].sudo().search([
+                ('id', '=', order_id),
+            ], limit=1)
+            if not order:
+                return {'status': 'error', 'message': 'No order found with this ID'}
+
+
+            if order and state:
+                if state == 'cancel':
+                    order.action_cancel()
+                    order.state = 'cancel'
+                if state == 'draft':
+                    order.action_draft()
+                    order.state = 'draft'
+
+
+            _logger.info("Sale order %s update via API", order.name)
+            return {
+                'status': 200,
+                'message': 'Sale order %s created' % order.name,
+                'sale_order_id': order.id,
+                'sale_order_state': order.state,
+            }
+
+        except Exception as e:
+            _logger.error("Error updating sale order via API: %s", e)
+            return {
+                'status': 'error',
+                'message': 'Error updating sale order: %s' % str(e),
             }
 
 class ProductAPI(http.Controller):

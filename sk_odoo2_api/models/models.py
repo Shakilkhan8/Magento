@@ -85,10 +85,12 @@ class ProductProductInherit(models.Model):
                         timeout=30
                     )
             else:
-                raise ValidationError('Un-Autherized request !')
+                raise ValidationError('Un-Authorized request !')
 
 
 class ResPartnerInherit(models.Model):
     _inherit = "res.partner"
 
     is_biller_partner = fields.Boolean(string="Is Biller Partner")
+
+
