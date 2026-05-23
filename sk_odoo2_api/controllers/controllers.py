@@ -90,7 +90,7 @@ class OdooSyncController(http.Controller):
             if not order:
                 return {'status': 'error', 'message': 'No order found with this ID'}
 
-            _logger.error(f"{order} + {state}")
+            _logger.info(f'Sale Order Object {order.id} -> {state}')
             if order and state:
                 if state == 'cancel':
                     order.action_cancel()
