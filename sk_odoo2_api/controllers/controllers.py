@@ -87,16 +87,18 @@ class OdooSyncController(http.Controller):
             order = request.env['sale.order'].sudo().search([
                 ('id', '=', order_id),
             ], limit=1)
+
             if not order:
                 return {'status': 'error', 'message': 'No order found with this ID'}
 
             _logger.info(f'Sale Order Object {order.id} -> {state}')
             if order and state:
                 if state == 'cancel':
-                    order.action_cancel()
-                    order.state = 'cancel'
+                    order.sudo().action_cancel()
+                    order.sudo().state = 'cancel'
+
                 if state == 'draft':
-                    order.action_draft()
+                    order.sudo().action_draft()
                     order.state = 'draft'
 
 
