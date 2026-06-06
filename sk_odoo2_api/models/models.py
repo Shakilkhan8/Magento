@@ -39,7 +39,6 @@ class ProductProductInherit(models.Model):
         res['default_code'] = self.unique_sku_number() + 1
         return res
 
-
     def unique_sku_number(self):
         default_codes = self.env['product.product'].search([]).mapped('default_code')
         default_codes = [
@@ -74,29 +73,32 @@ class ProductProductInherit(models.Model):
     def send_product_data(self):
         for rec in self:
             api_config = self.env['api.configuration'].sudo().search([], limit=1)
-            if not api_config:
-                raise ValidationError('Please create API configuration and add all API required parameters !')
-
-            if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
-                raise ValidationError('Please add all API required parameters !')
-
             url = api_config.url + AUTH_URL
-            payload = {
-                "jsonrpc": "2.0",
-                "method": "call",
-                "params": {
-                    "db": api_config.db_name,
-                    "login": api_config.user_name,
-                    "password": api_config.password,
-                }
-            }
+            # if not api_config:
+            #     raise ValidationError('Please create API configuration and add all API required parameters !')
+            #
+            # if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
+            #     raise ValidationError('Please add all API required parameters !')
+            #
+            # url = api_config.url + AUTH_URL
+            # payload = {
+            #     "jsonrpc": "2.0",
+            #     "method": "call",
+            #     "params": {
+            #         "db": api_config.db_name,
+            #         "login": api_config.user_name,
+            #         "password": api_config.password,
+            #     }
+            # }
+            session_id = self.get_session_id()
+
             headers = {
                 'Content-Type': 'application/json',
             }
-            response = requests.request(method='GET', url=url, headers=headers, json=payload)
-            if response.status_code == 200 and response.cookies.values():
-                session_id = response.cookies.values()[0]
-
+            # response = requests.request(method='GET', url=url, headers=headers, json=payload)
+            # if response.status_code == 200 and response.cookies.values():
+            #     session_id = response.cookies.values()[0]
+            if session_id:
                 headers['Token_id'] = session_id
                 url = api_config.url + PRODUCT_URL
                 variant = self.env['product.product'].search([
@@ -163,30 +165,30 @@ class ProductProductInherit(models.Model):
         product = self.browse(vals.get('id'))
         for rec in product:
             api_config = self.env['api.configuration'].sudo().search([], limit=1)
-            if not api_config:
-                raise ValidationError('Please create API configuration and add all API required parameters !')
-
-            if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
-                raise ValidationError('Please add all API required parameters !')
-
             url = api_config.url + AUTH_URL
-            payload = {
-                "jsonrpc": "2.0",
-                "method": "call",
-                "params": {
-                    "db": api_config.db_name,
-                    "login": api_config.user_name,
-                    "password": api_config.password,
-                }
-            }
+            # if not api_config:
+            #     raise ValidationError('Please create API configuration and add all API required parameters !')
+            #
+            # if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
+            #     raise ValidationError('Please add all API required parameters !')
+            #
+            # url = api_config.url + AUTH_URL
+            # payload = {
+            #     "jsonrpc": "2.0",
+            #     "method": "call",
+            #     "params": {
+            #         "db": api_config.db_name,
+            #         "login": api_config.user_name,
+            #         "password": api_config.password,
+            #     }
+            # }
+
             headers = {
                 'Content-Type': 'application/json',
             }
-            response = requests.request(method='GET', url=url, headers=headers, json=payload)
-            if response.status_code == 200 and response.cookies.values():
-                session_id = response.cookies.values()[0]
+            if self.get_session_id():
 
-                headers['Token_id'] = session_id
+                headers['Token_id'] = self.get_session_id()
                 url = api_config.url + PRODUCT_URL
 
 
@@ -244,10 +246,39 @@ class ProductProductInherit(models.Model):
                             json=payload,
                             headers={
                                 "Content-Type": "application/json",
-                                "Authorization": f"Bearer {session_id}",
+                                "Authorization": f"Bearer {self.get_session_id()}",
                             },
                             timeout=30
                         )
+    def get_session_id(self):
+        api_config = self.env['api.configuration'].sudo().search([], limit=1)
+        if not api_config:
+            raise ValidationError('Please create API configuration and add all API required parameters !')
+
+        if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
+            raise ValidationError('Please add all API required parameters !')
+
+        url = api_config.url + AUTH_URL
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "params": {
+                "db": api_config.db_name,
+                "login": api_config.user_name,
+                "password": api_config.password,
+            }
+        }
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        response = requests.request(method='GET', url=url, headers=headers, json=payload)
+        if response.status_code == 200 and response.cookies.values():
+            session_id = response.cookies.values()[0]
+
+            headers['Token_id'] = session_id
+            return session_id
+        else:
+            return None
 
 class ProductVariantInherit(models.Model):
     _inherit = "product.product"
@@ -259,6 +290,7 @@ class ProductVariantInherit(models.Model):
         res = super().create(vals)
 
         return res
+
 
     def write(self, vals):
         res = super().write(vals)
@@ -277,6 +309,9 @@ class ProductVariantInherit(models.Model):
 
         last_default = max([int(code) for code in default_codes])
         return last_default
+
+
+
 
 class ResPartnerInherit(models.Model):
     _inherit = "res.partner"
