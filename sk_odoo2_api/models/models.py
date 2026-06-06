@@ -28,6 +28,8 @@ class StockPicking(models.Model):
 class ProductProductInherit(models.Model):
     _inherit = "product.template"
 
+    api_id = fields.Integer('API ID')
+
     @api.onchange('qty_available')
     def _onchange_qty_available(self):
         for rec in self:
@@ -282,6 +284,8 @@ class ProductProductInherit(models.Model):
 
 class ProductVariantInherit(models.Model):
     _inherit = "product.product"
+
+    api_id = fields.Integer('API ID')
 
     @api.model
     def create(self, vals):
