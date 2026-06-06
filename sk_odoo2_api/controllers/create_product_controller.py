@@ -76,18 +76,18 @@ class ProductAPI(http.Controller):
                 template_vals['api_id'] = vals.get('template_id')
                 template_vals['attribute_line_ids'] = attribute_line_ids
 
-                template = ProductTemplate.create(template_vals)
+                template = ProductTemplate.sudo().create(template_vals)
                 variants = request.env['product.product'].search([
                     ('product_tmpl_id', '=', template.id)
                 ])
                 if variants:
                     for var in variants:
-                        var.image_1920 = vals.get('template_image')
+                        var.sudo().image_1920 = vals.get('template_image')
 
             else:
 
                 template.write(template_vals)
-                variants = request.env['product.product'].search([
+                variants = request.env['product.product'].sudo().search([
                     ('product_tmpl_id', '=', template.id)
                 ])
 
@@ -107,7 +107,7 @@ class ProductAPI(http.Controller):
             # Find Exact Variant
             # --------------------------------------------------
 
-            variant = template.product_variant_ids
+            variant = template.sudo().product_variant_ids
 
             for attr in vals.get('variant_attributes', []):
                 variant = variant.filtered(
@@ -139,7 +139,7 @@ class ProductAPI(http.Controller):
 
                 image = vals.get('image')
 
-                variant.write({
+                variant.sudo().write({
                     'api_id': vals.get('variant_id'),
                     'default_code': vals.get('default_code'),
                     'barcode': barcode,
