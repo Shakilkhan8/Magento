@@ -251,20 +251,18 @@ class ProductVariantInherit(models.Model):
 
     api_id = fields.Integer('API ID')
 
-    # @api.model
-    # def create(self, vals):
-    #     vals['default_code'] = self.unique_sku_number() + 1
-    #     print(self.unique_sku_number())
-    #     res = super().create(vals)
-    #
-    #     return res
-    #
-    #
-    # def write(self, vals):
-    #     res = super().write(vals)
-    #     if self.product_tmpl_id:
-    #         self.product_tmpl_id.send_product_data()
-    #     return res
+    @api.model
+    def create(self, vals):
+        vals['default_code'] = self.unique_sku_number() + 1
+        res = super().create(vals)
+        return res
+
+
+    def write(self, vals):
+        res = super().write(vals)
+        if self.product_tmpl_id and not self.product_tmpl_id.api_id:
+            self.product_tmpl_id.send_product_data()
+        return res
 
     def unique_sku_number(self):
         self.env.cr.execute("""
