@@ -44,13 +44,13 @@ class ProductProductInherit(models.Model):
 
     def unique_sku_number(self):
         self.env.cr.execute("""
-            SELECT MAX(CAST(regexp_replace(default_code, '\D', '', 'g') AS INTEGER))
+            SELECT COALESCE(MAX(CAST(REGEXP_REPLACE(default_code, '\D', '', 'g') AS BIGINT)), 0)
             FROM product_product
-            WHERE regexp_replace(default_code, '\D', '', 'g') <> ''
+            WHERE default_code IS NOT NULL
+            AND REGEXP_REPLACE(default_code, '\D', '', 'g') <> ''
         """)
-        result = self.env.cr.fetchone()
-        return result[0] or 0
 
+        return int(self.env.cr.fetchone()[0])
 
     @api.model
     def create(self, vals_list):
@@ -266,17 +266,15 @@ class ProductVariantInherit(models.Model):
     #         self.product_tmpl_id.send_product_data()
     #     return res
 
-
     def unique_sku_number(self):
-        default_codes = self.env['product.product'].search([]).mapped('default_code')
-        default_codes = [
-                re.sub(r'\D', '', code)
-                for code in default_codes
-                if code and re.sub(r'\D', '', code)
-            ]
+        self.env.cr.execute("""
+            SELECT COALESCE(MAX(CAST(REGEXP_REPLACE(default_code, '\D', '', 'g') AS BIGINT)), 0)
+            FROM product_product
+            WHERE default_code IS NOT NULL
+            AND REGEXP_REPLACE(default_code, '\D', '', 'g') <> ''
+        """)
 
-        last_default = max([int(code) for code in default_codes])
-        return last_default
+        return int(self.env.cr.fetchone()[0])
 
 
 
