@@ -152,7 +152,6 @@ class ProductProductInherit(models.Model):
         product = self.browse(vals.get('id'))
         for rec in product:
             api_config = self.env['api.configuration'].sudo().search([], limit=1)
-            url = api_config.url + AUTH_URL
 
             headers = {
                 'Content-Type': 'application/json',
@@ -261,8 +260,38 @@ class ProductVariantInherit(models.Model):
     def write(self, vals):
         res = super().write(vals)
         if self.product_tmpl_id and not self.product_tmpl_id.api_id:
-            self.product_tmpl_id.send_product_data()
+            self.update_variant()
         return res
+
+    def update_variant(self):
+
+        session_id = self.get_session_id()
+        for rec in self:
+
+            payload = {
+                'data': {
+                    'product_id': rec.id,
+                    'name': rec.name,
+                    'list_price': rec.list_price,
+                    'image_1920': rec.image_1920.decode('utf-8') if rec.image_1920 else False,
+                    'barcode': rec.barcode,
+                }
+            }
+
+            api_config = self.env['api.configuration'].sudo().search([], limit=1)
+            url = api_config.url + '/api/update-product-variant'
+
+            response = requests.post(
+                url=url,
+                json=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {session_id}",
+                },
+                timeout=30
+            )
+
+
 
     def unique_sku_number(self):
         self.env.cr.execute("""
@@ -273,6 +302,37 @@ class ProductVariantInherit(models.Model):
         """)
 
         return int(self.env.cr.fetchone()[0])
+
+
+    def get_session_id(self):
+        api_config = self.env['api.configuration'].sudo().search([], limit=1)
+        if not api_config:
+            raise ValidationError('Please create API configuration and add all API required parameters !')
+
+        if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
+            raise ValidationError('Please add all API required parameters !')
+
+        url = api_config.url + AUTH_URL
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "params": {
+                "db": api_config.db_name,
+                "login": api_config.user_name,
+                "password": api_config.password,
+            }
+        }
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        response = requests.request(method='GET', url=url, headers=headers, json=payload)
+        if response.status_code == 200 and response.cookies.values():
+            session_id = response.cookies.values()[0]
+
+            headers['Token_id'] = session_id
+            return session_id
+        else:
+            return None
 
 
 
