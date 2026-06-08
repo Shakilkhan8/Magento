@@ -68,8 +68,9 @@ class ProductProductInherit(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        if not self.api_id:
-            self.send_product_data()
+        for rec in self:
+            if not rec.api_id:
+                rec.send_product_data()
         return res
 
     def send_product_data(self):
@@ -82,9 +83,7 @@ class ProductProductInherit(models.Model):
             headers = {
                 'Content-Type': 'application/json',
             }
-            # response = requests.request(method='GET', url=url, headers=headers, json=payload)
-            # if response.status_code == 200 and response.cookies.values():
-            #     session_id = response.cookies.values()[0]
+
             if session_id:
                 headers['Token_id'] = session_id
                 url = api_config.url + PRODUCT_URL
@@ -156,7 +155,7 @@ class ProductProductInherit(models.Model):
             headers = {
                 'Content-Type': 'application/json',
             }
-            session_id = self.get_session_id()
+            session_id = rec.get_session_id()
             if session_id:
 
                 headers['Token_id'] = session_id
@@ -257,16 +256,18 @@ class ProductVariantInherit(models.Model):
         return res
 
 
-    def write(self, vals):
-        res = super().write(vals)
-        if self.product_tmpl_id and not self.product_tmpl_id.api_id:
-            self.update_variant()
-        return res
+    # def write(self, vals):
+    #     res = super().write(vals)
+    #     for rec in self:
+    #         if rec.product_tmpl_id and not rec.product_tmpl_id.api_id:
+    #             rec.update_variant()
+    #     return res
 
     def update_variant(self):
 
-        session_id = self.get_session_id()
+
         for rec in self:
+            session_id = rec.get_session_id()
 
             payload = {
                 'data': {

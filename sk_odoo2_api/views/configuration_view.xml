@@ -36,5 +36,20 @@
 
         <!-- This Menu Item must have a parent and an action -->
         <menuitem id="api_configuration_menu" web_icon="sk_odoo2_api,static/description/api_png.png" name="API Configuration" action="api_config_action" sequence="1"/>
+
+
+        <record id="company_form_inherit" model="ir.ui.view">
+            <field name="name">Company Form Inherit</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='vat']" position="after">
+                    <field name="is_api_allowed"/>
+                </xpath>
+
+            </field>
+        </record>
+
     </data>
 </odoo>

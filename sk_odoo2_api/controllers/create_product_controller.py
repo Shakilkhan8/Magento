@@ -24,6 +24,9 @@ class ProductAPI(http.Controller):
             # --------------------------------------------------
             # Create Attributes / Values
             # --------------------------------------------------
+            company_id = request.env['res.company'].sudo().search([
+                ('is_api_allowed', '=', True)
+            ], limit=1)
 
             attribute_line_ids = []
 
@@ -35,7 +38,8 @@ class ProductAPI(http.Controller):
 
                 if not attribute:
                     attribute = ProductAttribute.create({
-                        'name': attr_data.get('attribute')
+                        'name': attr_data.get('attribute'),
+                        'company_id': company_id.id
                     })
 
                 value_ids = []
@@ -44,13 +48,14 @@ class ProductAPI(http.Controller):
 
                     value = ProductAttributeValue.search([
                         ('name', '=', value_name),
-                        ('attribute_id', '=', attribute.id)
+                        ('attribute_id', '=', attribute.id),
                     ], limit=1)
 
                     if not value:
                         value = ProductAttributeValue.create({
                             'name': value_name,
                             'attribute_id': attribute.id,
+                            'company_id': company_id.id
                         })
 
                     value_ids.append(value.id)
@@ -68,7 +73,8 @@ class ProductAPI(http.Controller):
                 'name': vals.get('template_name'),
                 'list_price': vals.get('list_price', 0),
                 'image_1920': vals.get('template_image'),
-                'detailed_type': vals.get('detailed_type')
+                'detailed_type': vals.get('detailed_type'),
+                'company_id': company_id.id
             }
 
             if not template:
@@ -102,7 +108,7 @@ class ProductAPI(http.Controller):
                 #     template.write({
                 #         'attribute_line_ids': attribute_line_ids
                 #     })
-
+            
             # --------------------------------------------------
             # Find Exact Variant
             # --------------------------------------------------
@@ -192,6 +198,9 @@ class ProductAPI(http.Controller):
 
     @http.route('/api/update-product-variant', type='json', auth='public', methods=['POST'], csrf=False)
     def update_product_variant(self, **kwargs):
+        company_id = request.env['res.company'].sudo().search([
+            ('is_api_allowed', '=', True)
+        ], limit=1)
         try:
             vals = request.httprequest.json.get('data', {})
 
@@ -206,6 +215,7 @@ class ProductAPI(http.Controller):
                 else:
                     product.sudo().write({
                         'name': vals.get('name'),
+                        'company_id':company_id.id,
                         'image_1920': vals.get('image_1920') if vals.get('image_1920') else product_id.image_1920,
                         'list_price': vals.get('list_price'),
                         'barcode': vals.get('barcode'),
