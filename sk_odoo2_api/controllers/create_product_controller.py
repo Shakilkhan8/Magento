@@ -206,7 +206,7 @@ class ProductAPI(http.Controller):
                 else:
                     product.sudo().write({
                         'name': vals.get('name'),
-                        'image_1920': vals.get('image_1920'),
+                        'image_1920': vals.get('image_1920') if vals.get('image_1920') else product_id.image_1920,
                         'list_price': vals.get('list_price'),
                         'barcode': vals.get('barcode'),
                     })
