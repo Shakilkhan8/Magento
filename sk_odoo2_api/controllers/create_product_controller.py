@@ -232,3 +232,37 @@ class ProductAPI(http.Controller):
         except Exception as e:
 
             return {'status': 'error', 'message': str(e)}
+
+    @http.route('/api/update-product-images', type='json', auth='public', methods=['POST'], csrf=False)
+    def update_product_images(self, **kwargs):
+        company_id = request.env['res.company'].sudo().search([
+            ('is_api_allowed', '=', True)
+        ], limit=1)
+        try:
+            vals = request.httprequest.json.get('data', {})
+
+            if 'product_id' in vals and 'default_code' in vals:
+                default_code = vals.get('default_code')
+                product = request.env['product.product'].sudo().search([
+                    ('default_code', '=', default_code)
+                ], limit=1)
+
+                if not product:
+                    return {'status': 'error', 'message': 'Product not found'}
+                else:
+                    product.sudo().write({
+                        'image_1920': vals.get('image_1920') if vals.get('image_1920') else product.image_1920,
+                        'api_id': vals.get('product_id')
+                    })
+
+                    return {
+                        'status': 'success',
+                        'message': {
+                            'barcode': product.barcode,
+                            'list_price': product.list_price,
+                        }
+                    }
+
+        except Exception as e:
+
+            return {'status': 'error', 'message': str(e)}
