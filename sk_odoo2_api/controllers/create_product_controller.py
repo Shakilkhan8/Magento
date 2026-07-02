@@ -276,9 +276,9 @@ class ProductAPI(http.Controller):
             vals = request.httprequest.json.get('data', {})
 
             if 'product_id' in vals and 'default_code' in vals:
-                default_code = vals.get('default_code')
+                product_id = vals.get('product_id')
                 product = request.env['product.template'].sudo().search([
-                    ('default_code', '=', default_code)
+                    ('api_id', '=', product_id)
                 ], limit=1)
 
                 if not product:
