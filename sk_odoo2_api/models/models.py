@@ -41,13 +41,14 @@ class ProductProductInherit(models.Model):
         res = super().default_get(fields_list)
         res['default_code'] = self.unique_sku_number() + 1
         return res
-
     def unique_sku_number(self):
+
         self.env.cr.execute("""
             SELECT COALESCE(MAX(CAST(REGEXP_REPLACE(default_code, '\D', '', 'g') AS BIGINT)), 0)
-            FROM product_product
-            WHERE default_code IS NOT NULL
-            AND REGEXP_REPLACE(default_code, '\D', '', 'g') <> ''
+            FROM product_template
+            WHERE active = True
+              AND default_code IS NOT NULL
+              AND REGEXP_REPLACE(default_code, '\D', '', 'g') <> ''
         """)
 
         return int(self.env.cr.fetchone()[0])
@@ -295,11 +296,13 @@ class ProductVariantInherit(models.Model):
 
 
     def unique_sku_number(self):
+
         self.env.cr.execute("""
             SELECT COALESCE(MAX(CAST(REGEXP_REPLACE(default_code, '\D', '', 'g') AS BIGINT)), 0)
             FROM product_product
-            WHERE default_code IS NOT NULL
-            AND REGEXP_REPLACE(default_code, '\D', '', 'g') <> ''
+            WHERE active = True
+              AND default_code IS NOT NULL
+              AND REGEXP_REPLACE(default_code, '\D', '', 'g') <> ''
         """)
 
         return int(self.env.cr.fetchone()[0])
