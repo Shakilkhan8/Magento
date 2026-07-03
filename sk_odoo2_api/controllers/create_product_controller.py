@@ -39,7 +39,7 @@ class ProductAPI(http.Controller):
                 if not attribute:
                     attribute = ProductAttribute.create({
                         'name': attr_data.get('attribute'),
-                        'company_id': company_id.id
+                        # 'company_id': company_id.id
                     })
 
                 value_ids = []
@@ -55,7 +55,7 @@ class ProductAPI(http.Controller):
                         value = ProductAttributeValue.create({
                             'name': value_name,
                             'attribute_id': attribute.id,
-                            'company_id': company_id.id
+                            # 'company_id': company_id.id
                         })
 
                     value_ids.append(value.id)
