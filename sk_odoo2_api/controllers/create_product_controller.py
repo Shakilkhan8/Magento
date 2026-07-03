@@ -84,13 +84,13 @@ class ProductAPI(http.Controller):
                 template_vals['attribute_line_ids'] = attribute_line_ids
 
                 template = ProductTemplate.sudo().create(template_vals)
-                variants = request.env['product.product'].search([
+                variants = request.env['product.product'].sudo().search([
                     ('product_tmpl_id', '=', template.id)
                 ])
 
                 if variants:
                     i = 0
-                    default_code = int(vals.get('default_code'))
+                    default_code = int(template.default_code)
                     for var in variants:
                         var.sudo().image_1920 = vals.get('template_image')
                         var.sudo().default_code = default_code + i
