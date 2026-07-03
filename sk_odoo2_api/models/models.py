@@ -32,7 +32,8 @@ class ProductProductInherit(models.Model):
     api_id = fields.Integer('API ID')
 
     code = fields.Char(
-        string='Code'
+        string='Code',
+        store=True,
     )
 
 
@@ -74,13 +75,10 @@ class ProductProductInherit(models.Model):
             ('product_tmpl_id', '=', res.id)
         ])
         i = 0
-        default_code = res.default_code
+        default_code = res.code
         for var in variants:
-            if not var.default_code:
                 var.default_code = int(default_code) + i
                 i += 1
-
-
         return res
 
 

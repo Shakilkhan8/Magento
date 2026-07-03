@@ -151,51 +151,49 @@ class ProductAPI(http.Controller):
 
                 variant.sudo().write({
                     'api_id': vals.get('variant_id'),
-                    'default_code': vals.get('default_code'),
                     'barcode': barcode,
                     'image_1920': image,
                 })
 
 
             # Warehouse
-            warehouse = request.env['stock.warehouse'].sudo().search([
-                ('code', '=', 'IMR')
-            ], limit=1)
-
-            if not warehouse:
-                return {'status': 'error', 'message': 'Warehouse not found'}
-
-            location = warehouse.lot_stock_id
-
-            # Inventory adjustments only apply when inventory_mode=True (stock.quant inverse).
-            inv_ctx = dict(request.env.context or {}, inventory_mode=True)
-            Quant = request.env['stock.quant'].sudo().with_context(inv_ctx)
-
-            quant = Quant.search([
-                ('product_id', '=', variant.id),
-                ('location_id', '=', location.id),
-            ], limit=1)
-
-            qty = vals.get('qty')
-            if not quant:
-                quant = Quant.create({
-                    'product_id': variant.id,
-                    'location_id': location.id,
-                })
-
-            # Check for tracking
-            if variant.tracking != 'none':
-                return {'status': 'error', 'message': f'Product  is tracked by {variant.tracking}. Lot/Serial required.'}
-
-            # Sets counted qty and creates stock moves (Directly apply as SUPERUSER to bypass permission/UI checks).
-            from odoo import SUPERUSER_ID
-            quant.with_user(SUPERUSER_ID).write({'inventory_quantity': qty})
-            quant.with_user(SUPERUSER_ID)._apply_inventory()
+            # warehouse = request.env['stock.warehouse'].sudo().search([
+            #     ('code', '=', 'IMR')
+            # ], limit=1)
+            #
+            # if not warehouse:
+            #     return {'status': 'error', 'message': 'Warehouse not found'}
+            #
+            # location = warehouse.lot_stock_id
+            #
+            # # Inventory adjustments only apply when inventory_mode=True (stock.quant inverse).
+            # inv_ctx = dict(request.env.context or {}, inventory_mode=True)
+            # Quant = request.env['stock.quant'].sudo().with_context(inv_ctx)
+            #
+            # quant = Quant.search([
+            #     ('product_id', '=', variant.id),
+            #     ('location_id', '=', location.id),
+            # ], limit=1)
+            #
+            # qty = vals.get('qty')
+            # if not quant:
+            #     quant = Quant.create({
+            #         'product_id': variant.id,
+            #         'location_id': location.id,
+            #     })
+            #
+            # # Check for tracking
+            # if variant.tracking != 'none':
+            #     return {'status': 'error', 'message': f'Product  is tracked by {variant.tracking}. Lot/Serial required.'}
+            #
+            # # Sets counted qty and creates stock moves (Directly apply as SUPERUSER to bypass permission/UI checks).
+            # from odoo import SUPERUSER_ID
+            # quant.with_user(SUPERUSER_ID).write({'inventory_quantity': qty})
+            # quant.with_user(SUPERUSER_ID)._apply_inventory()
 
             return {
                 'status': 'success',
-                'product_id': variant.id,
-                'quant': quant.id,
+                'product_id': template.id,
             }
         except Exception as e:
             return {'status': 'error', 'message': str(e)}

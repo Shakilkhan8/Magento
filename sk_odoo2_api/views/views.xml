@@ -34,7 +34,7 @@
 
                 <xpath expr="//field[@name='detailed_type']" position="after">
                     <field name="api_id" readonly="1"/>
-                    <field name="code" readonly="1"/>
+                    <field name="code"/>
                 </xpath>
 
             </field>
