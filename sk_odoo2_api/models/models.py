@@ -270,8 +270,13 @@ class ProductVariantInherit(models.Model):
 
     @api.model
     def create(self, vals):
-        vals['default_code'] = self.unique_sku_number() + 1
         res = super().create(vals)
+        variant = self.search([('product_tmpl_id', '=', res.product_tmpl_id.id)])
+        i = 0
+        default_code = int(res.product_tmpl_id.code or 0) - 1
+        for var in variant:
+            var.default_code = default_code + i
+            i += 1
         return res
 
 
