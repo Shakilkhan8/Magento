@@ -121,7 +121,8 @@ class ProductProductInherit(models.Model):
                             'attribute': line.attribute_id.name,
                             'values': line.value_ids.mapped('name'),
                         })
-
+                    default_code = int(rec.default_code or rec.code)
+                    i = 0
                     for var in variant:
 
                         variant_attributes = []
@@ -143,7 +144,8 @@ class ProductProductInherit(models.Model):
 
                                 "variant_id": var.id,
                                 "variant_name": var.name,
-                                "default_code": var.default_code,
+                                "default_code": default_code + i,
+                                "code": default_code + i,
                                 "barcode": var.barcode,
                                 "list_price": var.list_price,
                                 "qty": var.qty_available,
@@ -162,6 +164,7 @@ class ProductProductInherit(models.Model):
                             },
                             timeout=30
                         )
+                        i +=1
 
     def send_new_product_data(self, vals):
         product = self.browse(vals.get('id'))
