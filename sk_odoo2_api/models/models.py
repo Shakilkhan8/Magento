@@ -41,11 +41,12 @@ class ProductProductInherit(models.Model):
         res = super().default_get(fields_list)
         res['default_code'] = self.unique_sku_number() + 1
         return res
+
     def unique_sku_number(self):
 
         self.env.cr.execute("""
             SELECT COALESCE(MAX(CAST(REGEXP_REPLACE(default_code, '\D', '', 'g') AS BIGINT)), 0)
-            FROM product_template
+            FROM product_product
             WHERE active = True
               AND default_code IS NOT NULL
               AND REGEXP_REPLACE(default_code, '\D', '', 'g') <> ''
@@ -64,6 +65,16 @@ class ProductProductInherit(models.Model):
                 'id': res.id,
 
             })
+        variants = self.env['product.product'].search([
+            ('product_tmpl_id', '=', res.id)
+        ])
+        i = 0
+        default_code = res.default_code
+        for var in variants:
+            var.default_code = int(default_code) + i
+
+            i += 1
+
         return res
 
 
@@ -257,12 +268,12 @@ class ProductVariantInherit(models.Model):
         return res
 
 
-    # def write(self, vals):
-    #     res = super().write(vals)
-    #     for rec in self:
-    #         if rec.product_tmpl_id and not rec.product_tmpl_id.api_id:
-    #             rec.update_variant()
-    #     return res
+    def write(self, vals):
+        res = super().write(vals)
+        for rec in self:
+            if rec.product_tmpl_id and not rec.product_tmpl_id.api_id:
+                rec.update_variant()
+        return res
 
     def update_variant(self):
 
@@ -292,8 +303,6 @@ class ProductVariantInherit(models.Model):
                 },
                 timeout=30
             )
-
-
 
     def unique_sku_number(self):
 
