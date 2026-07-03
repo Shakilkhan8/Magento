@@ -213,13 +213,14 @@ class ProductAPI(http.Controller):
                 ], limit=1)
 
                 if not product:
-                    product.sudo().create({
-                        'name': vals.get('name'),
-                        'company_id': company_id.id,
-                        'image_1920': vals.get('image_1920') if vals.get('image_1920') else False,
-                        'list_price': vals.get('list_price'),
-                        'barcode': vals.get('default_code'),
-                    })
+                    return {'message': 'Product not found !'}
+                    # product.sudo().create({
+                    #     'name': vals.get('name'),
+                    #     'company_id': company_id.id,
+                    #     'image_1920': vals.get('image_1920') if vals.get('image_1920') else False,
+                    #     'list_price': vals.get('list_price'),
+                    #     'barcode': vals.get('default_code'),
+                    # })
                 else:
                     product.sudo().write({
                         'name': vals.get('name'),

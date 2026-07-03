@@ -276,7 +276,8 @@ class ProductVariantInherit(models.Model):
         default_code = int(res.product_tmpl_id.code or 0) - 1
         for var in variant:
             var.default_code = default_code + i
-            
+            if not res.api_id:
+                res.update_variant()
             i += 1
         return res
 
