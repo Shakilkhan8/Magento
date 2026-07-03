@@ -216,7 +216,7 @@ class ProductAPI(http.Controller):
                     product.sudo().create({
                         'name': vals.get('name'),
                         'company_id': company_id.id,
-                        'image_1920': vals.get('image_1920') if vals.get('image_1920') else product_id.image_1920,
+                        'image_1920': vals.get('image_1920') if vals.get('image_1920') else False,
                         'list_price': vals.get('list_price'),
                         'barcode': vals.get('default_code'),
                     })
