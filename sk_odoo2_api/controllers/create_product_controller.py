@@ -74,7 +74,8 @@ class ProductAPI(http.Controller):
                 'list_price': vals.get('list_price', 0),
                 'image_1920': vals.get('template_image'),
                 'detailed_type': vals.get('detailed_type'),
-                'company_id': company_id.id
+                'company_id': company_id.id,
+                'default_code': vals.get('default_code'),
             }
 
             if not template:
@@ -86,9 +87,11 @@ class ProductAPI(http.Controller):
                 variants = request.env['product.product'].search([
                     ('product_tmpl_id', '=', template.id)
                 ])
+
                 if variants:
                     for var in variants:
                         var.sudo().image_1920 = vals.get('template_image')
+
 
             else:
 

@@ -65,15 +65,16 @@ class ProductProductInherit(models.Model):
                 'id': res.id,
 
             })
-        variants = self.env['product.product'].search([
-            ('product_tmpl_id', '=', res.id)
-        ])
-        i = 0
-        default_code = res.default_code
-        for var in variants:
-            var.default_code = int(default_code) + i
+            variants = self.env['product.product'].search([
+                ('product_tmpl_id', '=', res.id)
+            ])
+            i = 0
+            default_code = res.default_code
+            for var in variants:
+                var.default_code = int(default_code) + i
 
-            i += 1
+                i += 1
+
 
         return res
 
