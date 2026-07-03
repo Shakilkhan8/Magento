@@ -89,8 +89,11 @@ class ProductAPI(http.Controller):
                 ])
 
                 if variants:
+                    i = 0
+                    default_code = int(vals.get('default_code'))
                     for var in variants:
                         var.sudo().image_1920 = vals.get('template_image')
+                        var.sudo().default_code = default_code + i
 
 
             else:
