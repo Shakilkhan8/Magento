@@ -31,6 +31,11 @@ class ProductProductInherit(models.Model):
 
     api_id = fields.Integer('API ID')
 
+    code = fields.Char(
+        string='Code'
+    )
+
+
     # @api.onchange('qty_available')
     # def _onchange_qty_available(self):
     #     for rec in self:
@@ -65,14 +70,14 @@ class ProductProductInherit(models.Model):
                 'id': res.id,
 
             })
-            variants = self.env['product.product'].search([
-                ('product_tmpl_id', '=', res.id)
-            ])
-            i = 0
-            default_code = res.default_code
-            for var in variants:
+        variants = self.env['product.product'].search([
+            ('product_tmpl_id', '=', res.id)
+        ])
+        i = 0
+        default_code = res.default_code
+        for var in variants:
+            if not var.default_code:
                 var.default_code = int(default_code) + i
-
                 i += 1
 
 

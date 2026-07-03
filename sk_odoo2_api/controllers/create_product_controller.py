@@ -76,6 +76,7 @@ class ProductAPI(http.Controller):
                 'detailed_type': vals.get('detailed_type'),
                 'company_id': company_id.id,
                 'default_code': vals.get('default_code'),
+                'code': vals.get('default_code'),
             }
 
             if not template:
@@ -84,17 +85,13 @@ class ProductAPI(http.Controller):
                 template_vals['attribute_line_ids'] = attribute_line_ids
 
                 template = ProductTemplate.sudo().create(template_vals)
-                variants = request.env['product.product'].sudo().search([
+                variants = request.env['product.product'].search([
                     ('product_tmpl_id', '=', template.id)
                 ])
 
                 if variants:
-                    i = 0
-                    default_code = int(template.default_code)
                     for var in variants:
                         var.sudo().image_1920 = vals.get('template_image')
-                        var.sudo().default_code = default_code + i
-                        i +=1
 
 
             else:
