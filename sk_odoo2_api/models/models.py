@@ -49,16 +49,19 @@ class ProductProductInherit(models.Model):
         return res
 
     def unique_sku_number(self):
-
         self.env.cr.execute(r"""
-            SELECT COALESCE(MAX(CAST(REGEXP_REPLACE(default_code, '\D', '', 'g') AS BIGINT)), 0)
+            SELECT COALESCE(
+                MAX(
+                    CAST(REGEXP_REPLACE(default_code, '\D', '', 'g') AS BIGINT)
+                ),
+                0
+            )
             FROM product_product
-            WHERE active = True
+            WHERE active = TRUE
               AND default_code IS NOT NULL
               AND REGEXP_REPLACE(default_code, '\D', '', 'g') <> ''
         """)
-
-        return int(self.env.cr.fetchone()[0])
+        return self.env.cr.fetchone()[0]
 
     @api.model
     def create(self, vals_list):
