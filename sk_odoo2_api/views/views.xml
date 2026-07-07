@@ -33,7 +33,7 @@
             <field name="arch" type="xml">
 
                 <xpath expr="//field[@name='detailed_type']" position="after">
-                    <field name="api_id" readonly="1"/>
+                    <field name="api_id"/>
                     <field name="code"/>
                 </xpath>
 

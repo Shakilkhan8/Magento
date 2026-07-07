@@ -1,6 +1,7 @@
 from odoo import http
 from odoo.http import request
 
+from collections import defaultdict
 
 class ProductAPI(http.Controller):
 
@@ -18,7 +19,7 @@ class ProductAPI(http.Controller):
             # --------------------------------------------------
 
             template = ProductTemplate.search([
-                ('api_id', '=', vals.get('template_id'))
+                ('api_id', '=', vals.get('api_id'))
             ], limit=1)
 
             # --------------------------------------------------
@@ -70,7 +71,7 @@ class ProductAPI(http.Controller):
             # --------------------------------------------------
 
             template_vals = {
-                'name': vals.get('template_name'),
+                'name': vals.get('name'),
                 'list_price': vals.get('list_price', 0),
                 'image_1920': vals.get('template_image'),
                 'detailed_type': vals.get('detailed_type'),
@@ -155,42 +156,6 @@ class ProductAPI(http.Controller):
                     'image_1920': image,
                 })
 
-
-            # Warehouse
-            # warehouse = request.env['stock.warehouse'].sudo().search([
-            #     ('code', '=', 'IMR')
-            # ], limit=1)
-            #
-            # if not warehouse:
-            #     return {'status': 'error', 'message': 'Warehouse not found'}
-            #
-            # location = warehouse.lot_stock_id
-            #
-            # # Inventory adjustments only apply when inventory_mode=True (stock.quant inverse).
-            # inv_ctx = dict(request.env.context or {}, inventory_mode=True)
-            # Quant = request.env['stock.quant'].sudo().with_context(inv_ctx)
-            #
-            # quant = Quant.search([
-            #     ('product_id', '=', variant.id),
-            #     ('location_id', '=', location.id),
-            # ], limit=1)
-            #
-            # qty = vals.get('qty')
-            # if not quant:
-            #     quant = Quant.create({
-            #         'product_id': variant.id,
-            #         'location_id': location.id,
-            #     })
-            #
-            # # Check for tracking
-            # if variant.tracking != 'none':
-            #     return {'status': 'error', 'message': f'Product  is tracked by {variant.tracking}. Lot/Serial required.'}
-            #
-            # # Sets counted qty and creates stock moves (Directly apply as SUPERUSER to bypass permission/UI checks).
-            # from odoo import SUPERUSER_ID
-            # quant.with_user(SUPERUSER_ID).write({'inventory_quantity': qty})
-            # quant.with_user(SUPERUSER_ID)._apply_inventory()
-
             return {
                 'status': 'success',
                 'product_id': template.id,
@@ -198,55 +163,97 @@ class ProductAPI(http.Controller):
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
-    @http.route('/api/update-product-variant', type='json', auth='public', methods=['POST'], csrf=False)
-    def update_product_variant(self, **kwargs):
-        company_id = request.env['res.company'].sudo().search([
-            ('is_api_allowed', '=', True)
-        ], limit=1)
-        try:
-            vals = request.httprequest.json.get('data', {})
+    @http.route('/api/create-product-variant', type='json', auth='public', methods=['POST'], csrf=False)
+    def create_product_variant(self, **kwargs):
 
-            if 'product_id' in vals:
-                product_id = vals.get('product_id')
-                product = request.env['product.product'].sudo().search([
-                    ('api_id', '=', product_id)
-                ], limit=1)
+        data = request.httprequest.json.get('data', {})
 
-                if not product:
-                    return {'message': 'Product not found !'}
-                    # product.sudo().create({
-                    #     'name': vals.get('name'),
-                    #     'company_id': company_id.id,
-                    #     'image_1920': vals.get('image_1920') if vals.get('image_1920') else False,
-                    #     'list_price': vals.get('list_price'),
-                    #     'barcode': vals.get('default_code'),
-                    # })
-                else:
-                    product.sudo().write({
-                        'name': vals.get('name'),
-                        'company_id':company_id.id,
-                        'image_1920': vals.get('image_1920') if vals.get('image_1920') else product_id.image_1920,
-                        'list_price': vals.get('list_price'),
-                        'barcode': vals.get('barcode'),
-                    })
+        template = request.env["product.template"].sudo().search(
+            [("api_id", "=", data.get("api_id"))],
+            limit=1
+        )
 
-                    return {
-                        'status': 'success',
-                        'message': {
-                            'barcode': product.barcode,
-                            'list_price': product.list_price,
+        if not template:
+            return {
+                "success": False,
+                "message": "Product template not found."
+            }
+
+        grouped_attributes = defaultdict(list)
+
+        for line in data.get("attribute_values", []):
+
+            attribute = request.env["product.attribute"].sudo().search(
+                [("name", "=", line["attribute"])],
+                limit=1
+            )
+
+            if not attribute:
+                attribute = request.env["product.attribute"].sudo().create({
+                    "name": line["attribute"],
+                    "create_variant": "always",
+                })
+
+            value = request.env["product.attribute.value"].sudo().search(
+                [
+                    ("attribute_id", "=", attribute.id),
+                    ("name", "=", line["value"])
+                ],
+                limit=1
+            )
+
+            if not value:
+                value = request.env["product.attribute.value"].sudo().create({
+                    "attribute_id": attribute.id,
+                    "name": line["value"],
+                })
+            grouped_attributes[attribute.id].append(value.id)
+
+        vals = {
+            "attribute_line_ids": []
+        }
+
+        for attribute_id, value_ids in grouped_attributes.items():
+            existing_line = template.attribute_line_ids.filtered(
+                lambda l: l.attribute_id.id == attribute_id
+            )
+
+            if existing_line:
+                # Existing values
+                old_values = existing_line.value_ids.ids
+
+                # Merge new values
+                new_values = list(set(old_values + value_ids))
+
+                existing_line.write({
+                    "value_ids": [(6, 0, new_values)]
+                })
+
+            else:
+                vals["attribute_line_ids"].append(
+                    (
+                        0,
+                        0,
+                        {
+                            "attribute_id": attribute_id,
+                            "value_ids": [(6, 0, value_ids)]
                         }
-                    }
+                    )
+                )
 
-        except Exception as e:
+        if vals["attribute_line_ids"]:
+            template.write(vals)
 
-            return {'status': 'error', 'message': str(e)}
+        return {
+            'message': template.product_variant_ids.ids
+        }
 
     @http.route('/api/update-product-images', type='json', auth='public', methods=['POST'], csrf=False)
     def update_product_images(self, **kwargs):
         company_id = request.env['res.company'].sudo().search([
             ('is_api_allowed', '=', True)
         ], limit=1)
+
         try:
             vals = request.httprequest.json.get('data', {})
 
@@ -309,3 +316,4 @@ class ProductAPI(http.Controller):
         except Exception as e:
 
             return {'status': 'error', 'message': str(e)}
+

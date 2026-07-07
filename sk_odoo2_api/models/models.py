@@ -19,10 +19,10 @@ class StockPicking(models.Model):
 
     def button_validate(self):
         res = super().button_validate()
-        for rec in self.move_ids_without_package:
-            if not rec.product_tmpl_id.api_id:
-                if rec.product_tmpl_id and rec.quantity_done:
-                    rec.product_tmpl_id.send_product_data()
+        # for rec in self.move_ids_without_package:
+        #     if not rec.product_tmpl_id.api_id:
+        #         if rec.product_tmpl_id and rec.quantity_done:
+        #             rec.product_tmpl_id.send_product_data()
         return res
 
 
@@ -63,33 +63,34 @@ class ProductProductInherit(models.Model):
     @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
-        if not res.api_id:
-            self.send_new_product_data(vals={
-                'name': res.name,
-                'template_image': res.image_1920,
-                'barcode': res.barcode,
-                'id': res.id,
-
-            })
-        variants = self.env['product.product'].search([
-            ('product_tmpl_id', '=', res.id)
-        ])
-        i = 0
-        default_code = res.code
-        for var in variants:
-                var.default_code = int(default_code) + i
-                i += 1
+        # if not res.api_id:
+        #     self.send_new_product_data(vals={
+        #         'name': res.name,
+        #         'template_image': res.image_1920,
+        #         'barcode': res.barcode,
+        #         'id': res.id,
+        #
+        #     })
+        # variants = self.env['product.product'].search([
+        #     ('product_tmpl_id', '=', res.id)
+        # ])
+        # i = 0
+        # default_code = res.code
+        # for var in variants:
+        #         var.default_code = int(default_code) + i
+        #         i += 1
         return res
 
 
     def write(self, vals):
         res = super().write(vals)
-        for rec in self:
-            if not rec.api_id:
-                rec.send_product_data()
+        # for rec in self:
+        #     if not rec.api_id:
+        #         rec.send_product_data()
         return res
 
     def send_product_data(self):
+        return True
         for rec in self:
             api_config = self.env['api.configuration'].sudo().search([], limit=1)
             url = api_config.url + AUTH_URL
@@ -271,14 +272,13 @@ class ProductVariantInherit(models.Model):
     @api.model
     def create(self, vals):
         res = super().create(vals)
-        variant = self.search([('product_tmpl_id', '=', res.product_tmpl_id.id)])
-        i = 0
-        default_code = int(res.product_tmpl_id.code or 0) - 1
-        for var in variant:
-            var.default_code = default_code + i
-            if not res.api_id:
-                res.update_variant()
-            i += 1
+        sku = self.unique_sku_number()
+        res.default_code = sku
+        # for var in variant:
+        #     var.default_code = default_code + i
+        #     if not res.api_id:
+        #         res.update_variant()
+        #     i += 1
         return res
 
 
