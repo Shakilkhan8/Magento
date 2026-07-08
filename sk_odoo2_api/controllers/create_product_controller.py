@@ -29,47 +29,6 @@ class ProductAPI(http.Controller):
                 ('is_api_allowed', '=', True)
             ], limit=1)
 
-            # attribute_line_ids = []
-            #
-            # for attr_data in vals.get('attribute_values', []):
-            #
-            #     attribute = ProductAttribute.search([
-            #         ('name', '=', attr_data.get('attribute'))
-            #     ], limit=1)
-            #
-            #     if not attribute:
-            #         attribute = ProductAttribute.create({
-            #             'name': attr_data.get('attribute'),
-            #             # 'company_id': company_id.id
-            #         })
-            #
-            #     value_ids = []
-            #
-            #     for value_name in attr_data.get('values', []):
-            #
-            #         value = ProductAttributeValue.search([
-            #             ('name', '=', value_name),
-            #             ('attribute_id', '=', attribute.id),
-            #         ], limit=1)
-            #
-            #         if not value:
-            #             value = ProductAttributeValue.create({
-            #                 'name': value_name,
-            #                 'attribute_id': attribute.id,
-            #                 # 'company_id': company_id.id
-            #             })
-            #
-            #         value_ids.append(value.id)
-            #
-            #     attribute_line_ids.append((0, 0, {
-            #         'attribute_id': attribute.id,
-            #         'value_ids': [(6, 0, value_ids)]
-            #     }))
-
-            # --------------------------------------------------
-            # Create Template
-            # --------------------------------------------------
-
             template_vals = {
                 'name': vals.get('name'),
                 'list_price': vals.get('lst_price', 0),
@@ -80,81 +39,6 @@ class ProductAPI(http.Controller):
                 'barcode': vals.get('default_code', False),
             }
 
-            if not template:
-
-                template_vals['api_id'] = vals.get('api_id')
-                # template_vals['attribute_line_ids'] = attribute_line_ids
-
-                template = ProductTemplate.sudo().create(template_vals)
-                variants = request.env['product.product'].search([
-                    ('product_tmpl_id', '=', template.id)
-                ])
-
-
-                if variants:
-                    for var in variants:
-                        var.sudo().image_1920 = vals.get('template_image', False)
-            else:
-
-                template.write(template_vals)
-                variants = request.env['product.product'].sudo().search([
-                    ('product_tmpl_id', '=', template.id)
-                ])
-
-                if variants:
-                    for var in variants:
-                        var.image_1920 = vals.get('template_image')
-
-                # Rebuild attributes only if payload contains them
-                # if attribute_line_ids:
-                #     template.attribute_line_ids.unlink()
-                #
-                #     template.write({
-                #         'attribute_line_ids': attribute_line_ids
-                #     })
-
-            # --------------------------------------------------
-            # Find Exact Variant
-            # --------------------------------------------------
-
-            variant = template.sudo().product_variant_ids
-
-            for attr in vals.get('variant_attributes', []):
-                variant = variant.filtered(
-                    lambda v: any(
-                        ptav.attribute_id.name == attr.get('attribute')
-                        and ptav.product_attribute_value_id.name == attr.get('value')
-                        for ptav in v.product_template_attribute_value_ids
-                    )
-                )
-
-            variant = variant[:1]
-
-            # --------------------------------------------------
-            # Fallback Variant
-            # --------------------------------------------------
-
-            if not variant and template.product_variant_ids:
-                variant = template.product_variant_ids[0]
-
-            # --------------------------------------------------
-            # Update Variant
-            # --------------------------------------------------
-
-            if variant:
-
-                barcode = vals.get('barcode')
-                if barcode:
-                    barcode = str(barcode)
-
-                image = vals.get('image')
-
-                variant.sudo().write({
-                    'api_id': vals.get('variant_id'),
-                    'barcode': barcode,
-                    'image_1920': image,
-                })
-
             return {
                 'status': 'success',
                 'product_id': template.id,
@@ -162,6 +46,8 @@ class ProductAPI(http.Controller):
 
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
+
+
 
     @http.route('/api/create-product-variant', type='json', auth='public', methods=['POST'], csrf=False)
     def create_product_variant(self, **kwargs):
@@ -283,15 +169,16 @@ class ProductAPI(http.Controller):
 
             return {'status': 'error', 'message': str(e)}
 
-    @http.route('/api/update-product-template-images', type='json', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/update-product-template', type='json', auth='public', methods=['POST'], csrf=False)
     def update_product_template_images(self, **kwargs):
         company_id = request.env['res.company'].sudo().search([
             ('is_api_allowed', '=', True)
         ], limit=1)
+
         try:
             vals = request.httprequest.json.get('data', {})
 
-            if 'product_id' in vals and 'default_code' in vals:
+            if 'product_id' in vals:
                 product_id = vals.get('product_id')
                 product = request.env['product.template'].sudo().search([
                     ('api_id', '=', product_id)
@@ -302,7 +189,11 @@ class ProductAPI(http.Controller):
                 else:
                     product.sudo().write({
                         'image_1920': vals.get('image_1920') if vals.get('image_1920') else product.image_1920,
-                        'api_id': vals.get('product_id')
+                        'barcode': vals.get('barcode', False),
+                        'list_price': vals.get('lst_price', 0),
+                        'detailed_type': vals.get('detailed_type', False),
+                        'name': vals.get('name', False),
+
                     })
 
                     return {
@@ -310,6 +201,7 @@ class ProductAPI(http.Controller):
                         'message': {
                             'barcode': product.barcode,
                             'list_price': product.list_price,
+                            'name': product.name,
                         }
                     }
 
