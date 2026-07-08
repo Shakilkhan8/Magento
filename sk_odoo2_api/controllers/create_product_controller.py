@@ -37,7 +37,10 @@ class ProductAPI(http.Controller):
                 'company_id': company_id.id,
                 'default_code': vals.get('default_code'),
                 'barcode': vals.get('default_code', False),
+                'api_id': vals.get('api_id'),
             }
+
+            template = ProductTemplate.sudo().create(template_vals)
 
             return {
                 'status': 'success',
@@ -128,7 +131,13 @@ class ProductAPI(http.Controller):
                 )
 
         if vals["attribute_line_ids"]:
+            variant_ids = data.get('variant_ids')
             template.write(vals)
+            i = 0
+            if len(variant_ids) == len(template.product_variant_ids):
+                for rec in template.product_variant_ids:
+                    rec.api_id = variant_ids[i]
+                    i +=1
 
         return {
             'message': template.product_variant_ids.ids
@@ -170,7 +179,7 @@ class ProductAPI(http.Controller):
             return {'status': 'error', 'message': str(e)}
 
     @http.route('/api/update-product-template', type='json', auth='public', methods=['POST'], csrf=False)
-    def update_product_template_images(self, **kwargs):
+    def update_product_template(self, **kwargs):
         company_id = request.env['res.company'].sudo().search([
             ('is_api_allowed', '=', True)
         ], limit=1)
