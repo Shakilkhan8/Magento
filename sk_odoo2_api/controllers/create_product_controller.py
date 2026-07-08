@@ -90,11 +90,11 @@ class ProductAPI(http.Controller):
                     ('product_tmpl_id', '=', template.id)
                 ])
 
+                template.sudo().write(attribute_line_ids)
+
                 if variants:
                     for var in variants:
                         var.sudo().image_1920 = vals.get('template_image')
-
-
             else:
 
                 template.write(template_vals)
