@@ -90,7 +90,7 @@ class ProductAPI(http.Controller):
                     ('product_tmpl_id', '=', template.id)
                 ])
 
-                template.sudo().write(attribute_line_ids)
+                # template.sudo().write(attribute_line_ids)
 
                 if variants:
                     for var in variants:
