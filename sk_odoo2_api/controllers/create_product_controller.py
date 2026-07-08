@@ -29,42 +29,42 @@ class ProductAPI(http.Controller):
                 ('is_api_allowed', '=', True)
             ], limit=1)
 
-            attribute_line_ids = []
-
-            for attr_data in vals.get('attributes', []):
-
-                attribute = ProductAttribute.search([
-                    ('name', '=', attr_data.get('attribute'))
-                ], limit=1)
-
-                if not attribute:
-                    attribute = ProductAttribute.create({
-                        'name': attr_data.get('attribute'),
-                        # 'company_id': company_id.id
-                    })
-
-                value_ids = []
-
-                for value_name in attr_data.get('values', []):
-
-                    value = ProductAttributeValue.search([
-                        ('name', '=', value_name),
-                        ('attribute_id', '=', attribute.id),
-                    ], limit=1)
-
-                    if not value:
-                        value = ProductAttributeValue.create({
-                            'name': value_name,
-                            'attribute_id': attribute.id,
-                            # 'company_id': company_id.id
-                        })
-
-                    value_ids.append(value.id)
-
-                attribute_line_ids.append((0, 0, {
-                    'attribute_id': attribute.id,
-                    'value_ids': [(6, 0, value_ids)]
-                }))
+            # attribute_line_ids = []
+            #
+            # for attr_data in vals.get('attribute_values', []):
+            #
+            #     attribute = ProductAttribute.search([
+            #         ('name', '=', attr_data.get('attribute'))
+            #     ], limit=1)
+            #
+            #     if not attribute:
+            #         attribute = ProductAttribute.create({
+            #             'name': attr_data.get('attribute'),
+            #             # 'company_id': company_id.id
+            #         })
+            #
+            #     value_ids = []
+            #
+            #     for value_name in attr_data.get('values', []):
+            #
+            #         value = ProductAttributeValue.search([
+            #             ('name', '=', value_name),
+            #             ('attribute_id', '=', attribute.id),
+            #         ], limit=1)
+            #
+            #         if not value:
+            #             value = ProductAttributeValue.create({
+            #                 'name': value_name,
+            #                 'attribute_id': attribute.id,
+            #                 # 'company_id': company_id.id
+            #             })
+            #
+            #         value_ids.append(value.id)
+            #
+            #     attribute_line_ids.append((0, 0, {
+            #         'attribute_id': attribute.id,
+            #         'value_ids': [(6, 0, value_ids)]
+            #     }))
 
             # --------------------------------------------------
             # Create Template
@@ -83,14 +83,13 @@ class ProductAPI(http.Controller):
             if not template:
 
                 template_vals['api_id'] = vals.get('template_id')
-                template_vals['attribute_line_ids'] = attribute_line_ids
+                # template_vals['attribute_line_ids'] = attribute_line_ids
 
                 template = ProductTemplate.sudo().create(template_vals)
                 variants = request.env['product.product'].search([
                     ('product_tmpl_id', '=', template.id)
                 ])
 
-                # template.sudo().write(attribute_line_ids)
 
                 if variants:
                     for var in variants:
@@ -160,6 +159,7 @@ class ProductAPI(http.Controller):
                 'status': 'success',
                 'product_id': template.id,
             }
+
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
