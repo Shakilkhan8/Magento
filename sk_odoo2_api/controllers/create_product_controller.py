@@ -72,17 +72,17 @@ class ProductAPI(http.Controller):
 
             template_vals = {
                 'name': vals.get('name'),
-                'list_price': vals.get('list_price', 0),
-                'image_1920': vals.get('template_image'),
+                'list_price': vals.get('lst_price', 0),
+                'image_1920': vals.get('template_image', False),
                 'detailed_type': vals.get('detailed_type'),
                 'company_id': company_id.id,
                 'default_code': vals.get('default_code'),
-                'code': vals.get('default_code'),
+                'barcode': vals.get('default_code', False),
             }
 
             if not template:
 
-                template_vals['api_id'] = vals.get('template_id')
+                template_vals['api_id'] = vals.get('api_id')
                 # template_vals['attribute_line_ids'] = attribute_line_ids
 
                 template = ProductTemplate.sudo().create(template_vals)
@@ -93,7 +93,7 @@ class ProductAPI(http.Controller):
 
                 if variants:
                     for var in variants:
-                        var.sudo().image_1920 = vals.get('template_image')
+                        var.sudo().image_1920 = vals.get('template_image', False)
             else:
 
                 template.write(template_vals)
