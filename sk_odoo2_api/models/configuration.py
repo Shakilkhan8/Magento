@@ -22,3 +22,15 @@ class APIConfiguration(models.Model):
     password = fields.Char(
         string='Password',
     )
+
+class StoreDeletedSequence(models.Model):
+    _name = 'store.deleted.sequence'
+
+    name = fields.Char(
+        string='Name',
+    )
+    is_active = fields.Boolean()
+
+    product_tmpl_id = fields.Many2one(
+        comodel_name='product.template',
+    )

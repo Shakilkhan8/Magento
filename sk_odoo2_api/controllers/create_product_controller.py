@@ -23,7 +23,7 @@ class ProductAPI(http.Controller):
             ], limit=1)
 
             # --------------------------------------------------
-            # Create Attributes / Values
+            # Create Attributes / Valuesupdate-product-variant
             # --------------------------------------------------
             company_id = request.env['res.company'].sudo().search([
                 ('is_api_allowed', '=', True)
@@ -134,10 +134,9 @@ class ProductAPI(http.Controller):
             variant_ids = data.get('variant_ids')
             template.write(vals)
             i = 0
-            if len(variant_ids) == len(template.product_variant_ids):
-                for rec in template.product_variant_ids:
+            for rec in template.product_variant_ids:
                     rec.api_id = variant_ids[i]
-                    i +=1
+                    variant_ids.pop(i)
 
         return {
             'message': template.product_variant_ids.ids
@@ -198,6 +197,46 @@ class ProductAPI(http.Controller):
                 else:
                     product.sudo().write({
                         'image_1920': vals.get('image_1920') if vals.get('image_1920') else product.image_1920,
+                        'barcode': vals.get('barcode', False),
+                        'list_price': vals.get('lst_price', 0),
+                        'detailed_type': vals.get('detailed_type', False),
+                        'name': vals.get('name', False),
+
+                    })
+
+                    return {
+                        'status': 'success',
+                        'message': {
+                            'barcode': product.barcode,
+                            'list_price': product.list_price,
+                            'name': product.name,
+                        }
+                    }
+
+        except Exception as e:
+
+            return {'status': 'error', 'message': str(e)}
+
+    @http.route('/api/update-product-variant', type='json', auth='public', methods=['POST'], csrf=False)
+    def update_product_variants(self, **kwargs):
+        company_id = request.env['res.company'].sudo().search([
+            ('is_api_allowed', '=', True)
+        ], limit=1)
+
+        try:
+            vals = request.httprequest.json.get('data', {})
+
+            if 'product_id' in vals:
+                product_id = vals.get('product_id')
+                product = request.env['product.product'].sudo().search([
+                    ('id', '=', product_id)
+                ], limit=1)
+
+                if not product:
+                    return {'status': 'error', 'message': 'Product not found'}
+                else:
+                    product.sudo().write({
+                        'image_1920': vals.get('image_1920', False) if vals.get('image_1920', False) else product.image_1920,
                         'barcode': vals.get('barcode', False),
                         'list_price': vals.get('lst_price', 0),
                         'detailed_type': vals.get('detailed_type', False),

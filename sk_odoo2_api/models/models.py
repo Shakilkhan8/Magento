@@ -1,5 +1,7 @@
 import re
 
+from zope.interface.common import sequence
+
 from odoo import api, fields, models
 import json
 import requests
@@ -36,12 +38,6 @@ class ProductProductInherit(models.Model):
         store=True,
     )
 
-
-    # @api.onchange('qty_available')
-    # def _onchange_qty_available(self):
-    #     for rec in self:
-    #         rec.send_product_data()
-
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
@@ -74,27 +70,37 @@ class ProductProductInherit(models.Model):
         #         'id': res.id,
         #
         #     })
-        variants = self.env['product.product'].search([
-            ('product_tmpl_id', '=', res.id)
-        ])
-        default_code = self.unique_sku_number()
-        for var in variants:
-                var.default_code = int(default_code)
+        # variants = self.env['product.product'].search([
+        #     ('product_tmpl_id', '=', res.id)
+        # ])
+        #
+        # default_code = self.unique_sku_number()
+        # for var in variants:
+        #         var.default_code = int(default_code)
+        return res
+
+    def unlink(self):
+        old_seq = [{
+            'name': rec.default_code,
+            'is_active': True
+        } for rec in self.product_variant_ids]
+        self.env['store.deleted.sequence'].create(old_seq)
+        # self.env['store.deleted.sequence'].search([]).unlink()
+        res = super().unlink()
         return res
 
 
     def write(self, vals):
+        if 'attribute_line_ids' in vals:
+            # preserve_sequence = self.env['store.deleted.sequence'].search([]).unlink()
+            old_seq = [{
+                'name': rec.default_code,
+                'is_active': True
+            } for rec in self.product_variant_ids]
+            self.env['store.deleted.sequence'].create(old_seq)
         res = super().write(vals)
-        i = 1
-        for rec in self.product_variant_ids:
 
-            if not rec.default_code:
-                rec.default_code = self.unique_sku_number() + i
-                i +=1
 
-        # for rec in self:
-        #     if not rec.api_id:
-        #         rec.send_product_data()
         return res
 
     def send_product_data(self):
@@ -277,16 +283,57 @@ class ProductVariantInherit(models.Model):
 
     api_id = fields.Integer('API ID')
 
-    @api.model
+    @api.model_create_multi
     def create(self, vals):
-        res = super().create(vals)
+        products = super().create(vals)
+        reserved = self.env['store.deleted.sequence'].search([]).mapped('name')
+        seq_list = sorted(list(set(reserved)))
+        next_no = self.unique_sku_number()
+        sequence_to_delete = []
+
+        for product in products:
+            if not product.default_code:
+                if seq_list:
+                  if int(next_no) > int(seq_list[0]):
+                      product.default_code = seq_list[0]
+                      sequence_to_delete.append(seq_list[0])
+                      seq_list.pop(0)
+
+                  elif int(next_no) == int(seq_list[0]):
+                      product.default_code = seq_list[0]
+                      sequence_to_delete.append(seq_list[0])
+                      seq_list.pop(0)
+
+                  else:
+                      next_no += 1
+                      product.default_code = next_no
+                      sequence_to_delete.append(next_no)
+                else:
+                    next_no += 1
+                    product.default_code = next_no
+                    sequence_to_delete.append(next_no)
+
+
+        self.env['store.deleted.sequence'].search([('name', 'in', sequence_to_delete)]).unlink()
 
         # for var in variant:
         #     var.default_code = default_code + i
         #     if not res.api_id:
         #         res.update_variant()
         #     i += 1
-        return res
+        return products
+
+    def unique_sku_number(self):
+
+        self.env.cr.execute("""
+            SELECT COALESCE(MAX(CAST(REGEXP_REPLACE(default_code, '\D', '', 'g') AS BIGINT)), 0)
+            FROM product_product
+            WHERE active = True
+              AND default_code IS NOT NULL
+              AND REGEXP_REPLACE(default_code, '\D', '', 'g') <> ''
+        """)
+
+        return int(self.env.cr.fetchone()[0])
 
 
     # def write(self, vals):
