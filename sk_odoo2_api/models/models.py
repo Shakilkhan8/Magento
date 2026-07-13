@@ -1,5 +1,5 @@
 import re
-
+from collections import defaultdict
 from zope.interface.common import sequence
 
 from odoo import api, fields, models
@@ -15,16 +15,18 @@ from odoo.exceptions import ValidationError
 # BASE_URL = 'https://shakilkhan8-aladin-beauty-uat-30856289.dev.odoo.com'
 AUTH_URL = '/web/session/authenticate'
 PRODUCT_URL = '/api/create_product'
+UPDATE_VARIANT_URL = '/api/create-product-variant'
+PRODUCT_TEMPLATE_UPDATE_URL = '/api/update-product-template'
 
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
     def button_validate(self):
         res = super().button_validate()
-        # for rec in self.move_ids_without_package:
-        #     if not rec.product_tmpl_id.api_id:
-        #         if rec.product_tmpl_id and rec.quantity_done:
-        #             rec.product_tmpl_id.send_product_data()
+        for rec in self.move_ids_without_package:
+            if not rec.product_tmpl_id.api_id:
+                if rec.product_tmpl_id and rec.quantity_done:
+                    rec.product_tmpl_id.send_product_data()
         return res
 
 
@@ -37,6 +39,17 @@ class ProductProductInherit(models.Model):
         string='Code',
         store=True,
     )
+
+    def unlink(self):
+        old_seq = [{
+            'name': rec.default_code,
+            'is_active': True
+        } for rec in self.product_variant_ids]
+        self.env['store.deleted.sequence'].create(old_seq)
+        # self.env['store.deleted.sequence'].search([]).unlink()
+        res = super().unlink()
+        return res
+
 
     @api.model
     def default_get(self, fields_list):
@@ -62,53 +75,125 @@ class ProductProductInherit(models.Model):
     @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
-        # if not res.api_id:
-        #     self.send_new_product_data(vals={
-        #         'name': res.name,
-        #         'template_image': res.image_1920,
-        #         'barcode': res.barcode,
-        #         'id': res.id,
-        #
-        #     })
-        # variants = self.env['product.product'].search([
-        #     ('product_tmpl_id', '=', res.id)
-        # ])
-        #
-        # default_code = self.unique_sku_number()
-        # for var in variants:
-        #         var.default_code = int(default_code)
-        return res
 
-    def unlink(self):
-        old_seq = [{
-            'name': rec.default_code,
-            'is_active': True
-        } for rec in self.product_variant_ids]
-        self.env['store.deleted.sequence'].create(old_seq)
-        # self.env['store.deleted.sequence'].search([]).unlink()
-        res = super().unlink()
-        return res
+        if not res.api_id:
+            result = self.send_new_product_data(vals={
+                'name': res.name,
+                'template_image': res.image_1920,
+                'barcode': res.barcode,
+                'id': res.id,
+                'lst_price': res.list_price,
+                'detailed_type': res.detailed_type,
+                'default_code': res.default_code
 
+            })
+            if result.status_code == 200:
+                result1 = res.create_variants()
+
+        return res
 
     def write(self, vals):
+
         if 'attribute_line_ids' in vals:
-            # preserve_sequence = self.env['store.deleted.sequence'].search([]).unlink()
+            preserve_sequence = self.env['store.deleted.sequence'].search([]).unlink()
             old_seq = [{
                 'name': rec.default_code,
                 'is_active': True
             } for rec in self.product_variant_ids]
             self.env['store.deleted.sequence'].create(old_seq)
+            # self.env['store.deleted.sequence'].search([]).unlink()
+
         res = super().write(vals)
 
-
+        for rec in self:
+            if not rec.api_id:
+                # rec.update_template()
+                rec.update_variants()
         return res
 
-    def send_product_data(self):
-        return True
+     # This function used to create variants during creation of templates
+    def create_variants(self):
+            att_vals = []
+            for rec in self:
+                for line in self.attribute_line_ids:
+                    for attr in line.value_ids:
+                        att_vals.append({
+                            'attribute': attr.attribute_id.name,
+                            'value': attr.name
+                        })
+
+                api_config = self.env['api.configuration'].sudo().search([], limit=1)
+                if not api_config:
+                    continue
+
+                session_id = self.get_session_id()
+
+                headers = {
+                    'Content-Type': 'application/json',
+                }
+                product_id = rec.id if isinstance(rec.id, int) else rec._origin.id
+                payload = {
+                    'data': {
+                        'api_id': product_id,
+                        'attribute_values': att_vals,
+                        'variant_ids': rec.product_variant_ids.ids
+                    }
+                }
+
+                if session_id:
+                    headers['Token_id'] = session_id
+                    url = f"{api_config.url}{UPDATE_VARIANT_URL}"
+                    response = requests.post(
+                        url=url,
+                        json=payload,
+                        headers={
+                            "Content-Type": "application/json",
+                            "Authorization": f"Bearer {session_id}",
+                        },
+                        timeout=30
+                    )
+
+                    return response
+            # this function used to update or create new variants against template
+
+    def update_variants(self, data=None):
+        att_vals = []
+        if data:
+
+            api_config = self.env['api.configuration'].sudo().search([], limit=1)
+            url = f"{api_config.url}{AUTH_URL}"
+            if not api_config:
+                return True
+
+            session_id = self.get_session_id()
+
+            headers = {
+                'Content-Type': 'application/json',
+            }
+
+            payload = data
+
+            if session_id:
+                headers['Token_id'] = session_id
+                url = f"{api_config.url}{UPDATE_VARIANT_URL}"
+                response = requests.post(
+                    url=url,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {session_id}",
+                    },
+                    timeout=30
+                )
+
+                return response
+
+    def update_template(self):
         for rec in self:
             api_config = self.env['api.configuration'].sudo().search([], limit=1)
-            url = api_config.url + AUTH_URL
-
+            url = f"{api_config.url}{AUTH_URL}"
+            if not api_config:
+                continue
             session_id = self.get_session_id()
 
             headers = {
@@ -117,129 +202,65 @@ class ProductProductInherit(models.Model):
 
             if session_id:
                 headers['Token_id'] = session_id
-                url = api_config.url + PRODUCT_URL
+                url = f"{api_config.url}{PRODUCT_TEMPLATE_UPDATE_URL}"
                 variant = self.env['product.product'].search([
                     ('product_tmpl_id', '=', rec.id),
                 ])
 
-                variant = self.env['product.product'].search([
-                    ('product_tmpl_id', '=', rec.id),
-                ])
+                payload = {
+                    "data": {
+                        "product_id": self.id,
+                        'name': self.name,
+                        'image_1920': self.image_1920,
+                        'barcode': self.barcode,
+                        'lst_price': self.list_price,
+                        'detailed_type': self.detailed_type,
+                    }
+                }
 
-                if variant:
-
-                    # Template attributes
-                    template_attributes = []
-
-                    for line in rec.attribute_line_ids:
-                        template_attributes.append({
-                            'attribute': line.attribute_id.name,
-                            'values': line.value_ids.mapped('name'),
-                        })
-                    default_code = int(rec.default_code or rec.code)
-                    i = 0
-                    for var in variant:
-
-                        variant_attributes = []
-
-                        for ptav in var.product_template_attribute_value_ids:
-                            variant_attributes.append({
-                                'attribute': ptav.attribute_id.name,
-                                'value': ptav.product_attribute_value_id.name,
-                            })
-
-                        payload = {
-                            "data": {
-                                "template_id": rec.id,
-                                "template_name": rec.name,
-                                "template_image": rec.image_1920.decode('utf-8') if rec.image_1920 else False,
-                                "detailed_type": rec.detailed_type,
-
-                                "image": var.image_1920.decode('utf-8') if var.image_1920 else False,
-
-                                "variant_id": var.id,
-                                "variant_name": var.name,
-                                "default_code": default_code + i,
-                                "code": default_code + i,
-                                "barcode": var.barcode,
-                                "list_price": var.list_price,
-                                "qty": var.qty_available,
-
-                                "attributes": template_attributes,
-                                "variant_attributes": variant_attributes,
-                            }
-                        }
-                    
-                        response = requests.post(
-                            url=url,
-                            json=payload,
-                            headers={
-                                "Content-Type": "application/json",
-                                "Authorization": f"Bearer {session_id}",
-                            },
-                            timeout=30
-                        )
-                        i +=1
+                response = requests.post(
+                    url=url,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {session_id}",
+                    },
+                    timeout=30
+                )
 
     def send_new_product_data(self, vals):
         product = self.browse(vals.get('id'))
         for rec in product:
             api_config = self.env['api.configuration'].sudo().search([], limit=1)
+            if not api_config or not api_config.url:
+                continue
+            url = f"{api_config.url}{AUTH_URL}"
 
             headers = {
                 'Content-Type': 'application/json',
             }
-            session_id = rec.get_session_id()
+
+            session_id = self.get_session_id()
             if session_id:
 
                 headers['Token_id'] = session_id
-                url = api_config.url + PRODUCT_URL
+                url = f"{api_config.url}{PRODUCT_URL}"
 
 
-                variant = self.env['product.product'].search([
-                    ('product_tmpl_id', '=', product.id),
-                ])
-
-                if variant:
-
-                    # Template attributes
-                    template_attributes = []
-
-                    for line in rec.attribute_line_ids:
-                        template_attributes.append({
-                            'attribute': line.attribute_id.name,
-                            'values': line.value_ids.mapped('name'),
-                        })
-                    for var in variant:
-                        variant_attributes = []
-
-                        for ptav in var.product_template_attribute_value_ids:
-                            variant_attributes.append({
-                                'attribute': ptav.attribute_id.name,
-                                'value': ptav.product_attribute_value_id.name,
-                            })
-
-                        payload = {
+                payload = {
                             "data": {
-                                "template_id": product.id,
-                                "template_name": product.name,
-                                "variant_id": var.id,
-                                "template_image": rec.image_1920.decode('utf-8') if rec.image_1920 else False,
-                                "detailed_type": rec.detailed_type,
-
-                                "image": var.image_1920.decode('utf-8') if var.image_1920 else False,
-                                "variant_name": var.name,
-                                "default_code": var.default_code,
-                                "barcode": vals.get('barcode', ''),
-                                "list_price": var.list_price,
-                                "qty": var.qty_available,
-
-                                "attributes": template_attributes,
-                                "variant_attributes": variant_attributes,
+                            "name": vals.get('name'),
+                            "api_id": vals.get('id'),
+                            "template_image": vals.get('template_image'),
+                            "id": vals.get('id'),
+                            "barcode": vals.get('barcode'),
+                            "lst_price": vals.get('lst_price'),
+                            "detailed_type": vals.get('detailed_type'),
+                            "default_code": vals.get('default_code'),
                             }
                         }
 
-                        response = requests.post(
+                response = requests.post(
                             url=url,
                             json=payload,
                             headers={
@@ -248,6 +269,9 @@ class ProductProductInherit(models.Model):
                             },
                             timeout=30
                         )
+                return response
+
+
     def get_session_id(self):
         api_config = self.env['api.configuration'].sudo().search([], limit=1)
         if not api_config:
@@ -277,50 +301,88 @@ class ProductProductInherit(models.Model):
             return session_id
         else:
             return None
-
 class ProductVariantInherit(models.Model):
     _inherit = "product.product"
 
-    api_id = fields.Integer('API ID')
+    api_id = fields.Integer("API ID")
+
+    def write(self, vals):
+        api_call = False
+        keys_list = [
+            'id',
+            'image_1920',
+            'lst_price',
+            'barcode',
+            'name'
+        ]
+        if any(field in vals for field in keys_list):
+            api_call = True
+        res = super().write(vals)
+
+        if api_call:
+            self.update_variant()
+        return res
 
     @api.model_create_multi
-    def create(self, vals):
-        products = super().create(vals)
+    def create(self, vals_list):
+        products = super().create(vals_list)
+
         reserved = self.env['store.deleted.sequence'].search([]).mapped('name')
         seq_list = sorted(list(set(reserved)))
         next_no = self.unique_sku_number()
         sequence_to_delete = []
 
+        is_api = []
+
+        #this code is used to create a consecutive sequence with increment of 1
         for product in products:
+            if not product.api_id:
+                is_api.append(True)
             if not product.default_code:
                 if seq_list:
-                  if int(next_no) > int(seq_list[0]):
-                      product.default_code = seq_list[0]
-                      sequence_to_delete.append(seq_list[0])
-                      seq_list.pop(0)
+                    if next_no in sequence_to_delete and str(next_no) in seq_list:
+                        seq_list.remove(str(next_no))
+                        # continue
 
-                  elif int(next_no) == int(seq_list[0]):
-                      product.default_code = seq_list[0]
-                      sequence_to_delete.append(seq_list[0])
-                      seq_list.pop(0)
+                    if int(next_no) > int(seq_list[0]):
+                        product.default_code = seq_list[0]
+                        sequence_to_delete.append(seq_list[0])
+                        seq_list.pop(0)
 
-                  else:
-                      next_no += 1
-                      product.default_code = next_no
-                      sequence_to_delete.append(next_no)
+                    elif int(next_no) == int(seq_list[0]):
+                        product.default_code = seq_list[0]
+                        sequence_to_delete.append(seq_list[0])
+                        seq_list.pop(0)
+
+                    else:
+                        next_no += 1
+                        product.default_code = next_no
+                        sequence_to_delete.append(next_no)
                 else:
                     next_no += 1
                     product.default_code = next_no
                     sequence_to_delete.append(next_no)
 
-
         self.env['store.deleted.sequence'].search([('name', 'in', sequence_to_delete)]).unlink()
 
-        # for var in variant:
-        #     var.default_code = default_code + i
-        #     if not res.api_id:
-        #         res.update_variant()
-        #     i += 1
+        att_vals = []
+        for line in product.attribute_line_ids:
+            for attr in line.value_ids:
+                att_vals.append({
+                        'attribute': attr.attribute_id.name,
+                        'value': attr.name
+                    })
+
+        payload = {
+                'data': {
+                    'api_id': product.product_tmpl_id.id,
+                    'attribute_values': att_vals,
+                    'variant_ids': products.ids,
+                }
+            }
+        if is_api:
+            self.product_tmpl_id.update_variants(data=payload)
+
         return products
 
     def unique_sku_number(self):
@@ -335,42 +397,35 @@ class ProductVariantInherit(models.Model):
 
         return int(self.env.cr.fetchone()[0])
 
-
-    # def write(self, vals):
-    #     res = super().write(vals)
-    #     for rec in self:
-    #         if rec.product_tmpl_id and not rec.product_tmpl_id.api_id:
-    #             rec.update_variant()
-    #     return res
-
     def update_variant(self):
 
-
+        session_id = self.get_session_id()
         for rec in self:
-            session_id = rec.get_session_id()
-
-            payload = {
-                'data': {
-                    'product_id': rec.id,
-                    'name': rec.name,
-                    'list_price': rec.list_price,
-                    'image_1920': rec.image_1920.decode('utf-8') if rec.image_1920 else False,
-                    'barcode': rec.barcode,
+            if not rec.api_id:
+                product_id = rec.id if isinstance(rec.id, int) else rec._origin.id
+                payload = {
+                    'data': {
+                        'product_id': product_id,
+                        'name': rec.name,
+                        'lst_price': rec.list_price,
+                        'image_1920': rec.image_1920.decode('utf-8') if rec.image_1920 else False,
+                        'barcode': rec.barcode,
+                        'detailed_type': rec.detailed_type,
+                    }
                 }
-            }
 
-            api_config = self.env['api.configuration'].sudo().search([], limit=1)
-            url = api_config.url + '/api/update-product-variant'
+                api_config = self.env['api.configuration'].sudo().search([], limit=1)
+                url = api_config.url + '/api/update-product-variant'
 
-            response = requests.post(
-                url=url,
-                json=payload,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {session_id}",
-                },
-                timeout=30
-            )
+                response = requests.post(
+                    url=url,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {session_id}",
+                    },
+                    timeout=30
+                )
 
 
     def get_session_id(self):
