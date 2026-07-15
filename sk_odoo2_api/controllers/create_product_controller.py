@@ -231,7 +231,7 @@ class ProductAPI(http.Controller):
             if 'product_id' in vals:
                 product_id = vals.get('product_id')
                 product = request.env['product.product'].sudo().search([
-                    ('id', '=', product_id)
+                    ('api_id', '=', product_id)
                 ], limit=1)
 
                 if not product:
