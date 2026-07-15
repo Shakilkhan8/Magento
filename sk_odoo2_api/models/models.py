@@ -211,11 +211,11 @@ class ProductProductInherit(models.Model):
                     "data": {
                         "product_id": self.id,
                         'name': self.name,
-                        'image_1920': self.image_1920,
+                        'image_1920': self.image_1920.decode('utf-8'),
                         'barcode': self.barcode,
                         'lst_price': self.list_price,
                         'detailed_type': self.detailed_type,
-                        'standard_price': self.standard_price,
+                        'standard_price': self.standard_price or 0.0,
                     }
                 }
 
@@ -414,7 +414,9 @@ class ProductVariantInherit(models.Model):
                     json=payload,
                     headers={
                         "Content-Type": "application/json",
-                        "Authorization": f"Bearer {session_id}",
+                    },
+                    cookies={
+                        "session_id": session_id,
                     },
                     timeout=30
                 )
