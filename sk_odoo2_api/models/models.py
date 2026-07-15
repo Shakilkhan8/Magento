@@ -309,20 +309,9 @@ class ProductVariantInherit(models.Model):
     api_id = fields.Integer("API ID")
 
     def write(self, vals):
-        api_call = False
-        keys_list = [
-            'id',
-            'image_1920',
-            'lst_price',
-            'barcode',
-            'name'
-        ]
-        if any(field in vals for field in keys_list):
-            api_call = True
         res = super().write(vals)
 
-        if api_call:
-            self.update_variant()
+        self.update_variant()
         return res
 
     @api.model_create_multi
