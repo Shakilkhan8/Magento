@@ -38,6 +38,7 @@ class ProductAPI(http.Controller):
                 'default_code': vals.get('default_code'),
                 'barcode': vals.get('default_code', False),
                 'api_id': vals.get('api_id'),
+                'standard_price': vals.get('standard_price', 0),
             }
 
             template = ProductTemplate.sudo().create(template_vals)
@@ -201,6 +202,7 @@ class ProductAPI(http.Controller):
                         'list_price': vals.get('lst_price', 0),
                         'detailed_type': vals.get('detailed_type', False),
                         'name': vals.get('name', False),
+                        'standard_price': vals.get('standard_price', False),
 
                     })
 
@@ -241,6 +243,7 @@ class ProductAPI(http.Controller):
                         'list_price': vals.get('lst_price', 0),
                         'detailed_type': vals.get('detailed_type', False),
                         'name': vals.get('name', False),
+                        'standard_price': vals.get('standard_price', False),
 
                     })
 
