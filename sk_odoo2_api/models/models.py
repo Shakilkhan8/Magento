@@ -26,7 +26,7 @@ class StockPicking(models.Model):
         for rec in self.move_ids_without_package:
             if not rec.product_tmpl_id.api_id:
                 if rec.product_tmpl_id and rec.quantity_done:
-                    rec.product_tmpl_id.send_product_data()
+                    rec.product_tmpl_id.update_template()
         return res
 
 
