@@ -107,7 +107,7 @@ class ProductProductInherit(models.Model):
 
         for rec in self:
             if not rec.api_id:
-                # rec.update_template()
+                rec.update_template()
                 rec.update_variants()
         return res
 
@@ -215,6 +215,7 @@ class ProductProductInherit(models.Model):
                         'barcode': self.barcode,
                         'lst_price': self.list_price,
                         'detailed_type': self.detailed_type,
+                        'standard_price': self.standard_price,
                     }
                 }
 
@@ -257,6 +258,7 @@ class ProductProductInherit(models.Model):
                             "lst_price": vals.get('lst_price'),
                             "detailed_type": vals.get('detailed_type'),
                             "default_code": vals.get('default_code'),
+                            'standard_price': vals.get('standard_price'),
                             }
                         }
 
@@ -411,6 +413,7 @@ class ProductVariantInherit(models.Model):
                         'image_1920': rec.image_1920.decode('utf-8') if rec.image_1920 else False,
                         'barcode': rec.barcode,
                         'detailed_type': rec.detailed_type,
+                        'standard_price': rec.standard_price,
                     }
                 }
 
