@@ -231,7 +231,7 @@ class ProductAPI(http.Controller):
             if 'product_id' in vals:
                 product_id = vals.get('product_id')
                 product = request.env['product.product'].sudo().search([
-                    ('api_id', '=', product_id)
+                    ('id', '=', product_id)
                 ], limit=1)
 
                 if not product:
@@ -240,10 +240,10 @@ class ProductAPI(http.Controller):
                     product.sudo().write({
                         'image_1920': vals.get('image_1920', False) if vals.get('image_1920', False) else product.image_1920,
                         'barcode': vals.get('barcode', False),
-                        'list_price': vals.get('lst_price', 0),
+                        'list_price': vals.get('list_price', 0),
                         'detailed_type': vals.get('detailed_type', False),
                         'name': vals.get('name', False),
-                        'standard_price': vals.get('standard_price', False),
+                        'standard_price': vals.get('standard_price', 0),
 
                     })
 
