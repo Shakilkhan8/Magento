@@ -216,6 +216,7 @@ class ProductProductInherit(models.Model):
                         'lst_price': self.list_price,
                         'detailed_type': self.detailed_type,
                         'standard_price': self.standard_price or 0.0,
+                        'qty': self.qty_available or 0.0,
                     }
                 }
 
@@ -311,7 +312,7 @@ class ProductVariantInherit(models.Model):
     def write(self, vals):
         res = super().write(vals)
 
-        # self.update_variant()
+        self.update_variant()
         return res
 
     @api.model_create_multi
