@@ -24,9 +24,9 @@ class StockPicking(models.Model):
     def button_validate(self):
         res = super().button_validate()
         for rec in self.move_ids_without_package:
-            if not rec.product_tmpl_id.api_id:
-                if rec.product_tmpl_id and rec.quantity_done:
-                    rec.product_tmpl_id.update_template()
+            if not rec.product_id.api_id:
+                if rec.product_id and (rec.quantity_done or rec.product_uom_qty):
+                    rec.product_id.update_variant()
         return res
 
 
@@ -404,6 +404,7 @@ class ProductVariantInherit(models.Model):
                         'barcode': rec.barcode,
                         'detailed_type': rec.detailed_type,
                         'standard_price': rec.standard_price,
+                        'qty': rec.qty_available,
                     }
                 }
 
@@ -421,6 +422,8 @@ class ProductVariantInherit(models.Model):
                     },
                     timeout=30
                 )
+
+                response = response
 
 
 
