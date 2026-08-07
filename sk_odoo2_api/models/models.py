@@ -379,12 +379,20 @@ class ProductVariantInherit(models.Model):
 
     def unique_sku_number(self):
 
-        self.env.cr.execute("""
-            SELECT COALESCE(MAX(CAST(REGEXP_REPLACE(default_code, '\D', '', 'g') AS BIGINT)), 0)
-            FROM product_product
-            WHERE active = True
-              AND default_code IS NOT NULL
-              AND REGEXP_REPLACE(default_code, '\D', '', 'g') <> ''
+        self.env.cr.execute(r"""
+            SELECT COALESCE(
+                MAX(
+                    CAST(REGEXP_REPLACE(pp.default_code, '\D', '', 'g') AS BIGINT)
+                ),
+                0
+            )
+            FROM product_product pp
+            JOIN product_template pt
+                ON pt.id = pp.product_tmpl_id
+            WHERE pp.active = TRUE
+              AND pt.active = TRUE
+              AND pp.default_code IS NOT NULL
+              AND REGEXP_REPLACE(pp.default_code, '\D', '', 'g') <> ''
         """)
 
         return int(self.env.cr.fetchone()[0])
