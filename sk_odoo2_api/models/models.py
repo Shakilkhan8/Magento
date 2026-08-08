@@ -58,24 +58,32 @@ class ProductProductInherit(models.Model):
         return res
 
     def unique_sku_number(self):
+        company = self.env['res.company'].search([
+            ('is_api_allowed', '=', True)
+        ], limit=1)
+    
+        if not company:
+            return 0
+    
         self.env.cr.execute("""
             SELECT COALESCE(
                 MAX(
                     CAST(
-                        REGEXP_REPLACE(pp.default_code, '\\D', '', 'g')
+                        REGEXP_REPLACE(pp.default_code, '[^0-9]', '', 'g')
                         AS BIGINT
                     )
                 ),
                 0
             )
             FROM product_product pp
-            JOIN product_template pt
+            INNER JOIN product_template pt
                 ON pt.id = pp.product_tmpl_id
-            WHERE pp.active IS True
-              AND pt.active IS True
+            WHERE pp.active = TRUE
+              AND pt.active = TRUE
+              AND pp.company_id = %s
               AND pp.default_code IS NOT NULL
-              AND REGEXP_REPLACE(pp.default_code, '\\D', '', 'g') <> ''
-        """)
+              AND pp.default_code ~ '[0-9]'
+        """, (company.id,))
     
         return self.env.cr.fetchone()[0]
 
