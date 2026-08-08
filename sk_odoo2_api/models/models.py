@@ -58,8 +58,14 @@ class ProductProductInherit(models.Model):
         return res
 
     def unique_sku_number(self):
+        company_id = self.env['res.company'].search([
+            ('is_api_allowed', '=', True)
+        ], limit=1)
+
         products = self.env['product.product'].search([
             ('default_code', '!=', False),
+            ('active', '=', True),
+            ('company_id', '=', company_id.id),
         ])
 
         max_code = max(
@@ -379,8 +385,13 @@ class ProductVariantInherit(models.Model):
         return products
 
     def unique_sku_number(self):
+        company_id = self.env['res.company'].search([
+            ('is_api_allowed', '=', True)
+        ], limit=1)
         products = self.env['product.product'].search([
             ('default_code', '!=', False),
+            ('active', '=', True),
+            ('company_id', '=', company_id.id),
         ])
 
         max_code = max(
