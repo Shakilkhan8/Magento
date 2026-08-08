@@ -65,21 +65,27 @@ class ProductProductInherit(models.Model):
         if not company:
             return 0
     
-        self.env.cr.execute("""
-            SELECT COALESCE(
-                MAX(pp.default_code::BIGINT),
-                0
-            )
-            FROM product_product pp
-            JOIN product_template pt
-                ON pt.id = pp.product_tmpl_id
-            WHERE pp.active = TRUE
-              AND pt.active = TRUE
-              AND pt.company_id = %s
-              AND pp.default_code ~ '^[0-9]+$'
-        """, (company.id,))
+        products = self.env['product.product'].search([
+            ('default_code', '!=', False),
+            ('active', '=', True),
+            ('product_tmpl_id.active', '=', True),
+            ('product_tmpl_id.company_id', '=', company.id),
+        ])
     
-        return self.env.cr.fetchone()[0]
+        max_code = 0
+    
+        for product in products:
+            default_code = (product.default_code or '').strip()
+    
+            # Only pure integer default_code
+            if default_code.isdigit():
+    
+                number = int(default_code)
+    
+                if number > max_code:
+                    max_code = number
+    
+        return max_code
 
     @api.model
     def create(self, vals_list):
