@@ -96,7 +96,7 @@ class ProductProductInherit(models.Model):
     
         return numeric_products[0][0] if numeric_products else 0
     
-        @api.model
+    @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
 
