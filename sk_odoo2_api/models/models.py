@@ -62,16 +62,19 @@ class ProductProductInherit(models.Model):
             SELECT COALESCE(
                 MAX(
                     CAST(
-                        REGEXP_REPLACE(default_code, '\\D', '', 'g')
+                        REGEXP_REPLACE(pp.default_code, '\\D', '', 'g')
                         AS BIGINT
                     )
                 ),
                 0
             )
-            FROM product_product
-            WHERE active = TRUE
-              AND default_code IS NOT NULL
-              AND REGEXP_REPLACE(default_code, '\\D', '', 'g') <> ''
+            FROM product_product pp
+            JOIN product_template pt
+                ON pt.id = pp.product_tmpl_id
+            WHERE pp.active IS TRUE
+              AND pt.active IS TRUE
+              AND pp.default_code IS NOT NULL
+              AND REGEXP_REPLACE(pp.default_code, '\\D', '', 'g') <> ''
         """)
     
         return self.env.cr.fetchone()[0]
