@@ -337,7 +337,13 @@ class ProductVariantInherit(models.Model):
         products = super().create(vals_list)
 
         reserved = self.env['store.deleted.sequence'].search([]).mapped('name')
-        seq_list = sorted(list(set(reserved)))
+        seq_list = sorted(
+                    {
+                        int(name)
+                        for name in reserved
+                        if name and str(name).isdigit()
+                    }
+                )
         next_no = self.unique_sku_number()
         sequence_to_delete = []
 
