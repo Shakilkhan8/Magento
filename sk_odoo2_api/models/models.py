@@ -58,26 +58,23 @@ class ProductProductInherit(models.Model):
         return res
 
     def unique_sku_number(self):
-        company_id = self.env['res.company'].search([
-            ('is_api_allowed', '=', True)
-        ], limit=1)
-
-        products = self.env['product.product'].search([
-            ('default_code', '!=', False),
-            ('active', '=', True),
-            ('company_id', '=', company_id.id),
-        ])
-
-        max_code = max(
-            (
-                int(''.join(filter(str.isdigit, product.default_code)))
-                for product in products
-                if any(char.isdigit() for char in product.default_code)
+    self.env.cr.execute("""
+        SELECT COALESCE(
+            MAX(
+                CAST(
+                    REGEXP_REPLACE(default_code, '\\D', '', 'g')
+                    AS BIGINT
+                )
             ),
-            default=0
+            0
         )
+        FROM product_product
+        WHERE active = TRUE
+          AND default_code IS NOT NULL
+          AND REGEXP_REPLACE(default_code, '\\D', '', 'g') <> ''
+    """)
 
-        return int(max_code)
+    return self.env.cr.fetchone()[0]
 
     @api.model
     def create(self, vals_list):
