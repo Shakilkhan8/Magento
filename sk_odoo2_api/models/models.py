@@ -54,7 +54,7 @@ class ProductProductInherit(models.Model):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        res['default_code'] = self.unique_sku_number() + 4
+        res['default_code'] = self.unique_sku_number() + 1
         return res
 
     def unique_sku_number(self):
@@ -68,26 +68,35 @@ class ProductProductInherit(models.Model):
         products = self.env['product.product'].search([
             ('default_code', '!=', False),
             ('active', '=', True),
-            ('product_tmpl_id.active', '=', True),
-            ('product_tmpl_id.company_id', '=', company.id),
+            ('company_id', '=', company.id),
         ])
     
-        max_code = 0
+        _logger.info("Company: %s (%s)", company.name, company.id)
+        _logger.info("Total products found: %s", len(products))
+    
+        numeric_products = []
     
         for product in products:
-            default_code = (product.default_code or '').strip()
+            code = (product.default_code or '').strip()
     
-            # Only pure integer default_code
-            if default_code.isdigit():
+            if code.isdigit():
+                numeric_products.append(
+                    (int(code), code, product.id)
+                )
     
-                number = int(default_code)
+        numeric_products.sort(
+            key=lambda x: x[0],
+            reverse=True
+        )
     
-                if number > max_code:
-                    max_code = number
+        _logger.info(
+            "Top 20 numeric SKUs: %s",
+            numeric_products[:20]
+        )
     
-        return max_code
-
-    @api.model
+        return numeric_products[0][0] if numeric_products else 0
+    
+        @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
 
