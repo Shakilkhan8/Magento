@@ -336,76 +336,76 @@ class ProductVariantInherit(models.Model):
     def create(self, vals_list):
         products = super().create(vals_list)
 
-        # reserved = self.env['store.deleted.sequence'].search([]).mapped('name')
-        # seq_list = [rec for rec in reserved if rec != False]
-        # seq_list = sorted(list(set(seq_list)))
-        # next_no = self.unique_sku_number()
-        # sequence_to_delete = []
-
-        # is_api = []
-
-        # #this code is used to create a consecutive sequence with increment of 1
-        # for product in products:
-        #     if not product.api_id:
-        #         is_api.append(True)
-        #     if not product.default_code:
-        #         if seq_list:
-        #             if next_no in sequence_to_delete and str(next_no) in seq_list:
-        #                 seq_list.remove(str(next_no))
-        #                 # continue
-
-        #             if int(next_no) > (int(seq_list[0]) if seq_list else 0):
-        #                 product.default_code = seq_list[0]
-        #                 sequence_to_delete.append(seq_list[0])
-        #                 seq_list.pop(0)
-
-        #             elif int(next_no) == (int(seq_list[0]) if seq_list else 0):
-        #                 product.default_code = seq_list[0]
-        #                 sequence_to_delete.append(seq_list[0])
-        #                 seq_list.pop(0)
-
-        #             else:
-        #                 next_no += 1
-        #                 product.default_code = next_no
-        #                 sequence_to_delete.append(next_no)
-        #         else:
-        #             next_no += 1
-        #             product.default_code = next_no
-        #             sequence_to_delete.append(next_no)
-
-        # self.env['store.deleted.sequence'].search([('name', 'in', sequence_to_delete)]).unlink()
-
-
-        deleted_seqs = self.env['store.deleted.sequence'].search([])
-        seq_list = sorted(
-            [int(r.name) for r in deleted_seqs if r.name and r.name.isdigit()]
-        )
-
-        # Step 2: Hamesha LIVE greatest number nikalo (stale/cached nahi)
+        reserved = self.env['store.deleted.sequence'].search([]).mapped('name')
+        seq_list = [rec for rec in reserved if rec != False]
+        seq_list = sorted(list(set(seq_list)))
         next_no = self.unique_sku_number()
+        sequence_to_delete = []
 
-        records_to_remove = self.env['store.deleted.sequence']
         is_api = []
 
+        #this code is used to create a consecutive sequence with increment of 1
         for product in products:
             if not product.api_id:
                 is_api.append(True)
-
             if not product.default_code:
                 if seq_list:
-                    assigned_no = seq_list.pop(0)
-                    product.default_code = str(assigned_no)
+                    if next_no in sequence_to_delete and str(next_no) in seq_list:
+                        seq_list.remove(str(next_no))
+                        # continue
 
-                    rec = deleted_seqs.filtered(lambda r: r.name == str(assigned_no))
-                    records_to_remove |= rec
+                    if int(next_no) > (int(seq_list[0]) if seq_list else 0):
+                        product.default_code = seq_list[0]
+                        sequence_to_delete.append(seq_list[0])
+                        seq_list.pop(0)
+
+                    elif int(next_no) == (int(seq_list[0]) if seq_list else 0):
+                        product.default_code = seq_list[0]
+                        sequence_to_delete.append(seq_list[0])
+                        seq_list.pop(0)
+
+                    else:
+                        next_no += 1
+                        product.default_code = next_no
+                        sequence_to_delete.append(next_no)
                 else:
-                    # Hamesha next greater number - ek dafa nikal ke
-                    # loop ke andar local counter se increment karte raho
-                    product.default_code = str(next_no)
                     next_no += 1
+                    product.default_code = next_no
+                    sequence_to_delete.append(next_no)
 
-        if records_to_remove:
-            records_to_remove.unlink()
+        self.env['store.deleted.sequence'].search([('name', 'in', sequence_to_delete)]).unlink()
+
+
+        # deleted_seqs = self.env['store.deleted.sequence'].search([])
+        # seq_list = sorted(
+        #     [int(r.name) for r in deleted_seqs if r.name and r.name.isdigit()]
+        # )
+
+        # Step 2: Hamesha LIVE greatest number nikalo (stale/cached nahi)
+        # next_no = self.unique_sku_number()
+
+        # records_to_remove = self.env['store.deleted.sequence']
+        # is_api = []
+
+        # for product in products:
+        #     if not product.api_id:
+        #         is_api.append(True)
+
+        #     if not product.default_code:
+        #         if seq_list:
+        #             assigned_no = seq_list.pop(0)
+        #             product.default_code = str(assigned_no)
+
+        #             rec = deleted_seqs.filtered(lambda r: r.name == str(assigned_no))
+        #             records_to_remove |= rec
+        #         else:
+        #             # Hamesha next greater number - ek dafa nikal ke
+        #             # loop ke andar local counter se increment karte raho
+        #             product.default_code = str(next_no)
+        #             next_no += 1
+
+        # if records_to_remove:
+        #     records_to_remove.unlink()
 
         att_vals = []
         for line in product.attribute_line_ids:
