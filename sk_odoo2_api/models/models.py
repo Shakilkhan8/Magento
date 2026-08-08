@@ -54,7 +54,7 @@ class ProductProductInherit(models.Model):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        res['default_code'] = self.unique_sku_number() + 1
+        res['default_code'] = self.unique_sku_number() + 4
         return res
 
     def unique_sku_number(self):
