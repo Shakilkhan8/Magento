@@ -69,8 +69,12 @@ class ProductProductInherit(models.Model):
             SELECT COALESCE(
                 MAX(
                     CAST(
-                        REGEXP_REPLACE(pp.default_code, '[^0-9]', '', 'g')
-                        AS BIGINT
+                        REGEXP_REPLACE(
+                            pp.default_code,
+                            '[^0-9]',
+                            '',
+                            'g'
+                        ) AS BIGINT
                     )
                 ),
                 0
@@ -80,7 +84,7 @@ class ProductProductInherit(models.Model):
                 ON pt.id = pp.product_tmpl_id
             WHERE pp.active = TRUE
               AND pt.active = TRUE
-              AND pp.company_id = %s
+              AND pt.company_id = %s
               AND pp.default_code IS NOT NULL
               AND pp.default_code ~ '[0-9]'
         """, (company.id,))
