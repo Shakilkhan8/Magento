@@ -58,7 +58,7 @@ class OdooSyncController(http.Controller):
 
             sale_order = request.env['sale.order'].sudo().create({
                 'partner_id': partner.id,
-                'api_order_id': data.get('order_Id'),
+                'api_order_id': data.get('order_id'),
                 'order_line': order_lines,
             })
 

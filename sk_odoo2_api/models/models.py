@@ -319,7 +319,6 @@ class ProductVariantInherit(models.Model):
     standard_price = fields.Float(
         'Cost', company_dependent=False,
         digits='Product Price',
-        store=True,
         groups="base.group_user",
         help="""Value of the product (automatically computed in AVCO).
                 Used to value the product when the purchase cost is not known (e.g. inventory adjustment).
@@ -327,7 +326,6 @@ class ProductVariantInherit(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-
         self.update_variant()
         return res
 
@@ -389,7 +387,7 @@ class ProductVariantInherit(models.Model):
                 }
             }
         if is_api:
-           self.product_tmpl_id.update_variants(data=payload)
+            self.product_tmpl_id.update_variants(data=payload)
 
         return products
 
