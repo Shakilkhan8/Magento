@@ -316,6 +316,14 @@ class ProductVariantInherit(models.Model):
 
     api_id = fields.Integer("API ID")
 
+    standard_price = fields.Float(
+        'Cost', company_dependent=False,
+        digits='Product Price',
+        groups="base.group_user",
+        help="""Value of the product (automatically computed in AVCO).
+                Used to value the product when the purchase cost is not known (e.g. inventory adjustment).
+                Used to compute margins on sale orders.""")
+
     def write(self, vals):
         res = super().write(vals)
 
