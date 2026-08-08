@@ -212,7 +212,7 @@ class ProductProductInherit(models.Model):
                     "data": {
                         "product_id": self.id,
                         'name': self.name,
-                        'image_1920': self.image_1920.decode('utf-8'),
+                        'image_1920': 'image_1920': self.image_1920.decode('utf-8') if self.image_1920 else False,
                         'barcode': self.barcode,
                         'lst_price': self.list_price,
                         'detailed_type': self.detailed_type,
