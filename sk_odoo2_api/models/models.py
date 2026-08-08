@@ -77,7 +77,7 @@ class ProductProductInherit(models.Model):
             default=0
         )
 
-        return max_code
+        return int(max_code)
 
     @api.model
     def create(self, vals_list):
