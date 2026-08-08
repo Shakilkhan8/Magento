@@ -71,8 +71,7 @@ class ProductProductInherit(models.Model):
             ('company_id', '=', company.id),
         ])
     
-        _logger.info("Company: %s (%s)", company.name, company.id)
-        _logger.info("Total products found: %s", len(products))
+       
     
         numeric_products = []
     
@@ -87,11 +86,6 @@ class ProductProductInherit(models.Model):
         numeric_products.sort(
             key=lambda x: x[0],
             reverse=True
-        )
-    
-        _logger.info(
-            "Top 20 numeric SKUs: %s",
-            numeric_products[:20]
         )
     
         return numeric_products[0][0] if numeric_products else 0
