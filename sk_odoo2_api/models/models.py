@@ -54,8 +54,25 @@ class ProductProductInherit(models.Model):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        res['default_code'] = self.unique_sku_number() + 1
+        exist = self.is_code_exist(code=self.unique_sku_number() + 1)
+
+        res['default_code'] = exist
         return res
+
+    def is_code_exist(self, code):
+        company_id = self.env['res.company'].search([
+            ('is_api_allowed', '=', True)
+        ], limit=1)
+
+        products = self.env['product.product'].search([
+            ('default_code', '=', code),
+            ('active', '=', True),
+            ('company_id', '=', company_id.id),
+        ])
+        if products:
+            return code + 1
+        else:
+            return code
 
     def unique_sku_number(self):
         company = self.env['res.company'].search([
