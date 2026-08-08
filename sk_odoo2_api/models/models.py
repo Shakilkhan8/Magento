@@ -55,31 +55,29 @@ class ProductProductInherit(models.Model):
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
         res['default_code'] = self.unique_sku_number() + 1
+
         return res
 
-  
-
     def unique_sku_number(self):
-        company = self.env['res.company'].search([
+        company_id = self.env['res.company'].search([
             ('is_api_allowed', '=', True)
         ], limit=1)
-    
-        if not company:
-            return 0
-    
-        products = self.env['product.product'].search([
-            ('default_code', '!=', False),
-            ('active', '=', True),
-            ('company_id', '=', company.id),
-        ])
-        
-        codes = [
-        int(code)
-        for code in products.mapped('default_code')
-        if code and code.strip().isdigit()
-        ]
 
-        return max(codes, default=0)
+        if not company_id:
+            return 0
+        products = self.env['product.product'].search([
+            ('active', '=', True),
+            ('default_code', '!=', False)
+        ])
+        numbers = []
+
+        for product in products:
+            sku = product.default_code
+            numeric_part = ''.join(char for char in sku if sku.isdigit())
+            if numeric_part:
+                numbers.append(int(numeric_part))
+
+        return max(numbers, default=0)
     
     @api.model
     def create(self, vals_list):
