@@ -400,24 +400,33 @@ class ProductVariantInherit(models.Model):
         return products
 
     def unique_sku_number(self):
-        company_id = self.env['res.company'].search([
+        company = self.env['res.company'].search([
             ('is_api_allowed', '=', True)
         ], limit=1)
+    
+        if not company:
+            return 0
+    
         products = self.env['product.product'].search([
             ('default_code', '!=', False),
             ('active', '=', True),
-            ('company_id', '=', company_id.id),
+            ('product_tmpl_id.active', '=', True),
+            ('product_tmpl_id.company_id', '=', company.id),
         ])
-
-        max_code = max(
-            (
-                int(''.join(filter(str.isdigit, product.default_code)))
-                for product in products
-                if any(char.isdigit() for char in product.default_code)
-            ),
-            default=0
-        )
-
+    
+        max_code = 0
+    
+        for product in products:
+            default_code = (product.default_code or '').strip()
+    
+            # Only pure integer default_code
+            if default_code.isdigit():
+    
+                number = int(default_code)
+    
+                if number > max_code:
+                    max_code = number
+    
         return max_code
 
     def update_variant(self):
