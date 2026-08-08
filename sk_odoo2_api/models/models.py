@@ -71,8 +71,8 @@ class ProductProductInherit(models.Model):
             FROM product_product pp
             JOIN product_template pt
                 ON pt.id = pp.product_tmpl_id
-            WHERE pp.active IS TRUE
-              AND pt.active IS TRUE
+            WHERE pp.active IS True
+              AND pt.active IS True
               AND pp.default_code IS NOT NULL
               AND REGEXP_REPLACE(pp.default_code, '\\D', '', 'g') <> ''
         """)
