@@ -42,7 +42,7 @@ class OdooSyncController(http.Controller):
             order_lines = []
             for line in lines:
                 product = request.env['product.product'].sudo().search(
-                    [('id', '=', line.get('product_id'))], limit=1
+                    [('api_id', '=', line.get('product_id'))], limit=1
                 )
                 if not product:
                     return {
