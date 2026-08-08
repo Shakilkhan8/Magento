@@ -54,25 +54,10 @@ class ProductProductInherit(models.Model):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        exist = self.is_code_exist(code=self.unique_sku_number() + 1)
-
-        res['default_code'] = exist
+        res['default_code'] = self.unique_sku_number() + 1
         return res
 
-    def is_code_exist(self, code):
-        company_id = self.env['res.company'].search([
-            ('is_api_allowed', '=', True)
-        ], limit=1)
-
-        products = self.env['product.product'].search([
-            ('default_code', '=', code),
-            ('active', '=', True),
-            ('company_id', '=', company_id.id),
-        ])
-        if products:
-            return code + 1
-        else:
-            return code
+  
 
     def unique_sku_number(self):
         company = self.env['res.company'].search([
@@ -87,25 +72,14 @@ class ProductProductInherit(models.Model):
             ('active', '=', True),
             ('company_id', '=', company.id),
         ])
-    
-       
-    
-        numeric_products = []
-    
-        for product in products:
-            code = (product.default_code or '').strip()
-    
-            if code.isdigit():
-                numeric_products.append(
-                    (int(code), code, product.id)
-                )
-    
-        numeric_products.sort(
-            key=lambda x: x[0],
-            reverse=True
-        )
-    
-        return numeric_products[0][0] if numeric_products else 0
+        
+        codes = [
+        int(code)
+        for code in products.mapped('default_code')
+        if code and code.strip().isdigit()
+        ]
+
+        return max(codes, default=0)
     
     @api.model
     def create(self, vals_list):
