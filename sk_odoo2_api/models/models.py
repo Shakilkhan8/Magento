@@ -67,26 +67,16 @@ class ProductProductInherit(models.Model):
     
         self.env.cr.execute("""
             SELECT COALESCE(
-                MAX(
-                    CAST(
-                        REGEXP_REPLACE(
-                            pp.default_code,
-                            '[^0-9]',
-                            '',
-                            'g'
-                        ) AS BIGINT
-                    )
-                ),
+                MAX(pp.default_code::BIGINT),
                 0
             )
             FROM product_product pp
-            INNER JOIN product_template pt
+            JOIN product_template pt
                 ON pt.id = pp.product_tmpl_id
             WHERE pp.active = TRUE
               AND pt.active = TRUE
               AND pt.company_id = %s
-              AND pp.default_code IS NOT NULL
-              AND pp.default_code ~ '[0-9]'
+              AND pp.default_code ~ '^[0-9]+$'
         """, (company.id,))
     
         return self.env.cr.fetchone()[0]
