@@ -319,6 +319,7 @@ class ProductVariantInherit(models.Model):
     standard_price = fields.Float(
         'Cost', company_dependent=False,
         digits='Product Price',
+        store=True,
         groups="base.group_user",
         help="""Value of the product (automatically computed in AVCO).
                 Used to value the product when the purchase cost is not known (e.g. inventory adjustment).
