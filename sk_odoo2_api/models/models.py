@@ -379,8 +379,8 @@ class ProductVariantInherit(models.Model):
                     'variant_ids': products.ids,
                 }
             }
-        # if is_api:
-        #     self.product_tmpl_id.update_variants(data=payload)
+        if is_api:
+           self.product_tmpl_id.update_variants(data=payload)
 
         return products
 
