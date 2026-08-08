@@ -319,7 +319,7 @@ class ProductVariantInherit(models.Model):
     def write(self, vals):
         res = super().write(vals)
 
-        # self.update_variant()
+        self.update_variant()
         return res
 
     @api.model_create_multi
