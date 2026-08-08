@@ -58,19 +58,21 @@ class ProductProductInherit(models.Model):
         return res
 
     def unique_sku_number(self):
-        self.env.cr.execute(r"""
-            SELECT COALESCE(
-                MAX(
-                    CAST(REGEXP_REPLACE(default_code, '\D', '', 'g') AS BIGINT)
-                ),
-                0
-            )
-            FROM product_product
-            WHERE active = True
-              AND default_code IS NOT NULL
-              AND REGEXP_REPLACE(default_code, '\D', '', 'g') <> ''
-        """)
-        return self.env.cr.fetchone()[0]
+        products = self.env['product.product'].search([
+            ('active', '=', True),
+            ('default_code', '!=', False),
+        ])
+
+        max_code = max(
+            (
+                int(''.join(filter(str.isdigit, product.default_code)))
+                for product in products
+                if any(char.isdigit() for char in product.default_code)
+            ),
+            default=0
+        )
+
+        return max_code
 
     @api.model
     def create(self, vals_list):
@@ -379,23 +381,21 @@ class ProductVariantInherit(models.Model):
 
     def unique_sku_number(self):
 
-        self.env.cr.execute(r"""
-            SELECT COALESCE(
-                MAX(
-                    CAST(REGEXP_REPLACE(pp.default_code, '\D', '', 'g') AS BIGINT)
-                ),
-                0
-            )
-            FROM product_product pp
-            JOIN product_template pt
-                ON pt.id = pp.product_tmpl_id
-            WHERE pp.active = TRUE
-              AND pt.active = TRUE
-              AND pp.default_code IS NOT NULL
-              AND REGEXP_REPLACE(pp.default_code, '\D', '', 'g') <> ''
-        """)
+        products = self.env['product.product'].search([
+            ('active', '=', True),
+            ('default_code', '!=', False),
+        ])
 
-        return int(self.env.cr.fetchone()[0])
+        max_code = max(
+            (
+                int(''.join(filter(str.isdigit, product.default_code)))
+                for product in products
+                if any(char.isdigit() for char in product.default_code)
+            ),
+            default=0
+        )
+
+        return max_code
 
     def update_variant(self):
 
