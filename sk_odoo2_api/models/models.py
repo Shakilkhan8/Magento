@@ -1,5 +1,7 @@
 import re
 from collections import defaultdict
+from curses.ascii import isdigit
+
 from zope.interface.common import sequence
 
 from odoo import api, fields, models
@@ -78,7 +80,8 @@ class ProductProductInherit(models.Model):
                 numbers.append(int(numeric_part))
 
         return max(numbers, default=0)
-    
+
+
     @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
@@ -349,22 +352,21 @@ class ProductVariantInherit(models.Model):
                     if next_no in sequence_to_delete and str(next_no) in seq_list:
                         seq_list.remove(str(next_no))
                         # continue
-                    if seq_list:
-                        if int(next_no) > (int(seq_list[0]) if seq_list else []):
-                            product.default_code = seq_list[0]
-                            sequence_to_delete.append(seq_list[0])
-                            seq_list.pop(0)
 
-                        elif int(next_no) == (int(seq_list[0]) if seq_list else 0):
-                            product.default_code = seq_list[0]
-                            sequence_to_delete.append(seq_list[0])
-                            seq_list.pop(0)
+                    if int(next_no) > (int(seq_list[0]) if seq_list else 0):
+                        product.default_code = seq_list[0]
+                        sequence_to_delete.append(seq_list[0])
+                        seq_list.pop(0)
+
+                    elif int(next_no) == (int(seq_list[0]) if seq_list else 0):
+                        product.default_code = seq_list[0]
+                        sequence_to_delete.append(seq_list[0])
+                        seq_list.pop(0)
 
                     else:
                         next_no += 1
                         product.default_code = next_no
                         sequence_to_delete.append(next_no)
-
                 else:
                     next_no += 1
                     product.default_code = next_no
@@ -393,33 +395,24 @@ class ProductVariantInherit(models.Model):
         return products
 
     def unique_sku_number(self):
-        company = self.env['res.company'].search([
+        company_id = self.env['res.company'].search([
             ('is_api_allowed', '=', True)
         ], limit=1)
-    
-        if not company:
-            return 0
-    
         products = self.env['product.product'].search([
             ('default_code', '!=', False),
             ('active', '=', True),
-            ('product_tmpl_id.active', '=', True),
-            ('product_tmpl_id.company_id', '=', company.id),
+            ('company_id', '=', company_id.id),
         ])
-    
-        max_code = 0
-    
-        for product in products:
-            default_code = (product.default_code or '').strip()
-    
-            # Only pure integer default_code
-            if default_code.isdigit():
-    
-                number = int(default_code)
-    
-                if number > max_code:
-                    max_code = number
-    
+
+        max_code = max(
+            (
+                int(''.join(filter(str.isdigit, product.default_code)))
+                for product in products
+                if any(char.isdigit() for char in product.default_code)
+            ),
+            default=0
+        )
+
         return max_code
 
     def update_variant(self):
