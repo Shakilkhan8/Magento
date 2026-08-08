@@ -29,6 +29,9 @@ class OdooSyncController(http.Controller):
         try:
             data = request.httprequest.json['params']['data']
             lines = data.get('lines', [])
+            company_id = request.env['res.company'].sudo().search([
+                ('is_api_allowed', '=', True)
+            ], limit=1)
 
             partner = request.env['res.partner'].sudo().search([
                 ('is_biller_partner', '=', True),
@@ -55,12 +58,13 @@ class OdooSyncController(http.Controller):
                     'price_unit': line.get('price_unit', 0),
                     'product_uom_qty': line.get('product_uom_qty', 1),
                 }))
-
-            sale_order = request.env['sale.order'].sudo().create({
+            if company_id:
+                sale_order = request.env['sale.order'].sudo().create({
                 'partner_id': partner.id,
                 'api_order_id': data.get('order_id'),
                 'order_line': order_lines,
-            })
+                'company_id': company_id.id
+                })
 
             _logger.info("Sale order %s created via API", sale_order.name)
             return {
