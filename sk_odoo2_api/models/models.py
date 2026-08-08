@@ -379,9 +379,7 @@ class ProductVariantInherit(models.Model):
         return products
 
     def unique_sku_number(self):
-
         products = self.env['product.product'].search([
-            ('active', '=', True),
             ('default_code', '!=', False),
         ])
 
