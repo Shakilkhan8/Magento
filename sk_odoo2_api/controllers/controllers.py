@@ -73,13 +73,13 @@ class OdooSyncController(http.Controller):
                 'company_id': company_id.id
                 })
 
-            _logger.info("Sale order %s created via API", sale_order.name)
-            return {
-                'status': 200,
-                'message': 'Sale order %s created' % sale_order.name,
-                'sale_order_id': sale_order.id,
-                'sale_order_name': sale_order.name,
-            }
+                _logger.info("Sale order %s created via API", sale_order.name)
+                return {
+                    'status': 200,
+                    'message': 'Sale order %s created' % sale_order.name,
+                    'sale_order_id': sale_order.id,
+                    'sale_order_name': sale_order.name,
+                }
 
         except Exception as e:
             _logger.error("Error creating sale order via API: %s", e)

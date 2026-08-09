@@ -364,8 +364,6 @@ class ProductVariantInherit(models.Model):
         self.update_variant()
         return res
 
-
-
     @api.model_create_multi
     def create(self, vals_list):
         products = super().create(vals_list)
