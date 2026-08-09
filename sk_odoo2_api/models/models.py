@@ -339,6 +339,7 @@ class ProductVariantInherit(models.Model):
 
     api_id = fields.Integer("API ID")
 
+
     standard_price = fields.Float(
         'Cost', company_dependent=False,
         digits='Product Price',
@@ -393,7 +394,7 @@ class ProductVariantInherit(models.Model):
         for product in products:
             if not product.api_id:
                 is_api.append(True)
-                
+
             if product.default_code:
                 continue
 

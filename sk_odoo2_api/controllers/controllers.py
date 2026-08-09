@@ -29,6 +29,8 @@ class OdooSyncController(http.Controller):
         try:
             data = request.httprequest.json['params']['data']
             lines = data.get('lines', [])
+            shipping_info = data.get('shipping_info', {})
+
             company_id = request.env['res.company'].sudo().search([
                 ('is_api_allowed', '=', True)
             ], limit=1)
@@ -58,9 +60,14 @@ class OdooSyncController(http.Controller):
                     'price_unit': line.get('price_unit', 0),
                     'product_uom_qty': line.get('product_uom_qty', 1),
                 }))
+
             if company_id:
                 sale_order = request.env['sale.order'].sudo().create({
                 'partner_id': partner.id,
+                'courier_name': shipping_info.get('carrier_id', False),
+                'weight': shipping_info.get('weight', False),
+                'shipping_weight': shipping_info.get('shipping_weight', False),
+                'move_type': shipping_info.get('move_type', False),
                 'api_order_id': data.get('order_id'),
                 'order_line': order_lines,
                 'company_id': company_id.id
