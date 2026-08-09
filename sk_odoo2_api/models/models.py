@@ -18,13 +18,106 @@ PRODUCT_TEMPLATE_UPDATE_URL = '/api/update-product-template'
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
+
+    def get_session_id(self):
+        api_config = self.env['api.configuration'].sudo().search([], limit=1)
+        if not api_config:
+            raise ValidationError('Please create API configuration and add all API required parameters !')
+
+        if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
+            raise ValidationError('Please add all API required parameters !')
+
+        url = api_config.url + AUTH_URL
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "params": {
+                "db": api_config.db_name,
+                "login": api_config.user_name,
+                "password": api_config.password,
+            }
+        }
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        response = requests.request(method='GET', url=url, headers=headers, json=payload)
+        if response.status_code == 200 and response.cookies.values():
+            session_id = response.cookies.values()[0]
+
+            headers['Token_id'] = session_id
+            return session_id
+        else:
+            return None
+
     def button_validate(self):
         res = super().button_validate()
-        for rec in self.move_ids_without_package:
-            if not rec.product_id.api_id:
-                if rec.product_id and (rec.quantity_done or rec.product_uom_qty):
-                    rec.product_id.update_variant()
+        for picking in self:
+            for rec in picking.move_ids_without_package:
+                if not rec.product_id.api_id:
+                    if rec.product_id and (rec.quantity_done or rec.product_uom_qty):
+                        rec.product_id.update_variant()
+
+            sale_order = picking.sale_id  # agar delivery kisi sale order se linked hai
+            if not sale_order:
+                continue
+
+            data = {
+                    'carrier_tracking_ref': picking.carrier_tracking_ref,
+                    'order_id': picking.sale_id.id
+                    }
+            picking._send_delivery_update_to_target(data = data)
+
         return res
+
+    def _send_delivery_update_to_target(self, data):
+        api_config = self.env['api.configuration'].sudo().search([], limit=1)
+        if not api_config:
+            raise ValidationError('Please create API configuration and add all API required parameters !')
+
+        if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
+            raise ValidationError('Please add all API required parameters !')
+
+        url = api_config.url + '/api/update-delivery'
+
+        if data and api_config:
+            session_id = self.get_session_id()
+            if not session_id:
+                return False
+
+            payload = {
+                "jsonrpc": "2.0",
+                "method": "call",
+                    "data": {
+                        "order_id": data.get('order_id'),  # Target Odoo mein us order ka ID
+                        "carrier_tracking_ref": data.get('carrier_tracking_ref')  # Target Odoo mein us order ka ID
+                    }
+            }
+
+
+            try:
+                response = requests.post(
+                    url=url,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                    },
+                    cookies={
+                        "session_id": session_id,
+                    },
+                    timeout=30
+                )
+                response.raise_for_status()
+                result = response.json()
+                if result.status == 200:
+                    return {'status': 'success', 'message': 'Delivery validated success fully !'}
+                else:
+                    return {'status': 'success', 'message': 'Delivery validated success fully !'}
+
+            except requests.exceptions.RequestException as e:
+                return {
+                    'status': 'error',
+                    'message': str(e)
+                }
 
 
 class ProductProductInherit(models.Model):
@@ -37,50 +130,14 @@ class ProductProductInherit(models.Model):
         store=True,
     )
 
-    def unlink(self):
-        Sequence = self.env['store.deleted.sequence'].sudo()
-        products = self.env['product.product']
-        for rec in self:
-            products = products.search([('product_tmpl_id', '=', rec.id)])
-
-            for product in products:
-                code = product.default_code
-                if code and code.isdigit() and int(code) > 0:
-                    Sequence.create({'name': code})
-
-        return super().unlink()
-
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
 
-        products = self.env['product.product'].search([
-            ('active', '=', True),
-            ('default_code', '!=', False),
-        ])
-
-        used = {
-            int(''.join(c for c in p.default_code if c.isdigit()))
-            for p in products
-            if p.default_code and any(c.isdigit() for c in p.default_code)
-        }
-
-        deleted = self.env['store.deleted.sequence'].search([])
-
-        available = sorted(
-            int(r.name)
-            for r in deleted
-            if r.name and r.name.isdigit()
-            and int(r.name) > 0
-            and int(r.name) not in used
-        )
-
-        if available:
-            res['default_code'] = str(available[0])
-        else:
-            res['default_code'] = str(self.unique_sku_number() + 1)
+        res['default_code'] = str(self.unique_sku_number() + 1)
 
         return res
+
 
     def unique_sku_number(self):
         company_id = self.env['res.company'].search([
@@ -349,16 +406,6 @@ class ProductVariantInherit(models.Model):
                 Used to compute margins on sale orders.""")
 
 
-    def unlink(self):
-        Sequence = self.env['store.deleted.sequence'].sudo()
-
-        for product in self:
-            code = product.default_code
-            if code and code.isdigit() and int(code) > 0:
-                    Sequence.create({'name': code})
-
-        return super().unlink()
-
     def write(self, vals):
         res = super().write(vals)
         self.update_variant()
@@ -367,70 +414,33 @@ class ProductVariantInherit(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         products = super().create(vals_list)
-
-        deleted_seqs = self.env['store.deleted.sequence'].search([])
-
-        exist_products = self.env['product.product'].search([
-            ('active', '=', True),
-        ])
-
-        used = {
-            int(''.join(c for c in p.default_code if c.isdigit()))
-            for p in exist_products
-            if p.default_code and any(c.isdigit() for c in p.default_code)
-        }
-
-        seq_list = sorted(
-            int(r.name) for r in deleted_seqs
-            if r.name and r.name.isdigit() and int(r.name) > 0
-        )
-
         next_no = self.unique_sku_number()
-        remove = self.env['store.deleted.sequence']
-
+        i = 1
         is_api = []
         for product in products:
             if not product.api_id:
                 is_api.append(True)
+            if not product.default_code:
+                product.default_code = next_no + i
+                i += 1
 
-            if product.default_code:
-                continue
+            att_vals = []
+            for line in product.attribute_line_ids:
+                    for attr in line.value_ids:
+                        att_vals.append({
+                                'attribute': attr.attribute_id.name,
+                                'value': attr.name
+                            })
 
-            seq = next((n for n in seq_list if n not in used), None)
-
-            if seq:
-                product.default_code = str(seq)
-                used.add(seq)
-                seq_list.remove(seq)
-                remove |= deleted_seqs.filtered(lambda r: r.name == str(seq))
-            else:
-                while next_no in used or next_no <= 0:
-                    next_no += 1
-
-                product.default_code = str(next_no)
-                used.add(next_no)
-                next_no += 1
-
-        if remove:
-            remove.unlink()
-
-        att_vals = []
-        for line in product.attribute_line_ids:
-            for attr in line.value_ids:
-                att_vals.append({
-                        'attribute': attr.attribute_id.name,
-                        'value': attr.name
-                    })
-
-        payload = {
-                'data': {
-                    'api_id': product.product_tmpl_id.id,
-                    'attribute_values': att_vals,
-                    'variant_ids': sorted(products.ids),
+            payload = {
+                    'data': {
+                        'api_id': product.product_tmpl_id.id,
+                        'attribute_values': att_vals,
+                        'variant_ids': sorted(products.ids),
+                    }
                 }
-            }
-        if is_api:
-            self.product_tmpl_id.update_variants(data=payload)
+            if is_api:
+                self.product_tmpl_id.update_variants(data=payload)
 
         return products
 
@@ -438,22 +448,22 @@ class ProductVariantInherit(models.Model):
         company_id = self.env['res.company'].search([
             ('is_api_allowed', '=', True)
         ], limit=1)
+
+        if not company_id:
+            return 0
         products = self.env['product.product'].search([
-            ('default_code', '!=', False),
             ('active', '=', True),
-            ('company_id', '=', company_id.id),
+            ('default_code', '!=', False)
         ])
+        numbers = []
 
-        max_code = max(
-            (
-                int(''.join(filter(str.isdigit, product.default_code)))
-                for product in products
-                if any(char.isdigit() for char in product.default_code)
-            ),
-            default=0
-        )
+        for product in products:
+            sku = product.default_code
+            numeric_part = ''.join(char for char in sku if sku.isdigit())
+            if numeric_part:
+                numbers.append(int(numeric_part))
 
-        return max_code
+        return max(numbers, default=0)
 
     def update_variant(self):
 
