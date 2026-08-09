@@ -428,7 +428,7 @@ class ProductVariantInherit(models.Model):
                 'data': {
                     'api_id': product.product_tmpl_id.id,
                     'attribute_values': att_vals,
-                    'variant_ids': products.ids,
+                    'variant_ids': sorted(products.ids),
                 }
             }
         if is_api:
