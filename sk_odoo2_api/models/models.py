@@ -209,7 +209,6 @@ class ProductProductInherit(models.Model):
                 'id': res.id,
                 'lst_price': res.list_price,
                 'detailed_type': res.detailed_type,
-                'default_code': res.default_code
 
             })
             if result.status_code == 200:
@@ -381,7 +380,6 @@ class ProductProductInherit(models.Model):
                             "barcode": vals.get('barcode'),
                             "lst_price": vals.get('lst_price'),
                             "detailed_type": vals.get('detailed_type'),
-                            "default_code": vals.get('default_code'),
                             'standard_price': vals.get('standard_price'),
                             }
                         }

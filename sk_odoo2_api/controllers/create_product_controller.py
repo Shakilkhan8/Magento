@@ -35,7 +35,6 @@ class ProductAPI(http.Controller):
                 'image_1920': vals.get('template_image', False),
                 'detailed_type': vals.get('detailed_type'),
                 'company_id': company_id.id,
-                'default_code': vals.get('default_code'),
                 'barcode': vals.get('default_code', False),
                 'api_id': vals.get('api_id'),
                 'standard_price': vals.get('standard_price', 0),
@@ -155,7 +154,7 @@ class ProductAPI(http.Controller):
             if 'product_id' in vals and 'default_code' in vals:
                 default_code = vals.get('default_code')
                 product = request.env['product.product'].sudo().search([
-                    ('default_code', '=', default_code)
+                    ('api_id', '=', vals.get('product_id'))
                 ], limit=1)
 
                 if not product:
