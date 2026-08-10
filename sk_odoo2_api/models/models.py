@@ -62,7 +62,7 @@ class StockPicking(models.Model):
                 continue
 
             data = {
-                    'carrier_tracking_ref': "DHL-asdasda",
+                    'carrier_tracking_ref': picking.carrier_tracking_ref,
                     'order_id': picking.sale_id.id
                     }
             picking._send_delivery_update_to_target(data = data)
@@ -88,7 +88,7 @@ class StockPicking(models.Model):
                 "jsonrpc": "2.0",
                 "method": "call",
                     "data": {
-                        "order_id": 1267,  # Target Odoo mein us order ka ID
+                        "order_id": data.get('order_id'),  # Target Odoo mein us order ka ID
                         "carrier_tracking_ref": data.get('carrier_tracking_ref')  # Target Odoo mein us order ka ID
                     }
             }
@@ -105,12 +105,7 @@ class StockPicking(models.Model):
                     },
                     timeout=30
                 )
-                # response.raise_for_status()
-                # result = response.json()
-                # if response.status_code == 200:
-                #     return {'status': 'success', 'message': 'Delivery validated success fully !'}
-                # else:
-                #     return {'status': 'success', 'message': 'Delivery validated success fully !'}
+               
 
             except requests.exceptions.RequestException as e:
                 return {
