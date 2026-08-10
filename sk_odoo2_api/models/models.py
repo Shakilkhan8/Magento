@@ -62,7 +62,7 @@ class StockPicking(models.Model):
                 continue
 
             data = {
-                    'carrier_tracking_ref': picking.carrier_tracking_ref,
+                    'carrier_tracking_ref': picking.carrier_tracking_ref or ' ',
                     'order_id': picking.sale_id.id
                     }
             picking._send_delivery_update_to_target(data = data)
@@ -93,6 +93,7 @@ class StockPicking(models.Model):
                     }
             }
 
+
             try:
                 response = requests.post(
                     url=url,
@@ -105,7 +106,13 @@ class StockPicking(models.Model):
                     },
                     timeout=30
                 )
-               
+                # response.raise_for_status()
+                # result = response.json()
+                #
+                # if response.status_code == 200:
+                #     return {'status': 'success', 'message': 'Delivery validated success fully !'}
+                # else:
+                #     return {'status': 'success', 'message': 'Delivery validated success fully !'}
 
             except requests.exceptions.RequestException as e:
                 return {

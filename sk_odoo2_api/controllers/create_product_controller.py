@@ -154,7 +154,7 @@ class ProductAPI(http.Controller):
             if 'product_id' in vals and 'default_code' in vals:
                 default_code = vals.get('default_code')
                 product = request.env['product.product'].sudo().search([
-                    ('api_id', '=', vals.get('product_id'))
+                    ('default_code', '=', default_code)
                 ], limit=1)
 
                 if not product:
