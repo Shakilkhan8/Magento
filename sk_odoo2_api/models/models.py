@@ -105,8 +105,8 @@ class StockPicking(models.Model):
                     },
                     timeout=30
                 )
-                response.raise_for_status()
-                result = response.json()
+                # response.raise_for_status()
+                # result = response.json()
                 # if response.status_code == 200:
                 #     return {'status': 'success', 'message': 'Delivery validated success fully !'}
                 # else:
