@@ -93,7 +93,6 @@ class StockPicking(models.Model):
                     }
             }
 
-
             try:
                 response = requests.post(
                     url=url,
