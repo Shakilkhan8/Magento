@@ -89,8 +89,8 @@ class StockPicking(models.Model):
                 "jsonrpc": "2.0",
                 "method": "call",
                     "data": {
-                        "order_id": data.get('order_id'),  # Target Odoo mein us order ka ID
-                        "carrier_tracking_ref": data.get('carrier_tracking_ref')  # Target Odoo mein us order ka ID
+                        "order_id": data.get('order_id'),
+                        "carrier_tracking_ref": data.get('carrier_tracking_ref')
                     }
                 }
 
@@ -130,6 +130,10 @@ class ProductProductInherit(models.Model):
         string='Code',
         store=True,
     )
+
+    def update_variant_codes(self):
+        for rec in self.product_variant_ids:
+            rec.update_variant()
 
     @api.model
     def default_get(self, fields_list):
@@ -249,7 +253,6 @@ class ProductProductInherit(models.Model):
         if data:
 
             api_config = self.env['api.configuration'].sudo().search([], limit=1)
-            url = f"{api_config.url}{AUTH_URL}"
             if not api_config:
                 return True
 
@@ -440,8 +443,13 @@ class ProductVariantInherit(models.Model):
                         'api_id': product.product_tmpl_id.id,
                         'attribute_values': att_vals,
                         'variant_ids': sorted(products.ids),
+                        'ids_and_values': [{
+                            'id': rec.id,
+                            'default_code': rec.default_code
+                        } for rec in sorted(products)],
                     }
                 }
+
             if is_api:
                 self.product_tmpl_id.update_variants(data=payload)
 
@@ -483,6 +491,7 @@ class ProductVariantInherit(models.Model):
                         'barcode': rec.barcode,
                         'detailed_type': rec.detailed_type,
                         'standard_price': rec.standard_price,
+                        'default_code': rec.default_code,
                         'qty': rec.qty_available,
                     }
                 }

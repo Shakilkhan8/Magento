@@ -243,7 +243,7 @@ class ProductAPI(http.Controller):
                         'detailed_type': vals.get('detailed_type', False),
                         'name': vals.get('name', False),
                         'standard_price': vals.get('standard_price', 0),
-
+                        'default_code': vals.get('default_code', False),
                     })
 
                     return {
