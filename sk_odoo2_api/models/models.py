@@ -65,6 +65,7 @@ class StockPicking(models.Model):
                     'carrier_tracking_ref': picking.carrier_tracking_ref or ' ',
                     'order_id': picking.sale_id.api_order_id
                     }
+
             picking._send_delivery_update_to_target(data = data)
 
         return res
@@ -91,8 +92,7 @@ class StockPicking(models.Model):
                         "order_id": data.get('order_id'),  # Target Odoo mein us order ka ID
                         "carrier_tracking_ref": data.get('carrier_tracking_ref')  # Target Odoo mein us order ka ID
                     }
-            }
-
+                }
 
             try:
                 response = requests.post(

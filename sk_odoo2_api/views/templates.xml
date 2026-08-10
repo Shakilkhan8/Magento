@@ -25,7 +25,7 @@
                 <xpath expr="//page[@name='other_information']" position="after">
                    <page string="Shipping Information">
                         <group string="Shipping Information">
-                        <field name="courier_name" readonly="1"/>
+                        <field name="courier_name"/>
                         <field name="carrier_tracking_ref" readonly="1"/>
                         <field name="weight" readonly="1"/>
                         <field name="shipping_weight" readonly="1"/>
