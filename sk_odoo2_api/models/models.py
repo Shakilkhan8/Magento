@@ -62,7 +62,7 @@ class StockPicking(models.Model):
                 continue
 
             data = {
-                    'carrier_tracking_ref':  'DHL-29384238',
+                    'carrier_tracking_ref': picking.carrier_tracking_ref or ' ',
                     'order_id': picking.sale_id.id
                     }
             picking._send_delivery_update_to_target(data = data)
@@ -88,7 +88,7 @@ class StockPicking(models.Model):
                 "jsonrpc": "2.0",
                 "method": "call",
                     "data": {
-                        "order_id": 1279,  # Target Odoo mein us order ka ID
+                        "order_id": data.get('order_id'),  # Target Odoo mein us order ka ID
                         "carrier_tracking_ref": data.get('carrier_tracking_ref')  # Target Odoo mein us order ka ID
                     }
             }
