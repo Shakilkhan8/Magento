@@ -62,7 +62,7 @@ class StockPicking(models.Model):
                 continue
 
             data = {
-                    'carrier_tracking_ref': picking.carrier_tracking_ref,
+                    'carrier_tracking_ref': "DHL-asdasda",
                     'order_id': picking.sale_id.id
                     }
             picking._send_delivery_update_to_target(data = data)
@@ -88,7 +88,7 @@ class StockPicking(models.Model):
                 "jsonrpc": "2.0",
                 "method": "call",
                     "data": {
-                        "order_id": data.get('order_id'),  # Target Odoo mein us order ka ID
+                        "order_id": 1267,  # Target Odoo mein us order ka ID
                         "carrier_tracking_ref": data.get('carrier_tracking_ref')  # Target Odoo mein us order ka ID
                     }
             }
@@ -130,14 +130,50 @@ class ProductProductInherit(models.Model):
         store=True,
     )
 
+    def unlink(self):
+        Sequence = self.env['store.deleted.sequence'].sudo()
+        products = self.env['product.product']
+        for rec in self:
+            products = products.search([('product_tmpl_id', '=', rec.id)])
+
+            for product in products:
+                code = product.default_code
+                if code and code.isdigit() and int(code) > 0:
+                    Sequence.create({'name': code})
+
+        return super().unlink()
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
 
-        res['default_code'] = str(self.unique_sku_number() + 1)
+        products = self.env['product.product'].search([
+            ('active', '=', True),
+            ('default_code', '!=', False),
+        ])
+
+        used = {
+            int(''.join(c for c in p.default_code if c.isdigit()))
+            for p in products
+            if p.default_code and any(c.isdigit() for c in p.default_code)
+        }
+
+        deleted = self.env['store.deleted.sequence'].search([])
+
+        available = sorted(
+            int(r.name)
+            for r in deleted
+            if r.name and r.name.isdigit()
+            and int(r.name) > 0
+            and int(r.name) not in used
+        )
+
+        if available:
+            res['default_code'] = str(available[0])
+        else:
+            res['default_code'] = str(self.unique_sku_number() + 1)
 
         return res
-
 
     def unique_sku_number(self):
         company_id = self.env['res.company'].search([
@@ -414,33 +450,70 @@ class ProductVariantInherit(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         products = super().create(vals_list)
+
+        deleted_seqs = self.env['store.deleted.sequence'].search([])
+
+        exist_products = self.env['product.product'].search([
+            ('active', '=', True),
+        ])
+
+        used = {
+            int(''.join(c for c in p.default_code if c.isdigit()))
+            for p in exist_products
+            if p.default_code and any(c.isdigit() for c in p.default_code)
+        }
+
+        seq_list = sorted(
+            int(r.name) for r in deleted_seqs
+            if r.name and r.name.isdigit() and int(r.name) > 0
+        )
+
         next_no = self.unique_sku_number()
-        i = 1
+        remove = self.env['store.deleted.sequence']
+
         is_api = []
         for product in products:
             if not product.api_id:
                 is_api.append(True)
-            if not product.default_code:
-                product.default_code = next_no + i
-                i += 1
 
-            att_vals = []
-            for line in product.attribute_line_ids:
-                    for attr in line.value_ids:
-                        att_vals.append({
-                                'attribute': attr.attribute_id.name,
-                                'value': attr.name
-                            })
+            if product.default_code:
+                continue
 
-            payload = {
-                    'data': {
-                        'api_id': product.product_tmpl_id.id,
-                        'attribute_values': att_vals,
-                        'variant_ids': sorted(products.ids),
-                    }
-                }
-            if is_api:
-                self.product_tmpl_id.update_variants(data=payload)
+            seq = next((n for n in seq_list if n not in used), None)
+
+            if seq:
+                product.default_code = str(seq)
+                used.add(seq)
+                seq_list.remove(seq)
+                remove |= deleted_seqs.filtered(lambda r: r.name == str(seq))
+            else:
+                while next_no in used or next_no <= 0:
+                    next_no += 1
+
+                product.default_code = str(next_no)
+                used.add(next_no)
+                next_no += 1
+
+        if remove:
+            remove.unlink()
+
+        att_vals = []
+        for line in product.attribute_line_ids:
+            for attr in line.value_ids:
+                att_vals.append({
+                    'attribute': attr.attribute_id.name,
+                    'value': attr.name
+                })
+
+        payload = {
+            'data': {
+                'api_id': product.product_tmpl_id.id,
+                'attribute_values': att_vals,
+                'variant_ids': products.ids,
+            }
+        }
+        if is_api:
+            self.product_tmpl_id.update_variants(data=payload)
 
         return products
 
