@@ -63,7 +63,7 @@ class StockPicking(models.Model):
 
             data = {
                     'carrier_tracking_ref': picking.carrier_tracking_ref or ' ',
-                    'order_id': picking.sale_id.id
+                    'order_id': picking.sale_id.api_order_id
                     }
             picking._send_delivery_update_to_target(data = data)
 
