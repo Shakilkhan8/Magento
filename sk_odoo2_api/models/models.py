@@ -187,14 +187,6 @@ class ProductProductInherit(models.Model):
         return res
 
     def write(self, vals):
-
-        if 'attribute_line_ids' in vals:
-            for rec in self.product_variant_ids:
-                self.env['store.deleted.sequence'].create({
-                    'name': rec.default_code
-                })
-            # self.env['store.deleted.sequence'].search([]).unlink()
-
         res = super().write(vals)
 
         for rec in self:
