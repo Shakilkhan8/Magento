@@ -3,8 +3,7 @@ from collections import defaultdict
 from curses.ascii import isdigit
 
 from zope.interface.common import sequence
-import logging
-_logger = logging.getLogger(__name__)
+
 from odoo import api, fields, models
 import json
 import requests
@@ -74,17 +73,11 @@ class StockPicking(models.Model):
             # an actual tracking reference, otherwise skip the call.
             tracking_ref = picking.carrier_tracking_ref
             if not tracking_ref:
-                _logger.info(
-                    "Picking %s (outgoing) validated without a carrier_tracking_ref - "
-                    "skipping delivery update to target.", picking.name
-                )
+               
                 continue
 
             if not sale_order.api_order_id:
-                _logger.warning(
-                    "Picking %s: sale order %s has no api_order_id, "
-                    "cannot notify target.", picking.name, sale_order.name
-                )
+               
                 continue
 
             data = {
@@ -137,27 +130,12 @@ class StockPicking(models.Model):
 
             rpc_result = result.get('result') or {}
             if not isinstance(rpc_result, dict):
-                _logger.error(
-                    "Picking %s: unexpected response from target: %s",
-                    self.name, result
-                )
+               
                 return {'status': 'error', 'message': 'Unexpected response format'}
-
-            if rpc_result.get('status') == 'success':
-                _logger.info(
-                    "Picking %s: delivery update sent to target successfully. %s",
-                    self.name, rpc_result
-                )
-            else:
-                _logger.error(
-                    "Picking %s: target reported failure: %s",
-                    self.name, rpc_result
-                )
 
             return rpc_result
 
         except requests.exceptions.RequestException as e:
-            _logger.error("Picking %s: failed to send delivery update: %s", self.name, e)
             return {
                 'status': 'error',
                 'message': str(e)
