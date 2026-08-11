@@ -1,9 +1,7 @@
 import re
 from collections import defaultdict
 from curses.ascii import isdigit
-
 from zope.interface.common import sequence
-
 from odoo import api, fields, models
 import json
 import requests
