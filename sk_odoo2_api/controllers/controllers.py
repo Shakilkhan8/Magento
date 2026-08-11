@@ -30,14 +30,55 @@ class OdooSyncController(http.Controller):
             data = request.httprequest.json['params']['data']
             lines = data.get('lines', [])
             shipping_info = data.get('shipping_info', {})
+            partner_info = data.get('partner_info', {})
 
             company_id = request.env['res.company'].sudo().search([
                 ('is_api_allowed', '=', True)
             ], limit=1)
 
-            partner = request.env['res.partner'].sudo().search([
-                ('is_biller_partner', '=', True),
-            ], limit=1)
+            partner = request.env['res.partner'].sudo()
+            if partner_info:
+                partner = partner.create({
+                    'name': partner_info.get('name', False),
+                    'street': partner_info.get('street', False),
+                    'street2': partner_info.get('street2', False),
+                    'city': partner_info.get('city', False),
+                    'zip': partner_info.get('zip', False),
+                    'phone': partner_info.get('phone', False),
+                    'mobile': partner_info.get('mobile', False),
+                    'email': partner_info.get('email', False),
+                    'vat': partner_info.get('vat', False),
+                    'company_id': company_id.id,
+                })
+
+                country = request.env['res.country'].sudo().search([
+                    ('name', '=', partner_info.get('country', False)),
+                ])
+
+                if country:
+                    partner.country_id = country.id
+                else:
+                    country = request.env['res.country'].sudo().create({
+                        'name': partner_info.get('country', False),
+                    })
+                    partner.country_id = country.id
+
+                state = request.env['res.country.state'].sudo().search([
+                    ('name', '=', partner_info.get('state', False)),
+                ])
+
+                if state:
+                    partner.state_id = state.id
+
+                else:
+                    state = request.env['res.country.state'].sudo().create({
+                        'name': partner_info.get('state', False),
+                    })
+                    partner.state_id = state.id
+
+
+
+
             if not partner:
                 return {'status': 'error', 'message': 'No partner found with is_biller_partner=True'}
 
@@ -54,6 +95,7 @@ class OdooSyncController(http.Controller):
                         'status': 'error',
                         'message': f'Product not found for {lines}',
                     }
+
                 order_lines.append((0, 0, {
                     'product_id': product.id,
                     'name': line.get('name', product.name),
