@@ -3,7 +3,8 @@ from collections import defaultdict
 from curses.ascii import isdigit
 
 from zope.interface.common import sequence
-
+import logging
+_logger = logging.getLogger(__name__)
 from odoo import api, fields, models
 import json
 import requests
