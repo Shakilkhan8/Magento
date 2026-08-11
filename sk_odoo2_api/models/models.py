@@ -61,12 +61,37 @@ class StockPicking(models.Model):
             if not sale_order:
                 continue
 
-            data = {
-                    'carrier_tracking_ref': picking.carrier_tracking_ref or ' ',
-                    'order_id': picking.sale_id.api_order_id
-                    }
+            # Only notify the target once the FINAL/outgoing delivery step
+            # is validated - not on internal steps like Pick. Internal
+            # steps rarely carry a real carrier_tracking_ref yet, and
+            # firing early can cause the target to validate its own
+            # deliveries prematurely (before the real tracking ref exists).
+            if picking.picking_type_id.code != 'outgoing':
+                continue
 
-            picking._send_delivery_update_to_target(data = data)
+            # Don't send a blank/space placeholder - only send if there is
+            # an actual tracking reference, otherwise skip the call.
+            tracking_ref = picking.carrier_tracking_ref
+            if not tracking_ref:
+                _logger.info(
+                    "Picking %s (outgoing) validated without a carrier_tracking_ref - "
+                    "skipping delivery update to target.", picking.name
+                )
+                continue
+
+            if not sale_order.api_order_id:
+                _logger.warning(
+                    "Picking %s: sale order %s has no api_order_id, "
+                    "cannot notify target.", picking.name, sale_order.name
+                )
+                continue
+
+            data = {
+                'carrier_tracking_ref': tracking_ref,
+                'order_id': sale_order.api_order_id,
+            }
+
+            picking._send_delivery_update_to_target(data=data)
 
         return res
 
@@ -80,45 +105,133 @@ class StockPicking(models.Model):
 
         url = api_config.url + '/api/update-delivery'
 
-        if data and api_config:
-            session_id = self.get_session_id()
-            if not session_id:
-                return False
+        session_id = self.get_session_id()
+        if not session_id:
+            _logger.error("Picking %s: could not get session_id for target API.", self.name)
+            return False
 
-            payload = {
-                "jsonrpc": "2.0",
-                "method": "call",
-                    "data": {
-                        "order_id": data.get('order_id'),
-                        "carrier_tracking_ref": data.get('carrier_tracking_ref')
-                    }
-                }
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "call",
+            "data": {
+                "order_id": data.get('order_id'),
+                "carrier_tracking_ref": data.get('carrier_tracking_ref'),
+            }
+        }
 
-            try:
-                response = requests.post(
-                    url=url,
-                    json=payload,
-                    headers={
-                        "Content-Type": "application/json",
-                    },
-                    cookies={
-                        "session_id": session_id,
-                    },
-                    timeout=30
+        try:
+            response = requests.post(
+                url=url,
+                json=payload,
+                headers={
+                    "Content-Type": "application/json",
+                },
+                cookies={
+                    "session_id": session_id,
+                },
+                timeout=30
+            )
+            response.raise_for_status()
+            result = response.json()
+
+            rpc_result = result.get('result') or {}
+            if not isinstance(rpc_result, dict):
+                _logger.error(
+                    "Picking %s: unexpected response from target: %s",
+                    self.name, result
                 )
-                # response.raise_for_status()
-                # result = response.json()
-                #
-                # if response.status_code == 200:
-                #     return {'status': 'success', 'message': 'Delivery validated success fully !'}
-                # else:
-                #     return {'status': 'success', 'message': 'Delivery validated success fully !'}
+                return {'status': 'error', 'message': 'Unexpected response format'}
 
-            except requests.exceptions.RequestException as e:
-                return {
-                    'status': 'error',
-                    'message': str(e)
-                }
+            if rpc_result.get('status') == 'success':
+                _logger.info(
+                    "Picking %s: delivery update sent to target successfully. %s",
+                    self.name, rpc_result
+                )
+            else:
+                _logger.error(
+                    "Picking %s: target reported failure: %s",
+                    self.name, rpc_result
+                )
+
+            return rpc_result
+
+        except requests.exceptions.RequestException as e:
+            _logger.error("Picking %s: failed to send delivery update: %s", self.name, e)
+            return {
+                'status': 'error',
+                'message': str(e)
+            }
+
+    # def button_validate(self):
+    #     res = super().button_validate()
+    #     for picking in self:
+    #         for rec in picking.move_ids_without_package:
+    #             if not rec.product_id.api_id:
+    #                 if rec.product_id and (rec.quantity_done or rec.product_uom_qty):
+    #                     rec.product_id.update_variant()
+    #
+    #         sale_order = picking.sale_id  # agar delivery kisi sale order se linked hai
+    #         if not sale_order:
+    #             continue
+    #
+    #         data = {
+    #                 'carrier_tracking_ref': picking.carrier_tracking_ref or ' ',
+    #                 'order_id': picking.sale_id.api_order_id
+    #                 }
+    #
+    #         picking._send_delivery_update_to_target(data = data)
+    #
+    #     return res
+    #
+    # def _send_delivery_update_to_target(self, data):
+    #     api_config = self.env['api.configuration'].sudo().search([], limit=1)
+    #     if not api_config:
+    #         raise ValidationError('Please create API configuration and add all API required parameters !')
+    #
+    #     if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
+    #         raise ValidationError('Please add all API required parameters !')
+    #
+    #     url = api_config.url + '/api/update-delivery'
+    #
+    #     if data and api_config:
+    #         session_id = self.get_session_id()
+    #         if not session_id:
+    #             return False
+    #
+    #         payload = {
+    #             "jsonrpc": "2.0",
+    #             "method": "call",
+    #                 "data": {
+    #                     "order_id": data.get('order_id'),
+    #                     "carrier_tracking_ref": data.get('carrier_tracking_ref')
+    #                 }
+    #             }
+    #
+    #         try:
+    #             response = requests.post(
+    #                 url=url,
+    #                 json=payload,
+    #                 headers={
+    #                     "Content-Type": "application/json",
+    #                 },
+    #                 cookies={
+    #                     "session_id": session_id,
+    #                 },
+    #                 timeout=30
+    #             )
+    #             # response.raise_for_status()
+    #             # result = response.json()
+    #             #
+    #             # if response.status_code == 200:
+    #             #     return {'status': 'success', 'message': 'Delivery validated success fully !'}
+    #             # else:
+    #             #     return {'status': 'success', 'message': 'Delivery validated success fully !'}
+    #
+    #         except requests.exceptions.RequestException as e:
+    #             return {
+    #                 'status': 'error',
+    #                 'message': str(e)
+    #             }
 
 
 class ProductProductInherit(models.Model):
