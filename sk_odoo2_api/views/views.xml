@@ -21,6 +21,7 @@
 
                 <xpath expr="//field[@name='detailed_type']" position="after">
                     <field name="api_id" readonly="1"/>
+                    <field name="sync_on"/>
                 </xpath>
 
             </field>
@@ -34,8 +35,8 @@
 
                 <xpath expr="//field[@name='detailed_type']" position="after">
                     <field name="api_id"/>
+                    <field name="sync_on"/>
                     <button type="object" string="Update" name="update_variant_codes"/>
-                    <field name="code"/>
                 </xpath>
 
             </field>

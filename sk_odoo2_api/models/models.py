@@ -13,9 +13,9 @@ PRODUCT_URL = '/api/create_product'
 UPDATE_VARIANT_URL = '/api/create-product-variant'
 PRODUCT_TEMPLATE_UPDATE_URL = '/api/update-product-template'
 
+
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
-
 
     def get_session_id(self):
         api_config = self.env['api.configuration'].sudo().search([], limit=1)
@@ -71,11 +71,9 @@ class StockPicking(models.Model):
             # an actual tracking reference, otherwise skip the call.
             tracking_ref = picking.carrier_tracking_ref
             if not tracking_ref:
-               
                 continue
 
             if not sale_order.api_order_id:
-               
                 continue
 
             data = {
@@ -99,7 +97,6 @@ class StockPicking(models.Model):
 
         session_id = self.get_session_id()
         if not session_id:
-            _logger.error("Picking %s: could not get session_id for target API.", self.name)
             return False
 
         payload = {
@@ -128,7 +125,6 @@ class StockPicking(models.Model):
 
             rpc_result = result.get('result') or {}
             if not isinstance(rpc_result, dict):
-               
                 return {'status': 'error', 'message': 'Unexpected response format'}
 
             return rpc_result
@@ -138,77 +134,6 @@ class StockPicking(models.Model):
                 'status': 'error',
                 'message': str(e)
             }
-
-    # def button_validate(self):
-    #     res = super().button_validate()
-    #     for picking in self:
-    #         for rec in picking.move_ids_without_package:
-    #             if not rec.product_id.api_id:
-    #                 if rec.product_id and (rec.quantity_done or rec.product_uom_qty):
-    #                     rec.product_id.update_variant()
-    #
-    #         sale_order = picking.sale_id  # agar delivery kisi sale order se linked hai
-    #         if not sale_order:
-    #             continue
-    #
-    #         data = {
-    #                 'carrier_tracking_ref': picking.carrier_tracking_ref or ' ',
-    #                 'order_id': picking.sale_id.api_order_id
-    #                 }
-    #
-    #         picking._send_delivery_update_to_target(data = data)
-    #
-    #     return res
-    #
-    # def _send_delivery_update_to_target(self, data):
-    #     api_config = self.env['api.configuration'].sudo().search([], limit=1)
-    #     if not api_config:
-    #         raise ValidationError('Please create API configuration and add all API required parameters !')
-    #
-    #     if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
-    #         raise ValidationError('Please add all API required parameters !')
-    #
-    #     url = api_config.url + '/api/update-delivery'
-    #
-    #     if data and api_config:
-    #         session_id = self.get_session_id()
-    #         if not session_id:
-    #             return False
-    #
-    #         payload = {
-    #             "jsonrpc": "2.0",
-    #             "method": "call",
-    #                 "data": {
-    #                     "order_id": data.get('order_id'),
-    #                     "carrier_tracking_ref": data.get('carrier_tracking_ref')
-    #                 }
-    #             }
-    #
-    #         try:
-    #             response = requests.post(
-    #                 url=url,
-    #                 json=payload,
-    #                 headers={
-    #                     "Content-Type": "application/json",
-    #                 },
-    #                 cookies={
-    #                     "session_id": session_id,
-    #                 },
-    #                 timeout=30
-    #             )
-    #             # response.raise_for_status()
-    #             # result = response.json()
-    #             #
-    #             # if response.status_code == 200:
-    #             #     return {'status': 'success', 'message': 'Delivery validated success fully !'}
-    #             # else:
-    #             #     return {'status': 'success', 'message': 'Delivery validated success fully !'}
-    #
-    #         except requests.exceptions.RequestException as e:
-    #             return {
-    #                 'status': 'error',
-    #                 'message': str(e)
-    #             }
 
 
 class ProductProductInherit(models.Model):
@@ -221,6 +146,11 @@ class ProductProductInherit(models.Model):
         store=True,
     )
 
+    sync_on = fields.Boolean(
+        string='Syncing On',
+    )
+
+
     def update_variant_codes(self):
         for rec in self.product_variant_ids:
             rec.update_variant()
@@ -232,7 +162,6 @@ class ProductProductInherit(models.Model):
         res['default_code'] = str(self.unique_sku_number() + 1)
 
         return res
-
 
     def unique_sku_number(self):
         company_id = self.env['res.company'].search([
@@ -255,12 +184,11 @@ class ProductProductInherit(models.Model):
 
         return max(numbers, default=0)
 
-
     @api.model
     def create(self, vals_list):
         res = super().create(vals_list)
 
-        if not res.api_id:
+        if not res.api_id and res.sync_on:
             result = self.send_new_product_data(vals={
                 'name': res.name,
                 'template_image': res.image_1920,
@@ -280,55 +208,55 @@ class ProductProductInherit(models.Model):
         res = super().write(vals)
 
         for rec in self:
-            if not rec.api_id:
+            if not rec.api_id and rec.sync_on:
                 rec.update_template()
                 rec.update_variants()
         return res
 
-     # This function used to create variants during creation of templates
+    # This function used to create variants during creation of templates
     def create_variants(self):
-            att_vals = []
-            for rec in self:
-                for line in self.attribute_line_ids:
-                    for attr in line.value_ids:
-                        att_vals.append({
-                            'attribute': attr.attribute_id.name,
-                            'value': attr.name
-                        })
+        att_vals = []
+        for rec in self:
+            for line in self.attribute_line_ids:
+                for attr in line.value_ids:
+                    att_vals.append({
+                        'attribute': attr.attribute_id.name,
+                        'value': attr.name
+                    })
 
-                api_config = self.env['api.configuration'].sudo().search([], limit=1)
-                if not api_config:
-                    continue
+            api_config = self.env['api.configuration'].sudo().search([], limit=1)
+            if not api_config:
+                continue
 
-                session_id = self.get_session_id()
+            session_id = self.get_session_id()
 
-                headers = {
-                    'Content-Type': 'application/json',
+            headers = {
+                'Content-Type': 'application/json',
+            }
+            product_id = rec.id if isinstance(rec.id, int) else rec._origin.id
+            payload = {
+                'data': {
+                    'api_id': product_id,
+                    'attribute_values': att_vals,
+                    'variant_ids': rec.product_variant_ids.ids
                 }
-                product_id = rec.id if isinstance(rec.id, int) else rec._origin.id
-                payload = {
-                    'data': {
-                        'api_id': product_id,
-                        'attribute_values': att_vals,
-                        'variant_ids': rec.product_variant_ids.ids
-                    }
-                }
+            }
 
-                if session_id:
-                    headers['Token_id'] = session_id
-                    url = f"{api_config.url}{UPDATE_VARIANT_URL}"
-                    response = requests.post(
-                        url=url,
-                        json=payload,
-                        headers={
-                            "Content-Type": "application/json",
-                            "Authorization": f"Bearer {session_id}",
-                        },
-                        timeout=30
-                    )
+            if session_id:
+                headers['Token_id'] = session_id
+                url = f"{api_config.url}{UPDATE_VARIANT_URL}"
+                response = requests.post(
+                    url=url,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {session_id}",
+                    },
+                    timeout=30
+                )
 
-                    return response
-            # this function used to update or create new variants against template
+                return response
+        # this function used to update or create new variants against template
 
     def update_variants(self, data=None):
         att_vals = []
@@ -417,36 +345,33 @@ class ProductProductInherit(models.Model):
 
             session_id = self.get_session_id()
             if session_id:
-
                 headers['Token_id'] = session_id
                 url = f"{api_config.url}{PRODUCT_URL}"
 
-
                 payload = {
-                            "data": {
-                            "name": vals.get('name'),
-                            "api_id": vals.get('id'),
-                            "template_image": vals.get('template_image'),
-                            "id": vals.get('id'),
-                            "barcode": vals.get('barcode'),
-                            "lst_price": vals.get('lst_price'),
-                            "detailed_type": vals.get('detailed_type'),
-                            "default_code": vals.get('default_code'),
-                            'standard_price': vals.get('standard_price'),
-                            }
-                        }
+                    "data": {
+                        "name": vals.get('name'),
+                        "api_id": vals.get('id'),
+                        "template_image": vals.get('template_image'),
+                        "id": vals.get('id'),
+                        "barcode": vals.get('barcode'),
+                        "lst_price": vals.get('lst_price'),
+                        "detailed_type": vals.get('detailed_type'),
+                        "default_code": vals.get('default_code'),
+                        'standard_price': vals.get('standard_price'),
+                    }
+                }
 
                 response = requests.post(
-                            url=url,
-                            json=payload,
-                            headers={
-                                "Content-Type": "application/json",
-                                "Authorization": f"Bearer {session_id}",
-                            },
-                            timeout=30
-                        )
+                    url=url,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {session_id}",
+                    },
+                    timeout=30
+                )
                 return response
-
 
     def get_session_id(self):
         api_config = self.env['api.configuration'].sudo().search([], limit=1)
@@ -477,11 +402,12 @@ class ProductProductInherit(models.Model):
             return session_id
         else:
             return None
+
+
 class ProductVariantInherit(models.Model):
     _inherit = "product.product"
 
     api_id = fields.Integer("API ID")
-
 
     standard_price = fields.Float(
         'Cost', company_dependent=False,
@@ -491,9 +417,20 @@ class ProductVariantInherit(models.Model):
                 Used to value the product when the purchase cost is not known (e.g. inventory adjustment).
                 Used to compute margins on sale orders.""")
 
+    sync_on = fields.Boolean(
+        string='Syncing On',
+    )
+
 
     def write(self, vals):
+        
+        if self.product_tmpl_id.sync_on:
+            vals['sync_on'] = True
+        else:
+            vals['sync_on'] = False
+
         res = super().write(vals)
+
         self.update_variant()
         return res
 
@@ -505,6 +442,11 @@ class ProductVariantInherit(models.Model):
         is_api = []
         for product in products:
 
+            if product.product_tmpl_id.sync_on:
+                product.sync_on = True
+            else:
+                product.sync_on = False
+
             if not product.api_id:
                 is_api.append(True)
 
@@ -514,23 +456,23 @@ class ProductVariantInherit(models.Model):
 
             att_vals = []
             for line in product.attribute_line_ids:
-                    for attr in line.value_ids:
-                        att_vals.append({
-                                'attribute': attr.attribute_id.name,
-                                'value': attr.name
-                            })
+                for attr in line.value_ids:
+                    att_vals.append({
+                        'attribute': attr.attribute_id.name,
+                        'value': attr.name
+                    })
 
             payload = {
-                    'data': {
-                        'api_id': product.product_tmpl_id.id,
-                        'attribute_values': att_vals,
-                        'variant_ids': sorted(products.ids),
-                        'ids_and_values': [{
-                            'id': rec.id,
-                            'default_code': rec.default_code
-                        } for rec in sorted(products)],
-                    }
+                'data': {
+                    'api_id': product.product_tmpl_id.id,
+                    'attribute_values': att_vals,
+                    'variant_ids': sorted(products.ids),
+                    'ids_and_values': [{
+                        'id': rec.id,
+                        'default_code': rec.default_code
+                    } for rec in sorted(products)],
                 }
+            }
 
             if is_api:
                 self.product_tmpl_id.update_variants(data=payload)
@@ -595,8 +537,6 @@ class ProductVariantInherit(models.Model):
 
                 response = response
 
-
-
     def get_session_id(self):
         api_config = self.env['api.configuration'].sudo().search([], limit=1)
         if not api_config:
@@ -628,12 +568,7 @@ class ProductVariantInherit(models.Model):
             return None
 
 
-
-
 class ResPartnerInherit(models.Model):
     _inherit = "res.partner"
 
     is_biller_partner = fields.Boolean(string="Is Biller Partner")
-
-
-

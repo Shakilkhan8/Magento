@@ -149,7 +149,7 @@ class OdooSyncController(http.Controller):
                 'message': 'Error creating sale order: %s' % str(e),
             }
 
-
+        
     # @http.route('/api/create-sale-order', type='json', auth='user', csrf=False, methods=['POST'])
     # def create_sale_order_data(self, **kwargs):
     #     try:
