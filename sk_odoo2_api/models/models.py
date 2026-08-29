@@ -197,8 +197,8 @@ class ProductProductInherit(models.Model):
                 'lst_price': res.list_price,
                 'detailed_type': res.detailed_type,
                 'default_code': res.default_code,
-
-
+                'sync_on': res.sync_on,
+                'weight': res.weight,
             })
             if result.status_code == 200:
                 result1 = res.create_variants()
@@ -319,6 +319,8 @@ class ProductProductInherit(models.Model):
                         'detailed_type': self.detailed_type,
                         'standard_price': self.standard_price or 0.0,
                         'qty': self.qty_available or 0.0,
+                        'sync_on': self.sync_on,
+                        'weight': self.weight,
                     }
                 }
 
@@ -360,6 +362,8 @@ class ProductProductInherit(models.Model):
                         "detailed_type": vals.get('detailed_type'),
                         "default_code": vals.get('default_code'),
                         'standard_price': vals.get('standard_price'),
+                        'sync_on': vals.get('sync_on', False),
+                        'weight': vals.get('weight', 0),
                     }
                 }
 
@@ -424,11 +428,6 @@ class ProductVariantInherit(models.Model):
 
 
     def write(self, vals):
-        
-        if self.product_tmpl_id.sync_on:
-            vals['sync_on'] = True
-        else:
-            vals['sync_on'] = False
 
         res = super().write(vals)
 
@@ -518,6 +517,8 @@ class ProductVariantInherit(models.Model):
                         'standard_price': rec.standard_price,
                         'default_code': rec.default_code,
                         'qty': rec.qty_available,
+                        'sync_on': rec.sync_on,
+                        'weight': rec.weight,
                     }
                 }
 
