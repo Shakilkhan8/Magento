@@ -196,9 +196,7 @@ class ProductProductInherit(models.Model):
                 'id': res.id,
                 'lst_price': res.list_price,
                 'detailed_type': res.detailed_type,
-                'default_code': res.default_code,
-                'sync_on': res.sync_on,
-                'weight': res.weight
+                'default_code': res.default_code
 
             })
             if result.status_code == 200:
@@ -320,8 +318,6 @@ class ProductProductInherit(models.Model):
                         'detailed_type': self.detailed_type,
                         'standard_price': self.standard_price or 0.0,
                         'qty': self.qty_available or 0.0,
-                        'sync_on': self.sync_on,
-                        'weight': self.weight
                     }
                 }
 
@@ -363,8 +359,6 @@ class ProductProductInherit(models.Model):
                         "detailed_type": vals.get('detailed_type'),
                         "default_code": vals.get('default_code'),
                         'standard_price': vals.get('standard_price'),
-                        'sync_on': vals.get('sync_on', False),
-                        'weight': vals.get('weight', 0),
                     }
                 }
 
@@ -429,11 +423,11 @@ class ProductVariantInherit(models.Model):
 
 
     def write(self, vals):
-
-        # if self.product_tmpl_id.sync_on:
-        #     vals['sync_on'] = True
-        # else:
-        #     vals['sync_on'] = False
+        
+        if self.product_tmpl_id.sync_on:
+            vals['sync_on'] = True
+        else:
+            vals['sync_on'] = False
 
         res = super().write(vals)
 
@@ -475,9 +469,7 @@ class ProductVariantInherit(models.Model):
                     'variant_ids': sorted(products.ids),
                     'ids_and_values': [{
                         'id': rec.id,
-                        'default_code': rec.default_code,
-                        'sync_on': rec.sync_on,
-                        'weight': rec.weight,
+                        'default_code': rec.default_code
                     } for rec in sorted(products)],
                 }
             }
@@ -525,8 +517,6 @@ class ProductVariantInherit(models.Model):
                         'standard_price': rec.standard_price,
                         'default_code': rec.default_code,
                         'qty': rec.qty_available,
-                        'sync_on': rec.sync_on,
-                        'weight': rec.weight
                     }
                 }
 
