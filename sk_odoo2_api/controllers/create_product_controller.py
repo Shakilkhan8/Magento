@@ -38,6 +38,8 @@ class ProductAPI(http.Controller):
                 'barcode': vals.get('default_code', False),
                 'api_id': vals.get('api_id'),
                 'standard_price': vals.get('standard_price', 0),
+                'sync_on': vals.get('sync_on', False),
+                'weight': vals.get('weight', 0),
             }
 
             template = ProductTemplate.sudo().create(template_vals)
@@ -202,6 +204,8 @@ class ProductAPI(http.Controller):
                         'detailed_type': vals.get('detailed_type', False),
                         'name': vals.get('name', False),
                         'standard_price': vals.get('standard_price', False),
+                        'sync_on': vals.get('sync_on', False),
+                        'weight': vals.get('weight', 0),
 
                     })
 
@@ -244,6 +248,8 @@ class ProductAPI(http.Controller):
                         'name': vals.get('name', False),
                         'standard_price': vals.get('standard_price', 0),
                         'default_code': vals.get('default_code', False),
+                        'sync_on': vals.get('sync_on', False),
+                        'weight': vals.get('weight', 0),
                     })
 
                     return {
