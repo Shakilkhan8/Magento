@@ -511,6 +511,7 @@ class ProductVariantInherit(models.Model):
                         'product_id': product_id,
                         'name': rec.name,
                         'lst_price': rec.list_price,
+                        'api_id': rec.product_tmpl_id.id,
                         'image_1920': rec.image_1920.decode('utf-8') if rec.image_1920 else False,
                         'barcode': rec.barcode,
                         'detailed_type': rec.detailed_type,
