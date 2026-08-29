@@ -429,11 +429,11 @@ class ProductVariantInherit(models.Model):
 
 
     def write(self, vals):
-        
-        if self.product_tmpl_id.sync_on:
-            vals['sync_on'] = True
-        else:
-            vals['sync_on'] = False
+
+        # if self.product_tmpl_id.sync_on:
+        #     vals['sync_on'] = True
+        # else:
+        #     vals['sync_on'] = False
 
         res = super().write(vals)
 
