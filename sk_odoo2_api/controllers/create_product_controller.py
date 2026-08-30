@@ -53,100 +53,209 @@ class ProductAPI(http.Controller):
             return {'status': 'error', 'message': str(e)}
 
 
+    # @http.route('/api/create-product-variant', type='json', auth='public', methods=['POST'], csrf=False)
+    # def create_product_variant(self, **kwargs):
+    #
+    #     data = request.httprequest.json.get('data', {})
+    #
+    #     template = request.env["product.template"].sudo().search(
+    #         [("api_id", "=", data.get("api_id"))],
+    #         limit=1
+    #     )
+    #
+    #     if not template:
+    #         return {
+    #             "success": False,
+    #             "message": "Product template not found."
+    #         }
+    #
+    #     grouped_attributes = defaultdict(list)
+    #
+    #     for line in data.get("attribute_values", []):
+    #
+    #         attribute = request.env["product.attribute"].sudo().search(
+    #             [("name", "=", line["attribute"])],
+    #             limit=1
+    #         )
+    #
+    #         if not attribute:
+    #             attribute = request.env["product.attribute"].sudo().create({
+    #                 "name": line["attribute"],
+    #                 "create_variant": "always",
+    #             })
+    #
+    #         value = request.env["product.attribute.value"].sudo().search(
+    #             [
+    #                 ("attribute_id", "=", attribute.id),
+    #                 ("name", "=", line["value"])
+    #             ],
+    #             limit=1
+    #         )
+    #
+    #         if not value:
+    #             value = request.env["product.attribute.value"].sudo().create({
+    #                 "attribute_id": attribute.id,
+    #                 "name": line["value"],
+    #             })
+    #         grouped_attributes[attribute.id].append(value.id)
+    #
+    #     vals = {
+    #         "attribute_line_ids": []
+    #     }
+    #
+    #     for attribute_id, value_ids in grouped_attributes.items():
+    #         existing_line = template.attribute_line_ids.filtered(
+    #             lambda l: l.attribute_id.id == attribute_id
+    #         )
+    #
+    #         if existing_line:
+    #             old_values = existing_line.value_ids.ids
+    #             new_values = list(set(old_values + value_ids))
+    #
+    #             existing_line.write({
+    #                 "value_ids": [(6, 0, new_values)]
+    #             })
+    #
+    #         else:
+    #             vals["attribute_line_ids"].append(
+    #                 (
+    #                     0,
+    #                     0,
+    #                     {
+    #                         "attribute_id": attribute_id,
+    #                         "value_ids": [(6, 0, value_ids)]
+    #                     }
+    #                 )
+    #             )
+    #
+    #     variant_ids = data.get('variant_ids') or []
+    #     ids_and_values = data.get('ids_and_values') or []
+    #
+    #     for rec in sorted(template.product_variant_ids):
+    #         if not variant_ids:
+    #             break
+    #
+    #         new_api_id = variant_ids.pop(0)
+    #         extra_vals = ids_and_values.pop(0) if ids_and_values else {}
+    #
+    #         rec.write({
+    #             'api_id': new_api_id,
+    #             'sync_on': extra_vals.get('sync_on', template.sync_on),
+    #             'weight': extra_vals.get('weight', 0),
+    #         })
+    #
+    #     return {
+    #         'message': template.product_variant_ids.ids
+    #     }
+
+    #lates code
     @http.route('/api/create-product-variant', type='json', auth='public', methods=['POST'], csrf=False)
     def create_product_variant(self, **kwargs):
+        try:
+            data = request.httprequest.json.get('data', {})
 
-        data = request.httprequest.json.get('data', {})
-
-        template = request.env["product.template"].sudo().search(
-            [("api_id", "=", data.get("api_id"))],
-            limit=1
-        )
-
-        if not template:
-            return {
-                "success": False,
-                "message": "Product template not found."
-            }
-
-        grouped_attributes = defaultdict(list)
-
-        for line in data.get("attribute_values", []):
-
-            attribute = request.env["product.attribute"].sudo().search(
-                [("name", "=", line["attribute"])],
+            template = request.env["product.template"].sudo().search(
+                [("api_id", "=", data.get("api_id"))],
                 limit=1
             )
 
-            if not attribute:
-                attribute = request.env["product.attribute"].sudo().create({
-                    "name": line["attribute"],
-                    "create_variant": "always",
-                })
+            if not template:
+                return {
+                    "success": False,
+                    "message": "Product template not found."
+                }
 
-            value = request.env["product.attribute.value"].sudo().search(
-                [
-                    ("attribute_id", "=", attribute.id),
-                    ("name", "=", line["value"])
-                ],
-                limit=1
-            )
+            grouped_attributes = defaultdict(list)
 
-            if not value:
-                value = request.env["product.attribute.value"].sudo().create({
-                    "attribute_id": attribute.id,
-                    "name": line["value"],
-                })
-            grouped_attributes[attribute.id].append(value.id)
+            for line in data.get("attribute_values", []):
 
-        vals = {
-            "attribute_line_ids": []
-        }
-
-        for attribute_id, value_ids in grouped_attributes.items():
-            existing_line = template.attribute_line_ids.filtered(
-                lambda l: l.attribute_id.id == attribute_id
-            )
-
-            if existing_line:
-                old_values = existing_line.value_ids.ids
-                new_values = list(set(old_values + value_ids))
-
-                existing_line.write({
-                    "value_ids": [(6, 0, new_values)]
-                })
-
-            else:
-                vals["attribute_line_ids"].append(
-                    (
-                        0,
-                        0,
-                        {
-                            "attribute_id": attribute_id,
-                            "value_ids": [(6, 0, value_ids)]
-                        }
-                    )
+                attribute = request.env["product.attribute"].sudo().search(
+                    [("name", "=", line["attribute"])],
+                    limit=1
                 )
 
-        variant_ids = data.get('variant_ids') or []
-        ids_and_values = data.get('ids_and_values') or []
+                if not attribute:
+                    attribute = request.env["product.attribute"].sudo().create({
+                        "name": line["attribute"],
+                        "create_variant": "always",
+                    })
 
-        for rec in sorted(template.product_variant_ids):
-            if not variant_ids:
-                break
+                value = request.env["product.attribute.value"].sudo().search(
+                    [
+                        ("attribute_id", "=", attribute.id),
+                        ("name", "=", line["value"])
+                    ],
+                    limit=1
+                )
 
-            new_api_id = variant_ids.pop(0)
-            extra_vals = ids_and_values.pop(0) if ids_and_values else {}
+                if not value:
+                    value = request.env["product.attribute.value"].sudo().create({
+                        "attribute_id": attribute.id,
+                        "name": line["value"],
+                    })
+                grouped_attributes[attribute.id].append(value.id)
 
-            rec.write({
-                'api_id': new_api_id,
-                'sync_on': extra_vals.get('sync_on', template.sync_on),
-                'weight': extra_vals.get('weight', 0),
-            })
+            vals = {
+                "attribute_line_ids": []
+            }
 
-        return {
-            'message': template.product_variant_ids.ids
-        }
+            for attribute_id, value_ids in grouped_attributes.items():
+                existing_line = template.attribute_line_ids.filtered(
+                    lambda l: l.attribute_id.id == attribute_id
+                )
+
+                if existing_line:
+                    old_values = existing_line.value_ids.ids
+                    new_values = list(set(old_values + value_ids))
+
+                    existing_line.write({
+                        "value_ids": [(6, 0, new_values)]
+                    })
+
+                else:
+                    vals["attribute_line_ids"].append(
+                        (
+                            0,
+                            0,
+                            {
+                                "attribute_id": attribute_id,
+                                "value_ids": [(6, 0, value_ids)]
+                            }
+                        )
+                    )
+
+            if vals["attribute_line_ids"]:
+                # skip_api_sync=True -> Odoo ka apna automatic variant-creation
+                # flow is write se trigger hoga, lekin humara product.product
+                # create()/write() override outbound API call NAHI karega
+                # (warna receiving instance khud apne aap ko call karne ki
+                # koshish karti hai, jo get_session_id() fail hone par
+                # ValidationError raise kar ke poori request rollback kar deta hai)
+                template.with_context(skip_api_sync=True).write(vals)
+
+            variant_ids = data.get('variant_ids') or []
+            ids_and_values = data.get('ids_and_values') or []
+
+            for rec in sorted(template.product_variant_ids):
+                if not variant_ids:
+                    break
+
+                new_api_id = variant_ids.pop(0)
+                extra_vals = ids_and_values.pop(0) if ids_and_values else {}
+
+                rec.write({
+                    'api_id': new_api_id,
+                    'sync_on': extra_vals.get('sync_on', template.sync_on),
+                    'weight': extra_vals.get('weight', 0),
+                })
+
+            return {
+                'message': template.product_variant_ids.ids
+            }
+
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     # @http.route('/api/create-product-variant', type='json', auth='public', methods=['POST'], csrf=False)
     # def create_product_variant(self, **kwargs):
     #
