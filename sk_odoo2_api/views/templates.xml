@@ -1,0 +1,67 @@
+<odoo>
+    <data>
+
+        <!-- Inherit Form View to Modify it -->
+        <record id="partner_form_inherit_id" model="ir.ui.view">
+            <field name="name">Res Partner </field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='vat']" position="after">
+                    <field name="is_biller_partner"/>
+                </xpath>
+
+            </field>
+        </record>
+
+
+        <record id="sale_inherit_form" model="ir.ui.view">
+            <field name="name">sale.order.form</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//page[@name='other_information']" position="after">
+                   <page string="Shipping Information">
+                        <group string="Shipping Information">
+                        <field name="courier_name"/>
+                        <field name="carrier_tracking_ref" readonly="1"/>
+                        <field name="weight" readonly="1"/>
+                        <field name="shipping_weight" readonly="1"/>
+                        <field name="move_type" readonly="1"/>
+                        <field name="api_order_id" readonly="1"/>
+                    </group>
+                   </page>
+
+                </xpath>
+
+            </field>
+        </record>
+
+
+    </data>
+</odoo>
+
+
+<!--
+<group name='carrier_data' string="Shipping Information">
+                        <field name="is_return_picking" invisible="1"/>
+                        <field name="carrier_id" attrs="{'readonly': [('state', 'in', ('done', 'cancel'))]}" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="delivery_type" attrs="{'invisible':True}"/>
+                        <label for="carrier_tracking_ref"/>
+                        <div name="tracking">
+                            <field name="carrier_tracking_ref" class="oe_inline text-break" attrs="{'readonly': [('state', 'in', ('done', 'cancel'))]}"/>
+                            <button type='object' class="fa fa-arrow-right oe_link" confirm="Cancelling a delivery may not be undoable. Are you sure you want to continue?" name="cancel_shipment" string="Cancel" attrs="{'invisible':['|','|','|',('carrier_tracking_ref','=',False),('delivery_type','in', ['fixed', 'base_on_rule']),('delivery_type','=',False),('state','not in',('done'))]}"/>
+                        </div>
+                        <label for="weight" string="Weight"/>
+                        <div>
+                            <field name="weight" class="oe_inline"/>
+                            <field name="weight_uom_name" nolabel="1" class="oe_inline" style="margin-left:5px"/>
+                        </div>
+                        <label for="shipping_weight" string="Weight for shipping"/>
+                        <div>
+                            <field name="shipping_weight" class="oe_inline"/>
+                            <field name="weight_uom_name" nolabel="1" class="oe_inline" style="margin-left:5px"/>
+                        </div>
+                    </group>-->
