@@ -469,7 +469,9 @@ class ProductVariantInherit(models.Model):
                     'variant_ids': sorted(products.ids),
                     'ids_and_values': [{
                         'id': rec.id,
-                        'default_code': rec.default_code
+                        'default_code': rec.default_code,
+                        'sync_on': rec.sync_on,
+                        'weight': rec.weight,
                     } for rec in sorted(products)],
                 }
             }
@@ -510,8 +512,8 @@ class ProductVariantInherit(models.Model):
                     'data': {
                         'product_id': product_id,
                         'name': rec.name,
-                        'lst_price': rec.list_price,
                         'api_id': rec.product_tmpl_id.id,
+                        'lst_price': rec.list_price,
                         'image_1920': rec.image_1920.decode('utf-8') if rec.image_1920 else False,
                         'barcode': rec.barcode,
                         'detailed_type': rec.detailed_type,
