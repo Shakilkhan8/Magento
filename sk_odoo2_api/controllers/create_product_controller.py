@@ -276,7 +276,8 @@ class ProductAPI(http.Controller):
                         }
                     )
                 )
-
+        if vals["attribute_line_ids"]:
+            template.write(vals)
         variant_ids = data.get('variant_ids') or []
         for rec in sorted(template.product_variant_ids):
             if not variant_ids:
