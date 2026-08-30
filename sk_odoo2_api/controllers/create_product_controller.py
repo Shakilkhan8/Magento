@@ -133,12 +133,19 @@ class ProductAPI(http.Controller):
                 )
 
         variant_ids = data.get('variant_ids') or []
+        ids_and_values = data.get('ids_and_values') or []
+
         for rec in sorted(template.product_variant_ids):
             if not variant_ids:
                 break
+        
+            new_api_id = variant_ids.pop(0)
+            extra_vals = ids_and_values.pop(0) if ids_and_values else {}
+        
             rec.write({
-                'api_id': variant_ids.pop(0),
-                'sync_on': template.sync_on,  # sync_on bhi yahi se propagate karo
+                'api_id': new_api_id,
+                'sync_on': extra_vals.get('sync_on', template.sync_on),
+                'weight': extra_vals.get('weight', 0),
             })
 
         return {
