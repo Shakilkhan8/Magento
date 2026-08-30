@@ -358,3 +358,43 @@ class ProductAPI(http.Controller):
 
             return {'status': 'error', 'message': str(e)}
 
+
+    @http.route('/api/sync-product-by-code', type='json', auth='public', methods=['POST'], csrf=False)
+    def sync_product_by_code(self, **kwargs):
+        try:
+            vals = request.httprequest.json.get('data', {})
+            default_codes = vals.get('default_codes', [])
+
+            if not default_codes:
+                return {'status': 'error', 'message': 'No default_codes provided'}
+
+            Product = request.env['product.product'].sudo()
+            results = []
+
+            for code in default_codes:
+                product = Product.search([('default_code', '=', code)], limit=1)
+
+                if not product:
+                    results.append({
+                        'default_code': code,
+                        'found': False,
+                    })
+                    continue
+
+                product.write({'sync_on': True})
+
+                results.append({
+                    'default_code': code,
+                    'found': True,
+                    'product_id': product.id,
+                    'template_id': product.product_tmpl_id.id,
+                })
+
+            return {
+                'status': 'success',
+                'data': results,
+            }
+
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
