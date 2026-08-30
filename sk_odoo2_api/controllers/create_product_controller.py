@@ -11,8 +11,6 @@ class ProductAPI(http.Controller):
             vals = request.httprequest.json.get('data', {})
 
             ProductTemplate = request.env['product.template'].sudo()
-            ProductAttribute = request.env['product.attribute'].sudo()
-            ProductAttributeValue = request.env['product.attribute.value'].sudo()
 
             # --------------------------------------------------
             # Template Search
@@ -23,7 +21,7 @@ class ProductAPI(http.Controller):
             ], limit=1)
 
             # --------------------------------------------------
-            # Create Attributes / Valuesupdate-product-variant
+            # Template values
             # --------------------------------------------------
             company_id = request.env['res.company'].sudo().search([
                 ('is_api_allowed', '=', True)
@@ -42,7 +40,11 @@ class ProductAPI(http.Controller):
                 'weight': vals.get('weight', 0),
             }
 
-            template = ProductTemplate.sudo().create(template_vals)
+            if template:
+                # Existing template mile to naya banane ki bajaye USI ko update karo
+                template.with_context(skip_api_sync=True).write(template_vals)
+            else:
+                template = ProductTemplate.sudo().create(template_vals)
 
             return {
                 'status': 'success',
@@ -51,6 +53,53 @@ class ProductAPI(http.Controller):
 
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
+
+    # @http.route('/api/create_product', type='json', auth='public', methods=['POST'], csrf=False)
+    # def create_product(self, **kwargs):
+    #     try:
+    #         vals = request.httprequest.json.get('data', {})
+
+    #         ProductTemplate = request.env['product.template'].sudo()
+    #         ProductAttribute = request.env['product.attribute'].sudo()
+    #         ProductAttributeValue = request.env['product.attribute.value'].sudo()
+
+    #         # --------------------------------------------------
+    #         # Template Search
+    #         # --------------------------------------------------
+
+    #         template = ProductTemplate.search([
+    #             ('api_id', '=', vals.get('api_id'))
+    #         ], limit=1)
+
+    #         # --------------------------------------------------
+    #         # Create Attributes / Valuesupdate-product-variant
+    #         # --------------------------------------------------
+    #         company_id = request.env['res.company'].sudo().search([
+    #             ('is_api_allowed', '=', True)
+    #         ], limit=1)
+
+    #         template_vals = {
+    #             'name': vals.get('name'),
+    #             'list_price': vals.get('lst_price', 0),
+    #             'image_1920': vals.get('template_image', False),
+    #             'detailed_type': vals.get('detailed_type'),
+    #             'company_id': company_id.id,
+    #             'barcode': vals.get('default_code', False),
+    #             'api_id': vals.get('api_id'),
+    #             'standard_price': vals.get('standard_price', 0),
+    #             'sync_on': vals.get('sync_on', False),
+    #             'weight': vals.get('weight', 0),
+    #         }
+
+    #         template = ProductTemplate.sudo().create(template_vals)
+
+    #         return {
+    #             'status': 'success',
+    #             'product_id': template.id,
+    #         }
+
+    #     except Exception as e:
+    #         return {'status': 'error', 'message': str(e)}
 
 
     # @http.route('/api/create-product-variant', type='json', auth='public', methods=['POST'], csrf=False)
