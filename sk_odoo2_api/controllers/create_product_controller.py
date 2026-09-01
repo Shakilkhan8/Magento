@@ -15,7 +15,7 @@ class ProductAPI(http.Controller):
             # --------------------------------------------------
             # default_code se variant dhoondo
             # --------------------------------------------------
-            company = self.env['res.company'].sudo().search([('is_api_allowed', '=', True)], limit=1)
+            company = request.env['res.company'].sudo().search([('is_api_allowed', '=', True)], limit=1)
             variant = ProductProduct.search([
                 ('default_code', '=', vals.get('internal_reference')),
                 ('active', '=', True),
