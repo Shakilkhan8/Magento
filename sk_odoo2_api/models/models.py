@@ -188,7 +188,7 @@ class ProductProductInherit(models.Model):
     def create(self, vals_list):
         res = super().create(vals_list)
 
-        if not res.api_id and res.sync_on:
+        if not res.api_id:
             result = self.send_new_product_data(vals={
                 'name': res.name,
                 'template_image': res.image_1920,
@@ -209,7 +209,7 @@ class ProductProductInherit(models.Model):
         res = super().write(vals)
 
         for rec in self:
-            if not rec.api_id and rec.sync_on:
+            if not rec.api_id:
                 rec.update_template()
                 rec.update_variants()
         return res
@@ -425,6 +425,8 @@ class ProductVariantInherit(models.Model):
     sync_on = fields.Boolean(
         string='Syncing On',
     )
+
+
 
 
     def write(self, vals):
