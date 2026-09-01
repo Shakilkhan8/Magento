@@ -323,9 +323,14 @@ class ProductAPI(http.Controller):
 
             Product = request.env['product.product'].sudo()
             results = []
-
+            company = request.env['res.company'].sudo().search([('is_api_allowed', '=', True)], limit=1)
             for code in default_codes:
-                product = Product.search([('default_code', '=', code)], limit=1)
+                product = Product.search([
+                    ('default_code', '=', code),
+                    ('active', '=', True),
+                    ('company_id', '=', company.id),
+                ], limit=1)
+
 
                 if not product:
                     results.append({
