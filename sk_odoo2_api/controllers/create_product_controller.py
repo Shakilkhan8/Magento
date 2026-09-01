@@ -16,7 +16,8 @@ class ProductAPI(http.Controller):
             # default_code se variant dhoondo
             # --------------------------------------------------
             variant = ProductProduct.search([
-                ('default_code', '=', vals.get('internal_reference'))
+                ('default_code', '=', vals.get('internal_reference')),
+                ('active', '=', True)
             ], limit=1)
 
             if not variant:
