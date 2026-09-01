@@ -22,9 +22,6 @@ class StockPicking(models.Model):
         if not api_config:
             raise ValidationError('Please create API configuration and add all API required parameters !')
 
-        if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
-            raise ValidationError('Please add all API required parameters !')
-
         url = api_config.url + AUTH_URL
         payload = {
             "jsonrpc": "2.0",
@@ -89,9 +86,6 @@ class StockPicking(models.Model):
         api_config = self.env['api.configuration'].sudo().search([], limit=1)
         if not api_config:
             raise ValidationError('Please create API configuration and add all API required parameters !')
-
-        if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
-            raise ValidationError('Please add all API required parameters !')
 
         url = api_config.url + '/api/update-delivery'
 
@@ -383,9 +377,6 @@ class ProductProductInherit(models.Model):
         if not api_config:
             raise ValidationError('Please create API configuration and add all API required parameters !')
 
-        if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
-            raise ValidationError('Please add all API required parameters !')
-
         url = api_config.url + AUTH_URL
         payload = {
             "jsonrpc": "2.0",
@@ -425,6 +416,8 @@ class ProductVariantInherit(models.Model):
     sync_on = fields.Boolean(
         string='Syncing On',
     )
+
+
 
 
     def write(self, vals):
@@ -546,9 +539,6 @@ class ProductVariantInherit(models.Model):
         api_config = self.env['api.configuration'].sudo().search([], limit=1)
         if not api_config:
             raise ValidationError('Please create API configuration and add all API required parameters !')
-
-        if not (api_config.url and api_config.db_name and api_config.user_name and api_config.password):
-            raise ValidationError('Please add all API required parameters !')
 
         url = api_config.url + AUTH_URL
         payload = {

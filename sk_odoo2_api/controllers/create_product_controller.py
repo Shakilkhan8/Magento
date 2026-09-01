@@ -5,6 +5,50 @@ from collections import defaultdict
 
 class ProductAPI(http.Controller):
 
+    @http.route('/api/update_product_in_bulk', type='json', auth='public', methods=['POST'], csrf=False)
+    def update_product_variant_in_bulk(self, **kwargs):
+        try:
+            vals = request.httprequest.json.get('data', {})
+
+            ProductProduct = request.env['product.product'].sudo()
+
+            # --------------------------------------------------
+            # default_code se variant dhoondo
+            # --------------------------------------------------
+            company = request.env['res.company'].sudo().search([('is_api_allowed', '=', True)], limit=1)
+            variant = ProductProduct.search([
+                ('default_code', '=', vals.get('internal_reference')),
+                ('active', '=', True),
+                ('company_id', '=', company.id),
+            ], limit=1)
+
+            if not variant:
+                return {
+                    'status': 'error',
+                    'message': 'Product variant not found for internal_reference %s' % vals.get('internal_reference'),
+                }
+
+            # --------------------------------------------------
+            # Match mila to seedha update karo
+            # --------------------------------------------------
+            update_vals = {
+                'weight': vals.get('weight', variant.weight),
+                'standard_price': vals.get('standard_price', variant.standard_price),
+            }
+
+            if vals.get('image'):
+                update_vals['image_1920'] = vals.get('image')
+
+            variant.write(update_vals)
+
+            return {
+                'status': 'success',
+                'product_id': variant.id,
+            }
+
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     @http.route('/api/create_product', type='json', auth='public', methods=['POST'], csrf=False)
     def create_product(self, **kwargs):
         try:
@@ -53,150 +97,6 @@ class ProductAPI(http.Controller):
 
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
-
-    # @http.route('/api/create_product', type='json', auth='public', methods=['POST'], csrf=False)
-    # def create_product(self, **kwargs):
-    #     try:
-    #         vals = request.httprequest.json.get('data', {})
-
-    #         ProductTemplate = request.env['product.template'].sudo()
-    #         ProductAttribute = request.env['product.attribute'].sudo()
-    #         ProductAttributeValue = request.env['product.attribute.value'].sudo()
-
-    #         # --------------------------------------------------
-    #         # Template Search
-    #         # --------------------------------------------------
-
-    #         template = ProductTemplate.search([
-    #             ('api_id', '=', vals.get('api_id'))
-    #         ], limit=1)
-
-    #         # --------------------------------------------------
-    #         # Create Attributes / Valuesupdate-product-variant
-    #         # --------------------------------------------------
-    #         company_id = request.env['res.company'].sudo().search([
-    #             ('is_api_allowed', '=', True)
-    #         ], limit=1)
-
-    #         template_vals = {
-    #             'name': vals.get('name'),
-    #             'list_price': vals.get('lst_price', 0),
-    #             'image_1920': vals.get('template_image', False),
-    #             'detailed_type': vals.get('detailed_type'),
-    #             'company_id': company_id.id,
-    #             'barcode': vals.get('default_code', False),
-    #             'api_id': vals.get('api_id'),
-    #             'standard_price': vals.get('standard_price', 0),
-    #             'sync_on': vals.get('sync_on', False),
-    #             'weight': vals.get('weight', 0),
-    #         }
-
-    #         template = ProductTemplate.sudo().create(template_vals)
-
-    #         return {
-    #             'status': 'success',
-    #             'product_id': template.id,
-    #         }
-
-    #     except Exception as e:
-    #         return {'status': 'error', 'message': str(e)}
-
-
-    # @http.route('/api/create-product-variant', type='json', auth='public', methods=['POST'], csrf=False)
-    # def create_product_variant(self, **kwargs):
-    #
-    #     data = request.httprequest.json.get('data', {})
-    #
-    #     template = request.env["product.template"].sudo().search(
-    #         [("api_id", "=", data.get("api_id"))],
-    #         limit=1
-    #     )
-    #
-    #     if not template:
-    #         return {
-    #             "success": False,
-    #             "message": "Product template not found."
-    #         }
-    #
-    #     grouped_attributes = defaultdict(list)
-    #
-    #     for line in data.get("attribute_values", []):
-    #
-    #         attribute = request.env["product.attribute"].sudo().search(
-    #             [("name", "=", line["attribute"])],
-    #             limit=1
-    #         )
-    #
-    #         if not attribute:
-    #             attribute = request.env["product.attribute"].sudo().create({
-    #                 "name": line["attribute"],
-    #                 "create_variant": "always",
-    #             })
-    #
-    #         value = request.env["product.attribute.value"].sudo().search(
-    #             [
-    #                 ("attribute_id", "=", attribute.id),
-    #                 ("name", "=", line["value"])
-    #             ],
-    #             limit=1
-    #         )
-    #
-    #         if not value:
-    #             value = request.env["product.attribute.value"].sudo().create({
-    #                 "attribute_id": attribute.id,
-    #                 "name": line["value"],
-    #             })
-    #         grouped_attributes[attribute.id].append(value.id)
-    #
-    #     vals = {
-    #         "attribute_line_ids": []
-    #     }
-    #
-    #     for attribute_id, value_ids in grouped_attributes.items():
-    #         existing_line = template.attribute_line_ids.filtered(
-    #             lambda l: l.attribute_id.id == attribute_id
-    #         )
-    #
-    #         if existing_line:
-    #             old_values = existing_line.value_ids.ids
-    #             new_values = list(set(old_values + value_ids))
-    #
-    #             existing_line.write({
-    #                 "value_ids": [(6, 0, new_values)]
-    #             })
-    #
-    #         else:
-    #             vals["attribute_line_ids"].append(
-    #                 (
-    #                     0,
-    #                     0,
-    #                     {
-    #                         "attribute_id": attribute_id,
-    #                         "value_ids": [(6, 0, value_ids)]
-    #                     }
-    #                 )
-    #             )
-    #
-    #     variant_ids = data.get('variant_ids') or []
-    #     ids_and_values = data.get('ids_and_values') or []
-    #
-    #     for rec in sorted(template.product_variant_ids):
-    #         if not variant_ids:
-    #             break
-    #
-    #         new_api_id = variant_ids.pop(0)
-    #         extra_vals = ids_and_values.pop(0) if ids_and_values else {}
-    #
-    #         rec.write({
-    #             'api_id': new_api_id,
-    #             'sync_on': extra_vals.get('sync_on', template.sync_on),
-    #             'weight': extra_vals.get('weight', 0),
-    #         })
-    #
-    #     return {
-    #         'message': template.product_variant_ids.ids
-    #     }
-
 
 
     @http.route('/api/create-product-variant', type='json', auth='public', methods=['POST'], csrf=False)
@@ -423,9 +323,14 @@ class ProductAPI(http.Controller):
 
             Product = request.env['product.product'].sudo()
             results = []
-
+            company = request.env['res.company'].sudo().search([('is_api_allowed', '=', True)], limit=1)
             for code in default_codes:
-                product = Product.search([('default_code', '=', code)], limit=1)
+                product = Product.search([
+                    ('default_code', '=', code),
+                    ('active', '=', True),
+                    ('company_id', '=', company.id),
+                ], limit=1)
+
 
                 if not product:
                     results.append({
