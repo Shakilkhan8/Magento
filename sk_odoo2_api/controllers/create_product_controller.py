@@ -32,7 +32,6 @@ class ProductAPI(http.Controller):
             # Match mila to seedha update karo
             # --------------------------------------------------
             update_vals = {
-                'barcode': vals.get('barcode', variant.barcode),
                 'weight': vals.get('weight', variant.weight),
                 'standard_price': vals.get('standard_price', variant.standard_price),
             }
