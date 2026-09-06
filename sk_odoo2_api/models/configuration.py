@@ -1,4 +1,8 @@
 from odoo import api, fields, models
+import requests
+
+from odoo.exceptions import ValidationError
+
 
 class APIConfiguration(models.Model):
     _name = 'api.configuration'
@@ -27,6 +31,7 @@ class APIConfiguration(models.Model):
         string='Password',
         required=True,
     )
+
 
 class StoreDeletedSequence(models.Model):
     _name = 'store.deleted.sequence'

@@ -60,7 +60,7 @@ class ProductAPI(http.Controller):
             # Template Search
             # --------------------------------------------------
 
-            template = ProductTemplate.search([
+            template = ProductTemplate.sudo().search([
                 ('api_id', '=', vals.get('api_id'))
             ], limit=1)
 
@@ -77,7 +77,7 @@ class ProductAPI(http.Controller):
                 'image_1920': vals.get('template_image', False),
                 'detailed_type': vals.get('detailed_type'),
                 'company_id': company_id.id,
-                'barcode': vals.get('default_code', False),
+                'barcode': vals.get('barcode', False),
                 'api_id': vals.get('api_id'),
                 'standard_price': vals.get('standard_price', 0),
                 'sync_on': vals.get('sync_on', False),
@@ -86,7 +86,7 @@ class ProductAPI(http.Controller):
 
             if template:
                 # Existing template mile to naya banane ki bajaye USI ko update karo
-                template.with_context(skip_api_sync=True).write(template_vals)
+                template.sudo().write(template_vals)
             else:
                 template = ProductTemplate.sudo().create(template_vals)
 
@@ -178,6 +178,7 @@ class ProductAPI(http.Controller):
                 )
         if vals["attribute_line_ids"]:
             template.write(vals)
+
         variant_ids = data.get('variant_ids') or []
         for rec in sorted(template.product_variant_ids):
             if not variant_ids:
