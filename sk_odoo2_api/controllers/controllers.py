@@ -134,6 +134,8 @@ class OdooSyncController(http.Controller):
                 'company_id': company_id.id,
             })
 
+            sale_order.action_confirm()
+
             _logger.info("Sale order %s created via API", sale_order.name)
             return {
                 'status': 200,
