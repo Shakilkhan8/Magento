@@ -133,7 +133,8 @@ class OdooSyncController(http.Controller):
                 'order_line': order_lines,
                 'company_id': company_id.id,
             })
-            sale_order.sudo().action_confirm()
+
+            sale_order.action_confirm()
 
             _logger.info("Sale order %s created via API", sale_order.name)
             return {
