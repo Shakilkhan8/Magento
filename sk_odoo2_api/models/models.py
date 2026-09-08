@@ -156,27 +156,47 @@ class ProductProductInherit(models.Model):
         res['default_code'] = str(self.unique_sku_number() + 1)
 
         return res
-
     def unique_sku_number(self):
         company_id = self.env['res.company'].search([
             ('is_api_allowed', '=', True)
         ], limit=1)
-
+    
         if not company_id:
             return 0
         products = self.env['product.product'].search([
             ('active', '=', True),
-            ('default_code', '!=', False)
+            ('default_code', '!=', False),
+            ('company_id', '=', company_id.id),
         ])
         numbers = []
-
+    
         for product in products:
             sku = product.default_code
-            numeric_part = ''.join(char for char in sku if sku.isdigit())
+            numeric_part = ''.join(char for char in sku if char.isdigit())  # ✅ char, sku nahi
             if numeric_part:
                 numbers.append(int(numeric_part))
-
+    
         return max(numbers, default=0)
+    # def unique_sku_number(self):
+    #     company_id = self.env['res.company'].search([
+    #         ('is_api_allowed', '=', True)
+    #     ], limit=1)
+
+    #     if not company_id:
+    #         return 0
+    #     products = self.env['product.product'].search([
+    #         ('active', '=', True),
+    #         ('default_code', '!=', False)
+    #     ])
+    #     numbers = []
+
+    #     for product in products:
+    #         sku = product.default_code
+    #         numeric_part = ''.join(char for char in sku if sku.isdigit())
+    #         if numeric_part:
+    #             numbers.append(int(numeric_part))
+
+    #     return max(numbers, default=0)
 
     @api.model
     def create(self, vals_list):
