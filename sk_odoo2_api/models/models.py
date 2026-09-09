@@ -537,9 +537,7 @@ class ProductVariantInherit(models.Model):
         company_id = self.env['res.company'].search([
             ('is_api_allowed', '=', True)
         ], limit=1)
-
-        if not company_id:
-            return 0
+        
         products = self.env['product.product'].search([
             ('active', '=', True),
             ('default_code', '!=', False)
