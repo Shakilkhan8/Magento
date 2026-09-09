@@ -429,23 +429,37 @@ class ProductVariantInherit(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        products = super().create(vals_list)
-        next_no = self.unique_sku_number()
         i = 1
-        is_api = []
-        for product in products:
-
-            if product.product_tmpl_id.sync_on:
-                product.sync_on = True
+        if vals_list:
+            exist = self.env['product.product'].search([('product_tmpl_id', '=', vals_list[0]['product_tmpl_id'])])
+            if len(exist) == 1:
+                i = 0
+            elif len(vals_list) > 1:
+                i = 1
             else:
-                product.sync_on = False
+                i = 1
+        products = super().create(vals_list)
 
-            if not product.api_id:
-                is_api.append(True)
+        next_no = self.unique_sku_number()
+        if vals_list[0].get('product_template_attribute_value_ids'):
+            pass
+
+        is_api = []
+        for index, product in enumerate(products):
+            vals = vals_list[index] if index < len(vals_list) else {}
 
             if not product.default_code:
                 product.default_code = next_no + i
                 i += 1
+
+            # Odoo ka automatic variant-generation flow 'sync_on' kabhi
+            # vals mein nahi bhejta (ye related/computed nahi hai template se),
+            # isliye jab explicitly na diya ho, template ki value le lo.
+            if 'sync_on' not in vals:
+                product.sync_on = product.product_tmpl_id.sync_on
+
+            if not product.api_id:
+                is_api.append(True)
 
             att_vals = []
             for line in product.attribute_line_ids:
@@ -455,24 +469,70 @@ class ProductVariantInherit(models.Model):
                         'value': attr.name
                     })
 
-            payload = {
-                'data': {
-                    'api_id': product.product_tmpl_id.id,
-                    'attribute_values': att_vals,
-                    'variant_ids': sorted(products.ids),
-                    'ids_and_values': [{
-                        'id': rec.id,
-                        'default_code': rec.default_code,
-                        'sync_on': rec.sync_on,
-                        'weight': rec.weight,
-                    } for rec in sorted(products)],
-                }
+        payload = {
+            'data': {
+                'api_id': product.product_tmpl_id.id,
+                'attribute_values': att_vals,
+                'variant_ids': sorted(products.ids),
+                'ids_and_values': [{
+                    'id': rec.id,
+                    'default_code': rec.default_code,
+                    'sync_on': rec.sync_on,
+                    'weight': rec.weight,
+                } for rec in sorted(products)],
             }
-
-            if is_api:
-                self.product_tmpl_id.update_variants(data=payload)
+        }
+        if is_api and not self.env.context.get('skip_api_sync'):
+            self.product_tmpl_id.update_variants(data=payload)
 
         return products
+
+    # @api.model_create_multi
+    # def create(self, vals_list):
+    #     products = super().create(vals_list)
+    #     next_no = self.unique_sku_number()
+    #     i = 1
+    #     is_api = []
+    #     for product in products:
+    #
+    #         if product.product_tmpl_id.sync_on:
+    #             product.sync_on = True
+    #         else:
+    #             product.sync_on = False
+    #
+    #         if not product.api_id:
+    #             is_api.append(True)
+    #
+    #         if not product.default_code:
+    #             product.default_code = next_no + i
+    #             i += 1
+    #
+    #         att_vals = []
+    #         for line in product.attribute_line_ids:
+    #             for attr in line.value_ids:
+    #                 att_vals.append({
+    #                     'attribute': attr.attribute_id.name,
+    #                     'value': attr.name
+    #                 })
+    #
+    #         payload = {
+    #             'data': {
+    #                 'api_id': product.product_tmpl_id.id,
+    #                 'attribute_values': att_vals,
+    #                 'variant_ids': sorted(products.ids),
+    #                 'ids_and_values': [{
+    #                     'id': rec.id,
+    #                     'default_code': rec.default_code,
+    #                     'sync_on': rec.sync_on,
+    #                     'weight': rec.weight,
+    #                 } for rec in sorted(products)],
+    #             }
+    #         }
+    #
+    #         if is_api:
+    #             self.product_tmpl_id.update_variants(data=payload)
+    #
+    #     return products
 
     def unique_sku_number(self):
         company_id = self.env['res.company'].search([
