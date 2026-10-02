@@ -121,6 +121,7 @@ class ResConfigMagentoInstance(models.TransientModel):
                 'default_access_token': instance.access_token,
                 'default_company_id': instance.company_id.id,
                 'default_magento_url': instance.magento_url,
+                'default_magento_admin_url' : instance.magento_admin_url,
                 'default_is_multi_warehouse_in_magento': instance.is_multi_warehouse_in_magento,
                 'default_magento_verify_ssl': instance.magento_verify_ssl,
                 'is_already_instance_created': True,

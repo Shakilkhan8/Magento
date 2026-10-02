@@ -11,11 +11,11 @@ class SaleWorkflowProcess(models.Model):
     @api.model
     def _default_journal(self):
         """
-        It will return sales journal of company passed in context or user's company.
-        Migration done by Haresh Mori on September 2021
+        Define this method for find sales journal based on passed company in context or user's company.
+        :return: account.journal()
         """
         account_journal_obj = self.env['account.journal']
-        company_id = self._context.get('company_id', self.env.company.id)
+        company_id = self.env.context.get('company_id', self.env.company.id)
         domain = [('type', '=', "sale"), ('company_id', '=', company_id)]
         return account_journal_obj.search(domain, limit=1)
 
@@ -23,13 +23,17 @@ class SaleWorkflowProcess(models.Model):
     validate_order = fields.Boolean("Confirm Quotation", default=False,
                                     help="If it's checked, Order will be Validated.", tracking=True)
     create_invoice = fields.Boolean('Create & Validate Invoice', default=False,
-                                    help="If it's checked, Invoice for Order will be Created and Posted.", tracking=True)
-    register_payment = fields.Boolean(default=False, help="If it's checked, Payment will be registered for Invoice.", tracking=True)
+                                    help="If it's checked, Invoice for Order will be Created and Posted.",
+                                    tracking=True)
+    register_payment = fields.Boolean(default=False, help="If it's checked, Payment will be registered for Invoice.",
+                                      tracking=True)
     invoice_date_is_order_date = fields.Boolean('Force Accounting Date',
                                                 help="if it is checked then, the account journal entry will be "
                                                      "generated based on Order date and if unchecked then, "
-                                                     "the account journal entry will be generated based on Invoice Date", tracking=True)
-    journal_id = fields.Many2one('account.journal', string='Payment Journal', domain=[('type', 'in', ['cash', 'bank'])], tracking=True)
+                                                     "the account journal entry will be generated based on Invoice Date",
+                                                tracking=True)
+    journal_id = fields.Many2one('account.journal', string='Payment Journal', domain=[('type', 'in', ['cash', 'bank'])],
+                                 tracking=True)
     sale_journal_id = fields.Many2one('account.journal', string='Sales Journal', default=_default_journal,
                                       domain=[('type', '=', 'sale')], tracking=True)
     picking_policy = fields.Selection([('direct', 'Deliver each product when available'),
@@ -47,6 +51,7 @@ class SaleWorkflowProcess(models.Model):
         """
         Onchange of Confirm Quotation field.
         If 'Confirm Quotation' is unchecked, the 'Create & Validate Invoice' will be unchecked too.
+        :return:
         """
         for record in self:
             if not record.validate_order:
@@ -58,6 +63,7 @@ class SaleWorkflowProcess(models.Model):
        Onchange of Create & Validate Invoice field.
        If 'Create & Validate Invoice' is unchecked, the 'Register Payment' and 'Force Invoice Date' will be unchecked
        too.
+       :return:
        """
         for record in self:
             if not record.create_invoice:
@@ -70,7 +76,7 @@ class SaleWorkflowProcess(models.Model):
         according to the auto invoice workflow configured in sale order.
         :param auto_workflow_process_id: auto workflow process id
         :param order_ids: ids of sale orders
-        Migration done by Haresh Mori on September 2021
+        :return: True
         """
         sale_order_obj = self.env['sale.order']
         workflow_process_obj = self.env['sale.workflow.process.ept']
@@ -92,20 +98,24 @@ class SaleWorkflowProcess(models.Model):
 
     def shipped_order_workflow_ept(self, orders):
         """
-        This method is for processing the shipped orders.
+        Define this method for processing the shipped orders.
+        :param: orders: sale.order()
+        :return: True
         """
         self.ensure_one()
         stock_location_obj = self.env["stock.location"]
         product_product_obj = self.env["product.product"]
-
         mrp_module = product_product_obj.search_installed_module_ept('mrp')
         customer_location = stock_location_obj.search([("usage", "=", "customer")], limit=1)
-
         shipped_orders = orders.filtered(lambda x: x.order_line)
-
         for order in shipped_orders:
             order.state = 'sale'
+            references = order.stock_reference_ids
+            if not references:
+                self.env['stock.reference'].create({
+                    'name': order.name,
+                    'sale_ids': [(4, order.id)],
+                })
             order.auto_shipped_order_ept(customer_location, mrp_module)
-
         shipped_orders.validate_and_paid_invoices_ept(self)
         return True

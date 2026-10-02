@@ -193,7 +193,7 @@ class MagentoExportProductEpt(models.TransientModel):
         basic_details = self.m_update_basic_details
         update_description = self.m_update_description
 
-        if not update_img and not update_price and not basic_details and not update_description:
+        if not update_img and not update_price and not basic_details and not update_description and not self.magento_publish:
             raise UserError(_("Please select any of the above operation to update the product."))
 
         if not update_ids:
@@ -272,9 +272,10 @@ class MagentoExportProductEpt(models.TransientModel):
     def __prepare_conf_product_dict(self, m_template, log_line, website_id):
         product_dict = {}
         if m_template.magento_product_ids:
-            product_dict = self.__prepare_update_product_dict(m_template, log_line, False, website_id)
+            product_dict = self.__prepare_update_conf_product_dict(m_template, log_line, is_child=False)
             descriptions = self.__find_descriptions(m_template)
-            product_dict.get('product').update({'custom_attributes': descriptions})
+            for description in descriptions:
+                product_dict.get('product').get('custom_attributes').append(description)
             if self.m_update_image or self.m_update_description or self.m_update_basic_details:
                 product_dict = self.__prepare_images_dict(product_dict, m_template)
         return product_dict
@@ -295,16 +296,20 @@ class MagentoExportProductEpt(models.TransientModel):
                 product = m_product if is_child else m_template
                 descriptions = self.__find_descriptions(product)
                 m_store_view = self.__find_store_view(website_id)
-                self.__update_product_in_magento(instance, product, m_store_view, descriptions,
+                self.__update_product_in_magento(instance, m_template, m_store_view, descriptions,
                                                  product_dict)
                 product_dict.get('product').update({'name': m_template.magento_product_name})
                 product_dict = self.__prepare_images_dict(product_dict, m_template, is_child)
                 api_url = '/all/V1/products/%s' % Php.quote_sku(m_template.magento_sku)
                 self.env['magento.product.template'].update_product_request(instance, product_dict,
                                                                             api_url)
-            price_dict = self.__update_product_website_vise(instance, website_ids, product,
-                                                            product_dict)
-            self.__update_product_price_in_magento(instance, m_template, price_dict, log_line)
+                if is_child:
+                    price_dict = self.__update_product_website_vise(instance, website_ids, m_template,
+                                                                    product_dict, is_child)
+                else:
+                    price_dict = self.__update_product_website_vise(instance, website_ids, product,
+                                                                    product_dict, is_child)
+                self.__update_product_price_in_magento(instance, m_template, price_dict, log_line, is_child)
         else:
             message = "Not set any website in the product : %s" % m_template.magento_product_name
             log_line.create_common_log_line_ept(message=message, default_code=m_template.magento_sku,
@@ -336,11 +341,17 @@ class MagentoExportProductEpt(models.TransientModel):
         # and if its true then tax class with apply
         # self.magento_publish this variable used when export product
         if not is_child and product.magento_tax_class and \
-                self.m_update_basic_details or self.magento_publish in ['unpublish', 'publish']:
+                self.m_update_basic_details: #or self.magento_publish in ['unpublish', 'publish']:
             tax_dict = {
                 "attribute_code": "tax_class_id",
                 "value": product.magento_tax_class.magento_tax_class_id
             }
+        if is_child and self.m_update_basic_details:
+            if product.magento_tmpl_id.magento_tax_class:
+                tax_dict = {
+                    "attribute_code": "tax_class_id",
+                    "value": product.magento_tmpl_id.magento_tax_class.magento_tax_class_id
+                }
         return tax_dict
 
     def __find_cost_price(self, product, log_line, is_child, website_id):
@@ -361,7 +372,7 @@ class MagentoExportProductEpt(models.TransientModel):
             m_instance = product.magento_instance_id
             m_product = product.magento_product_ids
         product_cost_price = m_template_obj.get_scope_wise_product_price(
-            m_instance, log_line, m_product, website_id.cost_pricelist_id)
+            m_instance, log_line, m_product, website_id.cost_pricelist_id, cost_price=True)
         if product_cost_price and self.update_price or self.magento_publish in ['publish',
                                                                                     'unpublish']:
             cost_dict = {
@@ -393,14 +404,13 @@ class MagentoExportProductEpt(models.TransientModel):
         return custom_attributes
 
     def __prepare_update_product_dict(self, m_template, log_line, is_child, website_id):
-        cost_price = 0.0
         categories = self.__find_m_categories(m_template, is_child)
         tax_class = self.__find_tax_class(m_template, is_child)
-        if m_template.product_type == 'simple' and self.update_price:
-            cost_price = self.__find_cost_price(m_template, log_line, is_child, website_id)
+        cost_price = self.__find_cost_price(m_template, log_line, is_child, website_id)
         update_product_dict = {
             "product": {
                 "name": m_template.magento_product_name,
+                "status": 1 if self.magento_publish == "publish" else 0,
                 "extension_attributes": {
                 },
                 "custom_attributes": []
@@ -415,12 +425,31 @@ class MagentoExportProductEpt(models.TransientModel):
             update_product_dict.get('product').get('custom_attributes').append(cost_price)
         return update_product_dict
 
-    def __update_product_website_vise(self, instance, website_ids, product, product_dict):
+    def __prepare_update_conf_product_dict(self, m_template, log, is_child):
+        categories = self.__find_m_categories(m_template, is_child)
+        tax_class = self.__find_tax_class(m_template, is_child)
+        update_product_dict = {
+            "product": {
+                "name": m_template.magento_product_name,
+                "status": 1 if self.magento_publish == "publish" else 0,
+                "extension_attributes": {
+                },
+                "custom_attributes": []
+            }
+        }
+        if categories:
+            update_product_dict.get('product').get('extension_attributes').update(
+                {'category_links': categories})
+        if tax_class:
+            update_product_dict.get('product').get('custom_attributes').append(tax_class)
+        return update_product_dict
+
+    def __update_product_website_vise(self, instance, website_ids, product, product_dict, is_child):
         price_dict = []
         for website in website_ids:
             m_store_view = self.__find_store_view(website)
             price_dict = self.__prepare_update_website_price_dict(
-                instance, website, m_store_view, product, price_dict)
+                instance, website, m_store_view, product, price_dict, is_child)
         return price_dict
 
     def __update_product_in_magento(self, instance, product, m_store_view, custom_attrs,
@@ -438,8 +467,7 @@ class MagentoExportProductEpt(models.TransientModel):
                 self.env['magento.product.template'].update_product_request(
                     instance, product_dict, api_url)
 
-    def __prepare_product_price_dict(self, price_list, m_template, store_view_id):
-        is_it_child = False
+    def __prepare_product_price_dict(self, price_list, m_template, store_view_id, is_it_child=False):
         m_product = self.env['magento.product.template'].get_simple_product(is_it_child,
                                                                             m_template)
         product_price = price_list._get_product_price(m_product.odoo_product_id,
@@ -451,24 +479,24 @@ class MagentoExportProductEpt(models.TransientModel):
         return price_vals
 
     def __prepare_update_website_price_dict(self, instance, website, m_store_view, m_template,
-                                            price_dict):
+                                            price_dict, is_child):
         if self.update_price and instance.catalog_price_scope == 'website' and m_store_view:
             currency = website.magento_base_currency.id
             for store_view in m_store_view:
                 pricelist = website.pricelist_id.filtered(lambda x: x.currency_id.id == currency)
                 if pricelist:
                     price_vals = self.__prepare_product_price_dict(
-                        pricelist, m_template, store_view.magento_storeview_id)
+                        pricelist, m_template, store_view.magento_storeview_id, is_child)
                     price_dict.append(price_vals)
         return price_dict
 
-    def __update_product_price_in_magento(self, instance, m_template, price_dict, log_line):
+    def __update_product_price_in_magento(self, instance, m_template, price_dict, log_line, is_child):
         if self.update_price:
             if instance.catalog_price_scope == 'global':
                 _logger.info("Instance %s price scope is Global. ", instance.name)
                 if instance.pricelist_id:
                     price_vals = self.__prepare_product_price_dict(
-                        instance.pricelist_id, m_template, 0)
+                        instance.pricelist_id, m_template, 0, is_child)
                     price_dict.append(price_vals)
                 else:
                     message = "Price scope is Global, "
@@ -759,7 +787,7 @@ class MagentoExportProductEpt(models.TransientModel):
         for website in website_ids:
             m_store_view = self.__find_store_view(website)
             product_cost_price = m_template.get_scope_wise_product_price(
-                instance, log_line, conf_simple_product, website.cost_pricelist_id)
+                instance, log_line, conf_simple_product, website.cost_pricelist_id, cost_price=True)
             data.get('product', dict()).get('custom_attributes').append({
                 "attribute_code": "cost",
                 "value": product_cost_price
@@ -864,7 +892,7 @@ class MagentoExportProductEpt(models.TransientModel):
         }
         if categories:
             data.get('product').get('extension_attributes').update({'category_links': categories})
-        if tax_class and tax_class.get('value'):
+        if tax_class:
             data.get('product', dict()).get('custom_attributes').append(tax_class)
         return data
 

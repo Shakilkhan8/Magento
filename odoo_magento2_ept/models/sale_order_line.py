@@ -24,22 +24,25 @@ class SaleOrderLine(models.Model):
             if line.get('product_type') in ['configurable', 'bundle']:
                 continue
             product = line.get('line_product')
-            price = self.__find_order_item_price(item, line)
+            price = self.__find_order_item_price(item, line, instance)
             customer_option = self.__get_custom_option(item, line)
             line_vals = self.with_context(custom_options=customer_option).prepare_order_line_vals(
-                item, line, product, price)
+                item, line, product, price, instance)
             order_line = self.create(line_vals)
             order_line.with_context(round=rounding)._compute_amount()
             self.__create_line_desc_note(customer_option, item.get('sale_order_id'))
         return True
 
-    def __find_order_item_price(self, item, order_line):
+    def __find_order_item_price(self, item, order_line, instance):
         tax_type = item.get('website').tax_calculation_method
         if tax_type == 'including_tax':
-            price = self.__get_price(order_line, 'price_incl_tax')
+            price = self.__get_price(order_line, 'base_price_incl_tax') if instance.is_order_base_currency else self.__get_price(
+                order_line, 'price_incl_tax')
         else:
-            price = self.__get_price(order_line, 'price')
-        original_price = self.__get_price(order_line, 'original_price')
+            price = self.__get_price(order_line, 'base_price') if instance.is_order_base_currency else self.__get_price(
+                order_line, 'price')
+        original_price = self.__get_price(order_line, 'base_original_price') if instance.is_order_base_currency else self.__get_price(
+            order_line, 'original_price')
         item_price = price if price != original_price else original_price
         return item_price
 
@@ -62,7 +65,7 @@ class SaleOrderLine(models.Model):
     def find_order_item(self, items, instance, log_line, line_id):
         for item in items.get('items'):
             if item.get('product_type') == 'bundle' and 'bundle_ept' in list(self.env.context.keys()):
-                return False
+                continue
             product_sku = item.get('sku')
             magento_product = self.env['magento.product.product'].search([
                 '|', ('magento_product_id', '=', item.get('product_id')),
@@ -97,12 +100,12 @@ class SaleOrderLine(models.Model):
     def __get_custom_option(self, item, line):
         custom_options = ''
         description = self._find_option_desc(item, line.get('item_id'))
-        if description and line.get('line_product'):
+        if description:
             product_name = _("Custom Option for Product : %s \n" % line.get('line_product').name)
             custom_options = product_name + description
         return custom_options
 
-    def prepare_order_line_vals(self, item, line, product, price):
+    def prepare_order_line_vals(self, item, line, product, price, instance):
         order_qty = float(line.get('qty_ordered', 1.0))
         sale_order = item.get('sale_order_id')
         order_line_ref = line.get('parent_item_id') or line.get('item_id')
@@ -111,8 +114,8 @@ class SaleOrderLine(models.Model):
             'product_id': product.id,
             'company_id': sale_order.company_id.id,
             'name': item.get('name'),
-            'description': product.name if product else (sale_order and sale_order.name) or 'sale',
-            'product_uom': product.uom_id.id if product else False,
+            'description': product.name or (sale_order and sale_order.name),
+            'product_uom': product.uom_id.id,
             'order_qty': order_qty,
             'price_unit': price,
         }
@@ -120,12 +123,13 @@ class SaleOrderLine(models.Model):
         line_vals.update({
             'magento_sale_order_line_ref': order_line_ref,
         })
-        if item.get(f'order_tax_{line.get("item_id")}'):
-            line_vals.update({'tax_id': [(6, 0, item.get(f'order_tax_{line.get("item_id")}'))]})
-        elif line.get('tax_percent', 0.0):
-            pass
-        else:
-            line_vals.update({'tax_id': False})
+        if instance.magento_apply_tax_in_order == 'create_magento_tax':
+            if item.get(f'order_tax_{line.get("item_id")}'):
+                line_vals.update({'tax_id': [(6, 0, item.get(f'order_tax_{line.get("item_id")}'))]})
+            elif line.get('tax_percent', 0.0):
+                pass
+            else:
+                line_vals.update({'tax_id': False})
         return line_vals
 
     def __find_sales_taxes(self, percent, tax_type, instance, apply_tax):

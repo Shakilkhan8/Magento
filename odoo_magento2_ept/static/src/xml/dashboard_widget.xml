@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Template for dashboard widget extension -->
+    <!-- Note: t-extend is not supported in static XML files in Odoo 19 -->
+    <!-- If you need to remove the refund button, consider using JavaScript or CSS -->
+    <!-- This file is kept for future reference or custom template extensions -->
+</templates>
 
-<template>
-    <!-- Remove Refund button from the dashboard -->
-    <t t-extend="graph_dashboard_ept">
-        <t t-jquery="#instance_refund" t-operation="replace" />
-    </t>
-</template>

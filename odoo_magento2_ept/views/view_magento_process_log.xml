@@ -32,7 +32,7 @@
     <record id="action_magento_process_log_lines_ept" model="ir.actions.act_window">
         <field name="name">Log Lines</field>
         <field name="res_model">common.log.lines.ept</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <!--        <field name="domain">[('magento_instance_id','!=',False)]</field>-->
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">

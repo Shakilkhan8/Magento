@@ -9,17 +9,18 @@ class ReturnPicking(models.TransientModel):
     """
     _inherit = "stock.return.picking"
 
-    sale_order_id = fields.Many2one("sale.order")
+    sale_order_ept_id = fields.Many2one("sale.order")
 
-    @api.onchange('sale_order_id')
+    @api.onchange('sale_order_ept_id')
     def _onchange_sale_order_id(self):
         """
         When return picking wizard will be opened from Sale order, fields has to be set from the direct moves.
+        :return:
         """
-        move_dest_exists = False
+        # move_dest_exists = False
         moves = []
         product_return_moves = [(5,)]
-        order = self.sale_order_id
+        order = self.sale_order_ept_id
         if order and order.moves_count:
             moves = self.env["stock.move"].search(
                 [('picking_id', '=', False), ('sale_line_id', 'in', order.order_line.ids)])
@@ -33,25 +34,27 @@ class ReturnPicking(models.TransientModel):
                 continue
             if move.scrapped:
                 continue
-            if move.move_dest_ids:
-                move_dest_exists = True
+            # if move.move_dest_ids:
+            #     move_dest_exists = True
             product_return_moves_data = dict(product_return_moves_data_tmpl)
             product_return_moves_data.update(self._prepare_stock_return_picking_line_vals_from_move(move))
             product_return_moves.append((0, 0, product_return_moves_data))
         if order:
             self.product_return_moves = product_return_moves
-            self.move_dest_exists = move_dest_exists
+            # self.move_dest_exists = move_dest_exists
             warehouse = order.warehouse_id
-            self.parent_location_id = warehouse and warehouse.view_location_id.id or move.location_id.location_id.id
-            self.original_location_id = move.location_id.id
+            # self.parent_location_id = warehouse and warehouse.view_location_id.id or move.location_id.location_id.id
+            # self.original_location_id = move.location_id.id
             location_id = move.location_id.id
-            if warehouse.out_type_id.return_picking_type_id.default_location_dest_id.return_location:
+            if warehouse.out_type_id.return_picking_type_id.default_location_dest_id:
                 location_id = warehouse.out_type_id.return_picking_type_id.default_location_dest_id.id
-            self.location_id = location_id
+            # self.location_dest = location_id
+            self.company_id = order.company_id.id
 
     def create_returns_ept(self):
         """
         Creates return picking for the direct shipped moves.
+        :return: ir.actions.act_window()
         @note: Same as base method but with Customisation.
         """
         for wizard in self:
@@ -59,7 +62,7 @@ class ReturnPicking(models.TransientModel):
         # Override the context to disable all the potential filters that could have been set previously
         ctx = dict(self.env.context)
         ctx.update({
-            'default_partner_id': self.sale_order_id.partner_shipping_id.id,
+            'default_partner_id': self.picking_id.partner_id.id,
             'search_default_picking_type_id': pick_type_id,
             'search_default_draft': False,
             'search_default_assigned': False,
@@ -70,7 +73,7 @@ class ReturnPicking(models.TransientModel):
         })
         return {
             'name': _('Returned Picking'),
-            'view_mode': 'form,tree,calendar',
+            'view_mode': 'form,list,calendar',
             'res_model': 'stock.picking',
             'res_id': new_picking_id,
             'type': 'ir.actions.act_window',
@@ -80,32 +83,35 @@ class ReturnPicking(models.TransientModel):
     def _create_returns_ept(self):
         """
         Creates return picking and return move from the wizard for selected moves.
+        :return: stock.picking(), stock picking type
         @note: Same as base method but with Customisation.
         """
         # TODO sle: the unreserve of the next moves could be less brutal
         if not self.product_return_moves:
             raise UserError(_("Please specify at least one non-zero quantity."))
+
         for return_move in self.product_return_moves.mapped('move_id'):
             return_move.move_dest_ids.filtered(lambda m: m.state not in ('done', 'cancel'))._do_unreserve()
 
         # create new picking for returned products
-        order = self.sale_order_id
+        order = self.sale_order_ept_id
         picking_type_id = order.warehouse_id.out_type_id.return_picking_type_id.id
-        new_picking_vals = {
-            'move_ids': [],
+        new_picking_vals = self._prepare_picking_default_values()
+        new_picking_vals.update({
             'picking_type_id': picking_type_id,
-            'state': 'draft',
             'origin': _("Return of %s", order.name),
             'location_id': return_move.location_dest_id.id,
             "sale_id": order.id,
             "partner_id": order.partner_shipping_id.id
-        }
-        if self.location_id.id:
-            new_picking_vals.update({'location_dest_id': self.location_id.id})
+        })
+        # if self.location_id.id:
+        new_picking_vals.update({'location_dest_id': return_move.location_id.id})
         new_picking = self.picking_id.create(new_picking_vals)
-        new_picking.message_post_with_view('mail.message_origin_link',
-                                           values={'self': new_picking, 'origin': order},
-                                           subtype_id=self.env.ref('mail.mt_note').id)
+        new_picking.message_post_with_source(
+            'mail.message_origin_link',
+            render_values={'self': new_picking, 'origin': order},
+            subtype_xmlid='mail.mt_note',
+        )
         returned_lines = 0
         group = self.env["procurement.group"].create({"name": order.name, "sale_id": order.id,
                                                       "partner_id": order.partner_id.id})
@@ -115,7 +121,7 @@ class ReturnPicking(models.TransientModel):
             # TODO sle: float_is_zero?
             if return_line.quantity:
                 returned_lines += 1
-                vals = self._prepare_move_default_values(return_line, new_picking)
+                vals = return_line._prepare_move_default_values(new_picking)
                 vals.update({"warehouse_id": order.warehouse_id.id,
                              "group_id": group.id,
                              "to_refund": return_line.to_refund})

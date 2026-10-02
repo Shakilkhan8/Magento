@@ -10,7 +10,6 @@
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">5</field>
         <field name="interval_type">minutes</field>
-        <field name="numbercall">-1</field>
     </record>
 
     <!--This is used for process the product queue data "Parent Cron".-->
@@ -22,7 +21,6 @@
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">5</field>
         <field name="interval_type">minutes</field>
-        <field name="numbercall">-1</field>
     </record>
 
     <!--This is used for process the Customer queue data.-->
@@ -34,7 +32,6 @@
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">5</field>
         <field name="interval_type">minutes</field>
-        <field name="numbercall">-1</field>
     </record>
 
     <record id="magento_ir_cron_to_process_export_stock_queue_data" model="ir.cron">
@@ -45,7 +42,6 @@
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">15</field>
         <field name="interval_type">minutes</field>
-        <field name="numbercall">-1</field>
     </record>
 
 </odoo>

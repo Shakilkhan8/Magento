@@ -58,7 +58,7 @@ class MagentoExportStockLineEpt(models.Model):
         for line in self:
             is_processed = magento_product.export_magento_stock(line, api_url, log_line)
             if is_processed:
-                line.write({'state': 'done', 'processed_at': datetime.now()})
+                line.write({'state': 'done', 'processed_at': datetime.now(), 'data': False})
             else:
                 line.write({'state': 'failed', 'processed_at': datetime.now()})
             self._cr.commit()

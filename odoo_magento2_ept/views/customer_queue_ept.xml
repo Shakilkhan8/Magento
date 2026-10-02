@@ -9,16 +9,16 @@
                     <button name="%(odoo_magento2_ept.action_wizard_magento_import_customer)d"
                             string="Process Queue Manually"
                             type="action" class="btn-primary"
-                            attrs="{'invisible':['|',('is_process_queue', '=', True),('state','in',('completed'))]}"/>
+                            invisible="['|',('is_process_queue', '=', True),('state','in',('completed'))]"/>
                     <button name="%(odoo_magento2_ept.action_wizard_set_to_completed_customer_queue)d"
                             string="SET TO COMPLETED"
                             type="action" class="btn-primary"
-                            attrs="{'invisible':['|',('is_process_queue', '=', True),('state','in',('completed'))]}"/>
+                            invisible="['|',('is_process_queue', '=', True),('state','in',('completed'))]"/>
                     <field name="state" widget="statusbar"/>
                     <field name="is_process_queue" invisible="1"/>
                 </header>
                 <div class="alert alert-danger" role="alert" style="margin-bottom:0px;"
-                     attrs="{'invisible': ['|',('is_action_require','=',False),('state','=','done')]}">
+                     invisible="['|',('is_action_require','=',False),('state','=','done')]">
                     <strong>
                         Need to process the queue manually.
                         As this queue has been tried to process 3 times by automated action, but
@@ -51,7 +51,7 @@
                         <button id="customer_queue_line_failed_count"
                                 class="oe_stat_button"
                                 icon="fa-times" disabled="1"
-                                attrs="{'invisible':[('state', 'in', ['partially_completed'])]}">
+                                invisible="[('state', 'in', ['partially_completed'])]">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_value">
                                     <field name="failed_count"/>
@@ -62,7 +62,7 @@
 
                         <button id="customer_queue_line_failed_count"
                                 class="oe_stat_button" disabled="1"
-                                attrs="{'invisible':[('state', 'not in', ['partially_completed'])]}">
+                                invisible="[('state', 'not in', ['partially_completed'])]">
                             <span class="fa-stack fa-lg"
                                   style="padding-top: 6px; margin-left:2px; margin-top:2PX; font-size: 22px; color:#ff0000;">
                                 <i title="Failed" class="fa fa-times-circle"
@@ -74,7 +74,7 @@
                         <button id="customer_queue_line_done_count"
                                 class="oe_stat_button"
                                 icon="fa-check" disabled="1"
-                                attrs="{'invisible':[('state', 'in', ['completed'])]}">
+                                invisible="[('state', 'in', ['completed'])]">
                             <div class="o_field_widget o_stat_info">
                                 <span class="o_stat_value">
                                     <field name="done_count"/>
@@ -85,7 +85,7 @@
 
                         <button id="customer_queue_line_done_count"
                                 class="oe_stat_button" disabled="1"
-                                attrs="{'invisible':[('state', 'not in', ['completed'])]}">
+                                invisible="[('state', 'not in', ['completed'])]">
                             <span class="fa-stack fa-lg"
                                   style="padding-top: 6px; margin-left:15px; color:#00A04A;">
                                 <i title="Done" class="fa fa-check fa-stack-1x"
@@ -118,9 +118,9 @@
                         </div>
                     </div>
                     <widget name="web_ribbon" text="Processed"
-                            attrs="{'invisible': [('state','!=','completed')]}"/>
+                            invisible="state != 'completed'"/>
                     <widget name="web_ribbon" text="Processing..."
-                            attrs="{'invisible':[('is_process_queue', '=', False)]}"/>
+                            invisible="is_process_queue == False"/>
                     <group>
                         <group>
                             <field name="instance_id"/>
@@ -135,7 +135,7 @@
                     <notebook>
                         <page string="Data Lines">
                             <field name="line_ids">
-                                <tree create="false" editable="bottom"
+                                <list create="false" editable="bottom"
                                       decoration-danger="state=='failed'"
                                       decoration-success="state=='done'"
                                       decoration-info="state=='draft'">
@@ -144,15 +144,15 @@
                                     <field name="processed_at"/>
                                     <field name="data" invisible="1"/>
                                     <field name="state"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         <page string="Log Lines">
                             <field name="log_lines_ids">
-                                <tree create="false" editable="bottom">
+                                <list create="false" editable="bottom">
                                     <field name="magento_customer_data_queue_line_id"/>
                                     <field name="message"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                     </notebook>
@@ -171,8 +171,8 @@
         <field name="name">magento.customer.data.queue.ept.tree</field>
         <field name="model">magento.customer.data.queue.ept</field>
         <field name="arch" type="xml">
-            <tree create="0" delete="1" default_order="id desc"
-                  js_class="queue_line_ept_dashboard">
+            <list create="0" delete="1" default_order="id desc">
+                <!-- js_class="queue_line_ept_dashboard" temporarily removed due to Odoo 19 compatibility issue with common_connector_library -->
                 <header>
                     <button name="%(odoo_magento2_ept.action_wizard_magento_import_customer)d"
                             string="Process Queue"
@@ -185,8 +185,8 @@
                 <field name="is_process_queue" invisible="1"/>
                 <field name="is_action_require" invisible="1"/>
                 <field name="running_status"
-                       attrs="{'invisible':[('is_process_queue', '=', False)]}"/>
-            </tree>
+                       invisible="is_process_queue == False"/>
+            </list>
         </field>
     </record>
 
@@ -206,10 +206,10 @@
                 <filter string="Partial" name="partially_completed"
                         domain="[('state', '=', 'partially_completed')]"/>
                 <filter string="Failed" name="failed" domain="[('state', '=', 'failed')]"/>
-                <group expand="0" string="Group By">
-                    <filter string="Instance" name="group_by_instance"
+                <group>
+                    <filter string="Instance" name="group_by_instance" domain="[]"
                             context="{'group_by': 'instance_id'}"/>
-                    <filter string="State" name="group_by_state"
+                    <filter string="State" name="group_by_state" domain="[]"
                             context="{'group_by': 'state'}"/>
                 </group>
             </search>
@@ -219,7 +219,7 @@
     <record id="action_magento_customer_data_queue_ept" model="ir.actions.act_window">
         <field name="name">Customer Data Queues</field>
         <field name="res_model">magento.customer.data.queue.ept</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_magento_customer_data_queue_ept_tree"/>
         <field name="search_view_id" ref="view_magento_customer_data_queue_ept_filter"/>
         <field name="context">{'search_default_draft':

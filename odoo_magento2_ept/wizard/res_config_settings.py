@@ -200,7 +200,7 @@ class ResConfigSettings(models.TransientModel):
         help="Note : Magento2 supports Tax Calculation Method Based On – Total, Row Total, or Unit price. "
              "\nUnit price – this means that Magento will calculate tax on each quantity of each product in the cart, then round those-up and add them together.In Odoo, rounding is only supported per line and rounding globally, it doesn't support rounding based on unit price."
              "\nHere, set the tax calculation method based on the Magento2 Tax calculation method (Magento2 admin panel > Stores > Settings >Configuration > Sales > Tax > Calculation Settings > Tax Calculation Method Based on)")
-    magento_analytic_account_id = fields.Many2one('account.analytic.account', string='Magento Analytic Account',
+    magento_analytic_account_id = fields.Many2one('account.analytic.account', string='Analytic Account',
                                                   help='Set the Analytic account for Magento orders. '
                                                        '\n- The configuration of the analytic account for this instance will be applied to all sales orders created by the connector. With this configuration, the Analytic Default Rule configured in Odoo will not apply to Magento2 orders. '
                                                        '\n- If you wish to use Odoo Analytic Default Rule, you will not have to configure any anaytic account here.')
@@ -211,13 +211,15 @@ class ResConfigSettings(models.TransientModel):
 
     m_website_analytic_account_id = fields.Many2one('account.analytic.account',
                                                     string='Website Analytic Account')
-    magento_show_net_profit_report = fields.Boolean(string='Net Profit Report',
-                                            config_parameter="odoo_magento2_ept.magento_show_net_profit_report")
+    magento_show_net_profit_report = fields.Boolean(string='Magento Net Profit Report',
+                                                    config_parameter="odoo_magento2_ept.magento_show_net_profit_report")
     is_magento_digest = fields.Boolean(string="Send Periodic Digest?", help='If checked, Then it will send periodic '
                                                                             'digest per KPI.')
     import_customer_as_company = fields.Boolean(string="Import Customer as a Company",
                                                 default=False,
                                                 help="if checked,it will create partner as a company when creating new customer.")
+    is_order_base_currency = fields.Boolean(string="Import Order with base currency",
+                                            default=False, help="While Import Order with base currency")
 
     @api.onchange('magento_instance_id')
     def onchange_magento_instance_id(self):
@@ -249,7 +251,8 @@ class ResConfigSettings(models.TransientModel):
                 'magento_tax_rounding_method': magento_instance_id.magento_tax_rounding_method,
                 'magento_analytic_account_id': magento_instance_id.magento_analytic_account_id,
                 'is_magento_digest': magento_instance_id.is_magento_digest or False,
-                'import_customer_as_company': magento_instance_id.import_customer_as_company
+                'import_customer_as_company': magento_instance_id.import_customer_as_company or False,
+                'is_order_base_currency': magento_instance_id.is_order_base_currency or False
                 # 'is_export_dropship_picking': magento_instance_id.is_export_dropship_picking if magento_instance_id.is_export_dropship_picking else False
             })
         else:
@@ -354,7 +357,8 @@ class ResConfigSettings(models.TransientModel):
             'magento_tax_rounding_method': self.magento_tax_rounding_method,
             'magento_analytic_account_id': self.magento_analytic_account_id,
             'is_magento_digest': self.is_magento_digest or False,
-            'import_customer_as_company': self.import_customer_as_company
+            'import_customer_as_company': self.import_customer_as_company or False,
+            'is_order_base_currency': self.is_order_base_currency or False
             # 'is_export_dropship_picking': self.is_export_dropship_picking if self.is_export_dropship_picking else ""
         })
         magento_instance_id.write(values)
@@ -434,7 +438,8 @@ class ResConfigSettings(models.TransientModel):
                 'magento_tax_rounding_method': self.magento_tax_rounding_method,
                 'magento_analytic_account_id': self.magento_analytic_account_id,
                 'is_magento_digest': self.is_magento_digest or False,
-                'import_customer_as_company': self.import_customer_as_company
+                'import_customer_as_company': self.import_customer_as_company or False,
+                'is_order_base_currency': self.is_order_base_currency or False
                 # 'is_export_dropship_picking': magento_instance_id.is_export_dropship_picking if magento_instance_id.is_export_dropship_picking else False
             }
             magento_instance_id.write(basic_onboard_configurations)

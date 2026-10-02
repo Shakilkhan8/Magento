@@ -16,13 +16,13 @@
                     <div name="button_box" class="oe_button_box">
                         <button name="open_sale_order" class="oe_stat_button"
                                 icon="fa-chain" type="object"
-                                attrs="{'invisible': [('sale_order_id', '=', False)]}"
+                                invisible="sale_order_id == False"
                                 string="Sale Order">
                         </button>
                     </div>
 
                     <widget name="web_ribbon" text="Imported"
-                            attrs="{'invisible': [('state','!=','done')]}"/>
+                            invisible="state != 'done'"/>
 
                     <group>
                         <group>
@@ -37,9 +37,9 @@
                     <notebook>
                         <page name="log" string="Log">
                             <field name="log_lines_ids">
-                                <tree create="false" editable="bottom">
+                                <list create="false" editable="bottom">
                                     <field name="message"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         <page name="data" string="Order Data">
@@ -54,14 +54,14 @@
         <field name="name">magento.order.data.queue.line.ept.tree</field>
         <field name="model">magento.order.data.queue.line.ept</field>
         <field name="arch" type="xml">
-            <tree create="0" delete="0">
+            <list create="0" delete="0">
                 <field name="instance_id"/>
                 <field name="queue_id" string="Queue Reference #"/>
                 <field name="magento_id"/>
                 <field name="processed_at"/>
                 <field name="create_date"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 </odoo>

@@ -29,7 +29,7 @@ class MagentoResPartnerEpt(models.Model):
             instance = line.instance_id
         customer = False
         if data.get('id'):
-            customer = self.__search_customer(id=data.get('id'), instance_id=instance.id)
+            customer = self.__search_customer(id=data.get('id'), email=data.get('email'), instance_id=instance.id)
         if not customer:
             partner = self._create_odoo_partner(data, instance)
             values = self._prepare_magento_customer_values(partner_id=partner.id, instance=instance,
@@ -80,38 +80,104 @@ class MagentoResPartnerEpt(models.Model):
     def _create_customer_addresses(self, data, instance):
         parent_id = data.get('parent_id')
         parent_partner = self.env['res.partner'].browse(parent_id)
+        company_partner = False
         for address in data.get('addresses'):
             if address.get('default_billing', False):
-                address_type = self.__get_type(list(address.keys()))
-                if not (parent_partner.street or parent_partner.street2 or parent_partner.city or parent_partner.phone or parent_partner.zip):
+                partner = False
+                address.update({'store_view': data.get('store_view' or False), 'store_id': data.get('store_id' or False)})
+                values = self._prepare_partner_values(address, instance, parent_id=parent_id)
+                values.update(self._find_state_country(address))
+                if parent_partner.name == f"{address.get('firstname')} {address.get('lastname')}" and not (parent_partner.street or parent_partner.street2 or parent_partner.city or parent_partner.phone or parent_partner.zip):
+                    address_type = self.__get_type(list(address.keys()))
                     street = self.__merge_street(address.get('street', []))
-                    values = {'street': street.get('street'),
-                              'street2': street.get('street2'),
-                              'city': address.get('city', ''),
-                              'phone': address.get('telephone', ''),
-                              'zip': address.get('postcode', ''),
-                              'type': address_type,
-                              'vat': address.get('vat_id', '') or address.get('taxvat', '')}
-                    values.update(self._find_state_country(address))
-                    parent_partner.write(values)
-                data.update({address_type: parent_partner.id})
-                company_name = address.get('company', False)
-                if company_name:
+                    b_values = {'street': street.get('street'),
+                                'street2': street.get('street2'),
+                                'city': address.get('city', ''),
+                                'phone': address.get('telephone', ''),
+                                'zip': address.get('postcode', ''),
+                                'type': address_type,
+                                'vat': address.get('vat_id', '') or address.get('taxvat', '')}
+                    b_values.update(self._find_state_country(address))
+                    parent_partner.write(b_values)
+                    company_name = address.get('company', False)
+                    if company_name:
+                        if instance.import_customer_as_company:
+                            company_partner = self.env['res.partner'].search([('name', '=', company_name)])
+                            if not company_partner:
+                                company_partner = self.env['res.partner'].create(
+                                    {'name': company_name, 'company_type': 'company', 'is_magento_customer': True})
+                            if not parent_partner.parent_id:
+                                parent_partner.write({'parent_id': company_partner.id})
+                        else:
+                            parent_partner.write({'company_name': company_name})
+                    partner = parent_partner
+                if not partner:
                     if instance.import_customer_as_company:
-                        company_partner = self.env['res.partner'].search([('name', '=', company_name)])
-                        if not company_partner:
-                            company_partner = self.env['res.partner'].create(
-                                {'name': company_name, 'company_type': 'company', 'is_magento_customer': True})
-                        if not parent_partner.parent_id:
-                            parent_partner.write({'parent_id': company_partner.id})
+                        company_name = address.get('company', False)
+                        if company_name:
+                            company_partner = self.env['res.partner'].search([('name', '=', company_name)])
+                        if company_partner:
+                            values.update({'parent_id': company_partner.id})
+                        partner = self.env['res.partner']._find_partner_ept(values, key_list=key_list_without_company)
                     else:
-                        parent_partner.write({'company_name': company_name})
+                        partner = self.env['res.partner']._find_partner_ept(values, key_list=key_list)
+                if not partner:
+                    company = values.get('company_name', '')
+                    vat = values.get('vat')
+                    values.update({'parent_id': parent_id})
+                    if 'company_name' in list(values.keys()):
+                        # We will delete the company_name key form the dictionary,
+                        # If we pass that key then odoo will update the value of company_name to False.
+                        values.pop('company_name')
+                    partner = partner.create(values)
+                    if vat:
+                        partner.write({'vat': vat})
+                    if company:
+                        # We will write company_name because we can not pass the company_name and
+                        # parent_id together when we write the customer.
+                        if instance.import_customer_as_company:
+                            company_id = self.env['res.partner'].search([('name', '=', company)])
+                            if company_id:
+                                if not company_id.parent_id:
+                                    if parent_partner.parent_id and not parent_partner.parent_id == company_id:
+                                        company_id.write({'parent_id': parent_partner.parent_id.id})
+                                    elif parent_partner not in company_id.child_ids:
+                                        company_id.write({'parent_id': parent_partner.id})
+                            else:
+                                if parent_partner.parent_id:
+                                    company_id = self.env['res.partner'].create(
+                                        {'name': company, 'company_type': 'company', 'is_magento_customer': True,
+                                         'parent_id': parent_partner.parent_id.id})
+                                else:
+                                    company_id = self.env['res.partner'].create(
+                                        {'name': company, 'company_type': 'company', 'is_magento_customer': True,
+                                         'parent_id': parent_partner.id})
+                            partner.write({'parent_id': company_id.id})
+                        else:
+                            partner.write({'company_name': company})
+                customer = self.__search_customer(child=True, id=address.get('id'),
+                                                  customer_id=address.get('customer_id'),
+                                                  instance_id=instance.id)
+                if not customer:
+                    # If customer not found in layer then we will create the customer in layer.
+                    layer_values = self._prepare_magento_customer_values(instance=instance, data=data,
+                                                                         customer_id=address.get(
+                                                                             'customer_id'),
+                                                                         address_id=address.get('id'),
+                                                                         partner_id=partner.id)
+                    customer.create(layer_values)
+                data.update({values.get('type'): partner.id})
         for address in data.get('addresses'):
             if not address.get('default_billing', False):
                 address.update({'store_view': data.get('store_view' or False), 'store_id': data.get('store_id' or False)})
                 values = self._prepare_partner_values(address, instance, parent_id=parent_id)
                 values.update(self._find_state_country(address))
                 if instance.import_customer_as_company:
+                    company_name = address.get('company', False)
+                    if company_name:
+                        company_partner = self.env['res.partner'].search([('name', '=', company_name)])
+                    if company_partner:
+                        values.update({'parent_id': company_partner.id})
                     partner = self.env['res.partner']._find_partner_ept(values, key_list=key_list_without_company)
                 else:
                     partner = self.env['res.partner']._find_partner_ept(values, key_list=key_list)
@@ -119,12 +185,15 @@ class MagentoResPartnerEpt(models.Model):
                 #                                       '') and instance.import_customer_as_company) or not partner:
                 if not partner:
                     company = values.get('company_name', '')
+                    vat = values.get('vat')
                     values.update({'parent_id': parent_id})
                     if 'company_name' in list(values.keys()):
                         # We will delete the company_name key form the dictionary,
                         # If we pass that key then odoo will update the value of company_name to False.
                         values.pop('company_name')
                     partner = partner.create(values)
+                    if vat:
+                        partner.write({'vat': vat})
                     if company:
                         # We will write company_name because we can not pass the company_name and
                         # parent_id together when we write the customer.

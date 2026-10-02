@@ -712,7 +712,7 @@ class MagentoWebsite(models.Model):
             'name': 'Magento Store Views',
             'type': 'ir.actions.act_window',
             'view_type': 'form',
-            'view_mode': 'tree',
+            'view_mode': 'list',
             'res_model': 'magento.storeview',
             'views': [(tree_view, 'tree')],
             'view_id': tree_view,

@@ -18,7 +18,7 @@
         'report/inherit_invoice_report_temp.xml',
         'views/inherit_sale_order_line.xml',
         'views/inherit_customer.xml',
-        'views/templates.xml',
+        # 'views/templates.xml',
     ],
 
 }

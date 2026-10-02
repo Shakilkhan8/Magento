@@ -19,7 +19,7 @@
             <field name="inherit_id" ref="product.product_normal_form_view"/>
             <field name="arch" type="xml">
 
-                <xpath expr="//field[@name='detailed_type']" position="after">
+                <xpath expr="//field[@name='type']" position="after">
                     <field name="api_id" readonly="1"/>
                     <field name="sync_on"/>
                 </xpath>
@@ -33,7 +33,7 @@
             <field name="inherit_id" ref="product.product_template_only_form_view"/>
             <field name="arch" type="xml">
 
-                <xpath expr="//field[@name='detailed_type']" position="after">
+                <xpath expr="//field[@name='type']" position="after">
                     <field name="api_id"/>
                     <field name="sync_on"/>
                     <button type="object" string="Update" name="update_variant_codes"/>

@@ -55,9 +55,12 @@ class StockPicking(models.Model):
         set is_shipment_exportable true or false based on some condition
         :return:
         """
-        self.is_shipment_exportable = False
-        if self.magento_instance_id and self.picking_type_id.code == 'outgoing':
+        location_obj = self.env["stock.location"]
+        customer_locations = location_obj.search([("usage", "=", "customer")])
+        if (self.location_dest_id.id in customer_locations.ids) and self.sale_id:
             self.is_shipment_exportable = True
+        else:
+            self.is_shipment_exportable = False
 
     def _compute_set_magento_info(self):
         """
@@ -203,12 +206,14 @@ class StockPicking(models.Model):
         :param instance: magento.instance object
         :return: stock.picking records
         """
+        location_obj = self.env["stock.location"]
+        customer_locations = location_obj.search([("usage", "=", "customer")])
         return self.search([
             ('is_exported_to_magento', '=', False),
             ('state', 'in', ['done']),
             ('magento_instance_id', '=', instance.id),
             ('max_no_of_attempts', '<=', 3),
-            ('picking_type_id.code', '=', 'outgoing')
+            ("location_dest_id", "in", customer_locations.ids)
         ])
 
     def get_magento_tracking_number(self):

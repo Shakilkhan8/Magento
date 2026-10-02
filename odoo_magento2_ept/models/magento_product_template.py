@@ -122,7 +122,7 @@ class MagentoProductTemplate(models.Model):
                 'type': 'ir.actions.act_window',
                 'res_model': 'product.template',
                 'view_type': 'form',
-                'view_mode': 'tree,form',
+                'view_mode': 'list,form',
                 'domain': [('id', '=', self.odoo_product_template_id.id)],
             }
         return True
@@ -200,15 +200,15 @@ class MagentoProductTemplate(models.Model):
         o_attr_count = len(o_template.attribute_line_ids)
         m_attr_count = len(e_attributes.get('attributes'))
         if o_attr_count > 0 and o_attr_count != m_attr_count:
-            field_name = 'import_product_queue_line_id'
+            field_name = 'magento_import_product_queue_line_id'
             if 'is_order' in list(self.env.context.keys()):
                 field_name = 'magento_order_data_queue_line_id'
             message = f"Product {item.get('sku')} having mismatch Attribute count. \n" \
                       f"Product having {m_attr_count} attribute at magento side " \
                       f"and {o_attr_count} Attribute at odoo side."
-            if field_name == 'import_product_queue_line_id':
+            if field_name == 'magento_import_product_queue_line_id':
                 log_line.create_common_log_line_ept(message=message,
-                                                    import_product_queue_line_id=line.id, model_name=self._name,
+                                                    magento_import_product_queue_line_id=line.id, model_name=self._name,
                                                     magento_instance_id=line.instance_id.id)
             else:
                 log_line.create_common_log_line_ept(message=message,
@@ -230,14 +230,14 @@ class MagentoProductTemplate(models.Model):
                         if odoo_product:
                             continue
                         if not instance.auto_create_product:
-                            field_name = 'import_product_queue_line_id'
+                            field_name = 'magento_import_product_queue_line_id'
                             if 'is_order' in list(self.env.context.keys()):
                                 field_name = 'magento_order_data_queue_line_id'
                             message = f"Odoo Product Not found for SKU : {product.get('simple_product_sku')}, \n" \
                                       f"Variant {attribute.get('value')} is not available in Odoo."
-                            if field_name == 'import_product_queue_line_id':
+                            if field_name == 'magento_import_product_queue_line_id':
                                 log_line.create_common_log_line_ept(message=message,
-                                                                    import_product_queue_line_id=line.id,
+                                                                    magento_import_product_queue_line_id=line.id,
                                                                     model_name=self._name,
                                                                     default_code=product.get('simple_product_sku'),
                                                                     magento_instance_id=line.instance_id.id)
@@ -256,13 +256,16 @@ class MagentoProductTemplate(models.Model):
         m_id = child.get('simple_product_id')
         m_sku = child.get('simple_product_sku')
         m_product = m_product.search([('magento_instance_id', '=', instance.id),
-                                      ('magento_tmpl_id', '=', m_template.id),
+                                      # ('magento_tmpl_id', '=', m_template.id),
                                       ('odoo_product_id', '=', variant.id),
                                       '|',('magento_product_id', '=', m_id), ('magento_sku', '=', m_sku)], limit=1)
         values = self._prepare_variant_value(variant, m_template, child, data, item)
         if m_product:
+            m_template_id = m_product.magento_tmpl_id
             values.pop('magento_product_id')
             m_product.write(values)
+            if m_template != m_template_id:
+                m_template_id.unlink()
         else:
             m_product.create(values)
         return True
@@ -609,7 +612,7 @@ class MagentoProductTemplate(models.Model):
             'name': 'Magento Product Variant',
             'type': 'ir.actions.act_window',
             'view_type': 'form',
-            'view_mode': 'tree',
+            'view_mode': 'list',
             'res_model': 'magento.product.product',
             'views': [(tree_view, 'tree'), (form_view_id, 'form')],
             'view_id': tree_view,
@@ -634,8 +637,12 @@ class MagentoProductTemplate(models.Model):
         if m_product_ids:
             self.browse(m_product_ids).write({'sync_product_with_magento': False,
                                           "magento_product_template_id": ''})
+            if self.browse(m_product_ids).magento_product_ids:
+                self.browse(m_product_ids).magento_product_ids.write({'sync_product_with_magento': False, "magento_product_id": ''})
         else:
             self.write({'sync_product_with_magento': False,"magento_product_template_id": ''})
+            if self.magento_product_ids:
+                self.magento_product_ids.write({'sync_product_with_magento': False, "magento_product_id": ''})
         return True
 
     @staticmethod
@@ -728,7 +735,7 @@ class MagentoProductTemplate(models.Model):
         return product_price
 
     @staticmethod
-    def get_scope_wise_product_price(instance, log_line, product, price_list):
+    def get_scope_wise_product_price(instance, log_line, product, price_list, cost_price=False):
         """
         Get product price based on the price scope
         :param instance:  Magento Instance Object
@@ -740,16 +747,23 @@ class MagentoProductTemplate(models.Model):
         product_price = 0
         _logger.info("Instance %s price scope is Global.", instance.name)
         if price_list:
-            if price_list.item_ids.filtered(lambda x: x.product_id.id == product.odoo_product_id.id):
+            if price_list.item_ids.filtered(
+                    lambda x: x.product_id.id == product.odoo_product_id.id or x.product_id.id == product.odoo_product_id.product_tmpl_id.id):
                 product_price = price_list._get_product_price(product.odoo_product_id, price_list.id,
                                                              False)
                 if not product_price:
-                    product_price = product.odoo_product_id.standard_price
+                    if cost_price:
+                        product_price = product.odoo_product_id.standard_price
+                    else:
+                        product_price = product.odoo_product_id.list_price
                 _logger.info(
                     "Product : {} and product price is : {}".format(product.odoo_product_id.name,
                                                                     product_price))
             else:
-                product_price = product.odoo_product_id.standard_price
+                if cost_price:
+                    product_price = product.odoo_product_id.standard_price
+                else:
+                    product_price = product.odoo_product_id.list_price
         else:
             message = "Still price list not set for the Instance : %s" % instance.name
             log_line.create_common_log_line_ept(message=message, magento_instance_id=instance.id)
@@ -1095,7 +1109,7 @@ class MagentoProductTemplate(models.Model):
             # it means we not need to process further steps
             return True
         if response:
-            option.write({'magento_attribute_id': response.get('attribute_id')})
+            magento_attribute.write({'magento_attribute_id': response.get('attribute_id')})
             for attribute_value in response.get('options'):
                 option = option.search([
                     ('name', '=', attribute_value.get('label', '-')),
@@ -1133,9 +1147,10 @@ class MagentoProductTemplate(models.Model):
             product, 'configurable', False, attribute_set_id, log_line)
         attribute_set = self.env['magento.attribute.set'].search([
             ('attribute_set_id', '=', attribute_set_id), ('instance_id', '=', instance.id)])
+        attribute_group_id = attribute_set.attribute_group_ids[0].attribute_group_id
         attribute_data = {
             "attributeSetId": attribute_set_id,
-            "attributeGroupId": 1,
+            "attributeGroupId": attribute_group_id,
             "attributeCode": attribute_code,
             "sort_order": 10
         }

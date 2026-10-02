@@ -263,6 +263,8 @@ class MagentoInstance(models.Model):
     import_customer_as_company = fields.Boolean(string="Import Customer as a Company",
                                                 default=False,
                                                 help="while import customer create that time check.")
+    is_order_base_currency = fields.Boolean(string="Import Order with base currency",
+                                            default=False, help="Import Order with base currency check")
 
     _sql_constraints = [('unique_magento_host', 'unique(magento_url, access_token)',
                          "Instance already exists for given host. Host or Access Token must be Unique for the instance!")]
@@ -309,7 +311,7 @@ class MagentoInstance(models.Model):
             'name': 'Magento Carriers Views',
             'type': 'ir.actions.act_window',
             'view_type': 'form',
-            'view_mode': 'tree',
+            'view_mode': 'list',
             'res_model': 'magento.delivery.carrier',
             'views': [(tree_view, 'tree')],
             'view_id': tree_view,
@@ -327,7 +329,7 @@ class MagentoInstance(models.Model):
         action = {
             'domain': "[('id', 'in', " + str(instance_cron.ids) + " )]",
             'name': 'Cron Scheduler',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'res_model': 'ir.cron',
             'type': 'ir.actions.act_window',
         }
@@ -537,7 +539,7 @@ class MagentoInstance(models.Model):
             website_response = req(self, "/V1/store/websites", method='GET')
         except Exception as error:
             raise UserError(error)
-        default_warehouse = self.env['stock.warehouse'].search([], limit=1)
+        default_warehouse = self.env['stock.warehouse'].search([('company_id', '=', self.company_id.id)], limit=1)
         for data in website_response:
             magento_website_id = data.get('id')
             if magento_website_id != 0:
@@ -547,11 +549,11 @@ class MagentoInstance(models.Model):
                         'name': data.get('name'),
                         'magento_website_id': magento_website_id,
                         'magento_instance_id': self.id,
-                        'warehouse_id': self.warehouse_ids.id or default_warehouse.id
+                        'warehouse_id': default_warehouse.id
                     })
-                if mage_website_id:
+                if mage_website_id and not mage_website_id.warehouse_id:
                     mage_website_id.write({
-                        'warehouse_id': self.warehouse_ids.id or default_warehouse.id
+                        'warehouse_id': default_warehouse.id
                     })
 
     def search_magento_website_id(self, magento_website_id):
@@ -570,7 +572,7 @@ class MagentoInstance(models.Model):
             'name': 'Magento Website',
             'type': 'ir.actions.act_window',
             'view_type': 'form',
-            'view_mode': 'tree',
+            'view_mode': 'list',
             'res_model': 'magento.website',
             'views': [(tree_view, 'tree'), (form_view_id, 'form')],
             'view_id': tree_view,
@@ -772,7 +774,6 @@ class MagentoInstance(models.Model):
                 price_list = pricelist_obj.create({
                     'name': self.name + " Pricelist - " + active_currency.get('currency_to'),
                     'currency_id': currency_id.id,
-                    'discount_policy': 'with_discount',
                     'company_id': self.company_id.id,
                 })
             if magento_base_currency == active_currency.get(
@@ -1746,7 +1747,7 @@ class MagentoInstance(models.Model):
             'name': kwargs.get('name'),
             'res_model': kwargs.get('model'),
             'type': 'ir.actions.act_window',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
         }
         if len(ids) > 1:
             action.update({'domain': [('id', 'in', ids)]})
@@ -1795,8 +1796,8 @@ class MagentoInstance(models.Model):
 
         team_obj = self.env['crm.team']
         sales_team_name = self.name + '-' + storeview.name
-        sales_team_id = team_obj.search([('name', '=', sales_team_name)])
-
+        sales_team_id = team_obj.search([('name', '=', sales_team_name), ('company_id', '=', self.company_id.id)],
+                                        limit=1)
         if not sales_team_id:
             sales_team_id = team_obj.create({'name': sales_team_name})
 

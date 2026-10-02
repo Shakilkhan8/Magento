@@ -11,6 +11,7 @@ class StockPicking(models.Model):
         """
         Create and paid invoice on the basis of auto invoice work flow
         when invoicing policy is 'delivery'.
+        :return: True/False
         """
         result = super(StockPicking, self)._action_done()
         for picking in self:
@@ -22,12 +23,16 @@ class StockPicking(models.Model):
             delivery_lines = picking.move_line_ids.filtered(lambda l: l.product_id.invoice_policy == 'delivery')
 
             if work_flow_process_record and delivery_lines and work_flow_process_record.create_invoice and \
-                picking.picking_type_id.code == 'outgoing':
+                    picking.location_dest_id.usage == 'customer':
                 order.validate_and_paid_invoices_ept(work_flow_process_record)
         return result
 
     @api.depends('move_ids.state', 'move_ids.date', 'move_type')
     def _compute_scheduled_date(self):
+        """
+        Define this method for compute scheduled date for the pickings.
+        :return:
+        """
         for picking in self:
             carrier_id = picking.carrier_id
             if carrier_id and carrier_id.on_time_shipping:

@@ -52,11 +52,12 @@
                         <group>
                             <field name="update_price"/>
                             <field name="m_update_image" />
+                            <field name="magento_publish" widget="selection"/>
                         </group>
                         <group>
                             <field name="description_config_value" invisible="1"/>
                             <field name="m_update_basic_details"/>
-                            <field name="m_update_description" attrs="{'invisible': [('description_config_value', '=', False)]}"/>
+                            <field name="m_update_description" invisible="description_config_value == False"/>
                         </group>
                     </group>
                     <footer>

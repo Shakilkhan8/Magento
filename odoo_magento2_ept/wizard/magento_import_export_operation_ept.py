@@ -11,7 +11,7 @@ import os
 from csv import DictWriter
 from io import StringIO
 from datetime import datetime, timedelta
-from odoo.tools.misc import xlsxwriter
+import xlsxwriter
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -329,7 +329,7 @@ class MagentoImportExportEpt(models.TransientModel):
                 'name': _('Magento Product Inventory Adjustments'),
                 'res_model': 'stock.quant',
                 'type': 'ir.actions.act_window',
-                'view_mode': 'tree,form',
+                'view_mode': 'list,form',
             }
 
     def prepare_selected_product(self):

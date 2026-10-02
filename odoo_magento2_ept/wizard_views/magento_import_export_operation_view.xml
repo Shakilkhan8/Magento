@@ -25,7 +25,7 @@
                             </group>
                         </group>
                         <div name="msg_opr_main">
-                            <div attrs="{'invisible':[('operations','!=','import_product_categories')]}">
+                            <div invisible="operations != 'import_product_categories'">
                                 <p class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -53,7 +53,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','import_product_taxclass')]}">
+                            <div invisible="operations != 'import_product_taxclass'">
                                 <p class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -78,7 +78,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','import_product_attributes')]}">
+                            <div invisible="operations != 'import_product_attributes'">
                                 <p class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -113,7 +113,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','import_simple_products')]}">
+                            <div invisible="operations != 'import_simple_products'">
                                 <p class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -152,7 +152,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','import_configurable_products')]}">
+                            <div invisible="operations != 'import_configurable_products'">
                                 <p class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -192,7 +192,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','import_customer')]}">
+                            <div invisible="operations != 'import_customer'">
                                 <p colspan="2" class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -231,7 +231,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','import_ship_sale_order')]}">
+                            <div invisible="operations != 'import_ship_sale_order'">
                                 <p colspan="2" class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -261,7 +261,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','import_unship_sale_order')]}">
+                            <div invisible="operations != 'import_unship_sale_order'">
                                 <p colspan="2" class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -291,7 +291,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','import_cancel_orders')]}">
+                            <div invisible="operations != 'import_cancel_orders'">
                                 <p colspan="2" class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -319,7 +319,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','import_specific_order')]}">
+                            <div invisible="operations != 'import_specific_order'">
                                 <p colspan="2" class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -354,7 +354,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','import_specific_product')]}">
+                            <div invisible="operations != 'import_specific_product'">
                                 <p colspan="2" class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -389,7 +389,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','export_shipment_information')]}">
+                            <div invisible="operations != 'export_shipment_information'">
                                 <p colspan="2" class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -413,7 +413,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','export_invoice_information')]}">
+                            <div invisible="operations != 'export_invoice_information'">
                                 <p colspan="2" class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -435,7 +435,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','export_product_stock')]}">
+                            <div invisible="operations != 'export_product_stock'">
                                 <p colspan="2" class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -483,7 +483,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','import_product_stock')]}">
+                            <div invisible="operations != 'import_product_stock'">
                                 <p colspan="2" class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -526,7 +526,7 @@
                                     </b>
                                 </p>
                             </div>
-                            <div attrs="{'invisible':[('operations','!=','map_products')]}">
+                            <div invisible="operations != 'map_products'">
                                 <p colspan="2" class="alert alert-warning" role="alert">
                                     <b>
                                         <u>
@@ -570,27 +570,27 @@
                             </div>
                         </div>
                         <notebook
-                                attrs="{'invisible': [('operations', 'not in', ['import_specific_order','import_specific_product','import_configurable_products','import_simple_products', 'import_product_stock', 'import_customer','import_unship_sale_order','import_ship_sale_order','import_cancel_orders', 'map_products'])]}">
+                                invisible="operations not in ['import_specific_order','import_specific_product','import_configurable_products','import_simple_products', 'import_product_stock', 'import_customer','import_unship_sale_order','import_ship_sale_order','import_cancel_orders', 'map_products']">
                             <page string='Sync Option'>
                                 <div class="row">
                                     <div class='col-md-8'>
                                         <group name="is_import_specific_sale_order"
-                                               attrs="{'invisible' : [('operations','!=','import_specific_order')]}">
-                                            <field name="import_specific_sale_order" attrs="{'required':[('operations','=','import_specific_order')]}"/>
+                                               invisible="operations != 'import_specific_order'">
+                                            <field name="import_specific_sale_order" required="operations == 'import_specific_order'"/>
                                         </group>
                                         <group name="is_import_specific_product"
-                                               attrs="{'invisible' : [('operations','!=','import_specific_product')]}">
-                                            <field name="import_specific_product" attrs="{'required':[('operations','=','import_specific_product')]}"/>
+                                               invisible="operations != 'import_specific_product'">
+                                            <field name="import_specific_product" required="operations == 'import_specific_product'"/>
                                         </group>
-                                        <group name="is_update_existing_product" attrs="{'invisible' : [('operations','not in',['import_configurable_products', 'import_simple_products','import_specific_product'])]}">
-                                            <field name="do_not_update_existing_product" widget="boolean_toggle" attrs="{'required':[('operations','in',['import_configurable_products', 'import_simple_products','import_specific_product'])]}"/>
+                                        <group name="is_update_existing_product" invisible="operations not in ['import_configurable_products', 'import_simple_products','import_specific_product']">
+                                            <field name="do_not_update_existing_product" widget="boolean_toggle" required="operations in ['import_configurable_products', 'import_simple_products','import_specific_product']"/>
                                         </group>
                                         <group name="group_auto_validate"
-                                               attrs="{'invisible' : [('operations','not in',['import_product_stock'])]}">
+                                               invisible="operations not in ['import_product_stock']">
                                             <field name="auto_validate_stock" widget="boolean_toggle"/>
                                         </group>
                                         <group string="Select Date Range For Import"
-                                               attrs="{'invisible':[('operations','not in',['import_configurable_products', 'import_simple_products','import_customer','import_unship_sale_order','import_ship_sale_order','import_cancel_orders'])]}"
+                                               invisible="operations not in ['import_configurable_products', 'import_simple_products','import_customer','import_unship_sale_order','import_ship_sale_order','import_cancel_orders']"
                                                class="w-100">
                                             <label for="start_date" string="Date"/>
                                             <div class="d-inline-block">
@@ -599,15 +599,15 @@
                                                        class="oe_inline"/>
                                                 To
                                                 <field name="end_date" widget="daterange"
-                                                       attrs="{'required': [('operations', 'in', ['import_configurable_products', 'import_simple_products'])]}"
+                                                       required="operations in ['import_configurable_products', 'import_simple_products']"
                                                        options="{'related_start_date': 'start_date'}"
                                                        class="oe_inline"/>
                                             </div>
                                         </group>
                                         <group string="Mapping Magento Products Using CSV"
-                                               attrs="{'invisible':[('operations','!=','map_products')]}">
+                                               invisible="operations != 'map_products'">
                                             <div>
-                                                <div attrs="{'invisible':[('operations','!=','map_products')]}">
+                                                <div invisible="operations != 'map_products'">
                                                     <field name="file_name" invisible="1"/>
                                                     <field name="datas" filename="file_name" class="oe_inline"/>
                                                 </div>
@@ -624,7 +624,7 @@
                         </notebook>
 
                         <p colspan="2" class="alert alert-warning" role="alert"
-                           attrs="{'invisible': [('operations', '!=', 'export_product_stock')]}">
+                           invisible="operations != 'export_product_stock'">
                             <div style="color:#ff0000; font-size:15px;">
                                 <b>Important Note:</b>
                             </div>

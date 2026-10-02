@@ -9,7 +9,7 @@
             <field name="priority">11</field>
             <field name="arch" type="xml">
                 <form string="Schedulers Configurations" class="o_magento_ept">
-                    <div class="oe_title mb-2 ml-2" attrs="{'invisible': [('magento_instance_id', '!=', False)]}">
+                    <div class="oe_title mb-2 ml-2" invisible="magento_instance_id != False">
                         <h1 class="o_on_board_heading">
                             Currently, no instance configuration is underway.
                         </h1>
@@ -28,8 +28,7 @@
                             </b>
                         </div>
                     </div>
-                    <div class="oe_title" attrs="{'invisible': [('magento_instance_id', '=', False)]}"
-                         invisible="not context.get('is_calling_from_magento_onboarding_panel', False)">
+                    <div class="oe_title" invisible="magento_instance_id == False or not context.get('is_calling_from_magento_onboarding_panel', False)">
                         <h1 class="font-weight-bold o_on_board_heading">
                             <field name="magento_instance_id" readonly="1" options="{'no_open': True}"/>
                         </h1>
@@ -57,28 +56,28 @@
                                     </div>
                                     <br/>
                                     <div class="o_onboard_cron_settings"
-                                         attrs="{'invisible': [('auto_import_product', '=', False)]}">
+                                         invisible="auto_import_product == False">
                                         <field name="auto_import_product_interval_number"
                                                placeholder="Interval Number"
-                                               attrs="{'required': [('auto_import_product', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_product == True and magento_instance_id != False"
                                                class="o_onboard_cron_box"/>
                                         <field name="auto_import_product_interval_type"
                                                placeholder="Interval Type"
-                                               attrs="{'required': [('auto_import_product', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_product == True and magento_instance_id != False"
                                                class="o_onboard_cron_type"/>
                                         <field name="auto_import_product_next_execution"
                                                placeholder="Next Execution Date"
-                                               attrs="{'required': [('auto_import_product', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_product == True and magento_instance_id != False"
                                                class="o_onboard_cron_execution"/>
                                         <field name="auto_import_product_user_id"
                                                placeholder="Responsible User"
-                                               attrs="{'required': [('auto_import_product', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_product == True and magento_instance_id != False"
                                                class="o_onboard_cron_user"/>
                                         <span>
                                             <h4>
                                                 <label for="do_not_update_existing_product"/>
                                                 <field name="do_not_update_existing_product"
-                                                       attrs="{'required': [('auto_import_product', '=', True),('magento_instance_id','!=',False)]}"
+                                                       required="auto_import_product == True and magento_instance_id != False"
                                                        widget="boolean_toggle" class="o_onboard_boolean_toggle"/>
                                             </h4>
                                         </span>
@@ -111,22 +110,22 @@
                                     </div>
                                     <br/>
                                     <div class="o_onboard_cron_settings"
-                                         attrs="{'invisible': [('auto_export_product_stock', '=', False)]}">
+                                         invisible="auto_export_product_stock == False">
                                         <field name="auto_export_product_stock_interval_number"
                                                placeholder="Interval Number"
-                                               attrs="{'required': [('auto_export_product_stock', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_product_stock == True and magento_instance_id != False"
                                                class="o_onboard_cron_box"/>
                                         <field name="auto_export_product_stock_interval_type"
                                                placeholder="Interval Type"
-                                               attrs="{'required': [('auto_export_product_stock', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_product_stock == True and magento_instance_id != False"
                                                class="o_onboard_cron_type"/>
                                         <field name="auto_export_product_stock_next_execution"
                                                placeholder="Next Execution Date"
-                                               attrs="{'required': [('auto_export_product_stock', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_product_stock == True and magento_instance_id != False"
                                                class="o_onboard_cron_execution"/>
                                         <field name="auto_export_product_stock_user_id"
                                                placeholder="Responsible User"
-                                               attrs="{'required': [('auto_export_product_stock', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_product_stock == True and magento_instance_id != False"
                                                class="o_onboard_cron_user"/>
                                     </div>
                                 </div>
@@ -155,22 +154,22 @@
                                     </div>
                                     <br/>
                                     <div class="o_onboard_cron_settings"
-                                         attrs="{'invisible': [('auto_import_sale_orders', '=', False)]}">
+                                         invisible="auto_import_sale_orders == False">
                                         <field name="auto_import_sale_orders_interval_number"
                                                placeholder="Interval Number"
-                                               attrs="{'required': [('auto_import_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_box"/>
                                         <field name="auto_import_sale_orders_interval_type"
                                                placeholder="Interval Type"
-                                               attrs="{'required': [('auto_import_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_type"/>
                                         <field name="auto_import_sale_orders_next_execution"
                                                placeholder="Next Execution Date"
-                                               attrs="{'required': [('auto_import_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_execution"/>
                                         <field name="auto_import_sale_order_user_id"
                                                placeholder="Responsible User"
-                                               attrs="{'required': [('auto_import_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_user"/>
                                     </div>
                                 </div>
@@ -192,22 +191,22 @@
                                     </div>
                                     <br/>
                                     <div class="o_onboard_cron_settings"
-                                         attrs="{'invisible': [('auto_import_unshipped_sale_orders', '=', False)]}">
+                                         invisible="auto_import_unshipped_sale_orders == False">
                                         <field name="auto_import_unshipped_sale_orders_interval_number"
                                                placeholder="Interval Number"
-                                               attrs="{'required': [('auto_import_unshipped_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_unshipped_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_box"/>
                                         <field name="auto_import_unshipped_sale_orders_interval_type"
                                                placeholder="Interval Type"
-                                               attrs="{'required': [('auto_import_unshipped_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_unshipped_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_type"/>
                                         <field name="auto_import_unshipped_sale_orders_next_execution"
                                                placeholder="Next Execution Date"
-                                               attrs="{'required': [('auto_import_unshipped_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_unshipped_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_execution"/>
                                         <field name="auto_import_unshipped_sale_order_user_id"
                                                placeholder="Responsible User"
-                                               attrs="{'required': [('auto_import_unshipped_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_unshipped_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_user"/>
                                     </div>
                                 </div>
@@ -229,22 +228,22 @@
                                     </div>
                                     <br/>
                                     <div class="o_onboard_cron_settings"
-                                         attrs="{'invisible': [('auto_import_cancel_sale_orders', '=', False)]}">
+                                         invisible="auto_import_cancel_sale_orders == False">
                                         <field name="auto_import_cancel_sale_orders_interval_number"
                                                placeholder="Interval Number"
-                                               attrs="{'required': [('auto_import_cancel_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_cancel_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_box"/>
                                         <field name="auto_import_cancel_sale_orders_interval_type"
                                                placeholder="Interval Type"
-                                               attrs="{'required': [('auto_import_cancel_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_cancel_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_type"/>
                                         <field name="auto_import_cancel_sale_orders_next_execution"
                                                placeholder="Next Execution Date"
-                                               attrs="{'required': [('auto_import_cancel_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_cancel_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_execution"/>
                                         <field name="auto_import_cancel_sale_order_user_id"
                                                placeholder="Responsible User"
-                                               attrs="{'required': [('auto_import_cancel_sale_orders', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_import_cancel_sale_orders == True and magento_instance_id != False"
                                                class="o_onboard_cron_user"/>
                                     </div>
                                 </div>
@@ -266,22 +265,22 @@
                                     </div>
                                     <br/>
                                     <div class="o_onboard_cron_settings"
-                                         attrs="{'invisible': [('auto_export_invoice', '=', False)]}">
+                                         invisible="auto_export_invoice == False">
                                         <field name="auto_export_invoice_interval_number"
                                                placeholder="Interval Number"
-                                               attrs="{'required': [('auto_export_invoice', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_invoice == True and magento_instance_id != False"
                                                class="o_onboard_cron_box"/>
                                         <field name="auto_export_invoice_interval_type"
                                                placeholder="Interval Type"
-                                               attrs="{'required': [('auto_export_invoice', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_invoice == True and magento_instance_id != False"
                                                class="o_onboard_cron_type"/>
                                         <field name="auto_export_invoice_next_execution"
                                                placeholder="Next Execution Date"
-                                               attrs="{'required': [('auto_export_invoice', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_invoice == True and magento_instance_id != False"
                                                class="o_onboard_cron_execution"/>
                                         <field name="auto_export_invoice_user_id"
                                                placeholder="Responsible User"
-                                               attrs="{'required': [('auto_export_invoice', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_invoice == True and magento_instance_id != False"
                                                class="o_onboard_cron_user"/>
                                     </div>
                                 </div>
@@ -303,22 +302,22 @@
                                     </div>
                                     <br/>
                                     <div class="o_onboard_cron_settings"
-                                         attrs="{'invisible': [('auto_export_shipment_order_status', '=', False)]}">
+                                         invisible="auto_export_shipment_order_status == False">
                                         <field name="auto_export_shipment_order_status_interval_number"
                                                placeholder="Interval Number"
-                                               attrs="{'required': [('auto_export_shipment_order_status', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_shipment_order_status == True and magento_instance_id != False"
                                                class="o_onboard_cron_box"/>
                                         <field name="auto_export_shipment_order_status_interval_type"
                                                placeholder="Interval Type"
-                                               attrs="{'required': [('auto_export_shipment_order_status', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_shipment_order_status == True and magento_instance_id != False"
                                                class="o_onboard_cron_type"/>
                                         <field name="auto_export_shipment_order_status_next_execution"
                                                placeholder="Next Execution Date"
-                                               attrs="{'required': [('auto_export_shipment_order_status', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_shipment_order_status == True and magento_instance_id != False"
                                                class="o_onboard_cron_execution"/>
                                         <field name="auto_export_shipment_order_status_user_id"
                                                placeholder="Responsible User"
-                                               attrs="{'required': [('auto_export_shipment_order_status', '=', True),('magento_instance_id','!=',False)]}"
+                                               required="auto_export_shipment_order_status == True and magento_instance_id != False"
                                                class="o_onboard_cron_user"/>
                                     </div>
                                 </div>

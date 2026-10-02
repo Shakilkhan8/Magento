@@ -4,13 +4,13 @@
             <field name="name">Magento Dashboard</field>
             <field name="model">magento.website</field>
             <field name="arch" type="xml">
-                <kanban class="oe_background_grey o_kanban_dashboard o_magento_kanban" create="false" sample="1" js_class="MagentoOnBoardingToggle" banner_route="/magento_instances/magento_instances_onboarding_panel">
+                <kanban class="oe_background_grey o_kanban_dashboard o_magento_kanban" create="false" sample="1" js_class="MagentoOnBoardingToggle" banner_route="/magento_instances/magento_instances_onboarding_panel" highlight_color="color">
                     <field name="name" />
                     <field name="color"/>
                     <field name="magento_instance_id" />
                     <templates>
-                        <t t-name="kanban-box">
-                            <div t-attf-class="#{kanban_color(record.color.raw_value)} record_dashboard_ept">
+                        <t t-name="card">
+                            <div t-attf-class="o_kanban_color_#{record.color.raw_value or 0} record_dashboard_ept">
                                 <div class="o_kanban_card_header">
                                     <div class="o_kanban_card_header_title">
                                         <div class="o_primary mb4">
@@ -140,13 +140,13 @@
             <field name="name">Magento Instance</field>
             <field name="model">magento.instance</field>
             <field name="arch" type="xml">
-                <kanban class="oe_background_grey o_kanban_dashboard o_magento_kanban" create="false" sample="1" js_class="MagentoOnBoardingToggle" banner_route="/magento_instances/magento_instances_onboarding_panel">
+                <kanban class="oe_background_grey o_kanban_dashboard o_magento_kanban" create="false" sample="1" js_class="MagentoOnBoardingToggle" banner_route="/magento_instances/magento_instances_onboarding_panel" highlight_color="color">
                     <field name="name" />
                     <field name="color"/>
                     <field name="id" />
                     <templates>
-                        <t t-name="kanban-box">
-                            <div t-attf-class="#{kanban_color(record.color.raw_value)}" style="width:30%">
+                        <t t-name="card">
+                            <div t-attf-class="o_kanban_color_#{record.color.raw_value or 0}" style="width:30%">
                                 <div class="o_kanban_card_header">
                                     <div class="o_kanban_card_header_title">
                                         <div class="o_primary">

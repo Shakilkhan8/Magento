@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <form string="Basic Confirmation" class="o_magento_ept">
                 <div class="oe_title mb-2 ml-2"
-                     attrs="{'invisible': [('magento_instance_id', '!=', False)]}">
+                     invisible="magento_instance_id != False">
                     <h1 class="o_on_board_heading">
                         Currently, no instance configuration is underway.
                     </h1>
@@ -27,35 +27,35 @@
                     </div>
                 </div>
                 <div class="oe_title mb-2 ml-2"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                     invisible="magento_instance_id == False">
                     <h1 class="font-weight-bold o_on_board_heading">
                         <field name="magento_instance_id" readonly="1" options="{'no_open': True}"/>
                     </h1>
                 </div>
 
                 <div class="o_horizontal_separator font-weight-bold o_onboard_header"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">Product
+                     invisible="magento_instance_id == False">Product
                 </div>
                 <div name="product_configuration_instance"
                      class="row mt16 o_settings_container o_onboard_padding"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                     invisible="magento_instance_id == False">
                     <field name="magento_version" invisible="1"/>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box">
                         <div class="ml-2 pl-1">
                             <label for="catalog_price_scope" class="o_onboard_label" string="Catalog price scope"/>
                             <field name="catalog_price_scope"
-                                   attrs="{'required':[('magento_instance_id','!=',False)]}"
+                                   required="magento_instance_id != False"
                                    class="o_light_label w-25" readonly="1"/>
                         </div>
                     </div>
 
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
-                         attrs="{'invisible': [('catalog_price_scope', '=', 'website')]}">
+                         invisible="catalog_price_scope == 'website'">
                         <div class="ml-2 pl-1">
                             <label for="pricelist_id" class="o_onboard_label" string="Price list"/>
                             <field name="pricelist_id"
                                    options="{'no_open':True,'no_create':True,'no_create_edit':True}"
-                                   attrs="{'required':[('magento_instance_id','!=',False), ('catalog_price_scope', '!=', 'website')]}"
+                                   required="magento_instance_id != False and catalog_price_scope != 'website'"
                                    class="o_light_label w-50 o_onboard_select" widget="selection"
                             />
                         </div>
@@ -81,25 +81,25 @@
                             <label for="import_product_category" class="o_onboard_label" string="Product Category"/>
                             <field name="import_product_category"
                                    options="{'no_open':True,'no_create':True,'no_create_edit':True}"
-                                   attrs="{'required':[('magento_instance_id','!=',False)]}"
+                                   required="magento_instance_id != False"
                                    class="o_light_label w-50 o_onboard_select" widget="selection"
                             />
                         </div>
                     </div>
                 </div>
                 <div class="o_horizontal_separator font-weight-bold o_onboard_header"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">Order
+                     invisible="magento_instance_id == False">Order
                 </div>
                 <div name="order_configuration_instance"
                      class="row mt16 o_settings_container o_onboard_padding"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                     invisible="magento_instance_id == False">
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box">
                         <div class="ml-2 pl-1">
                             <label for="import_magento_order_status_ids" class="o_onboard_label"
                                    string="Import Order Status"/>
                             <field name="import_magento_order_status_ids"
                                    widget="many2many_tags"
-                                   attrs="{'required':[('magento_instance_id','!=',False)]}"
+                                   required="magento_instance_id != False"
                                    options="{'no_create':True,'no_create_edit': True}"
                                    class="o_light_label o_onboard_input"/>
                         </div>
@@ -119,20 +119,30 @@
                                    class="o_light_label w-50 o_onboard_input"/>
                         </div>
                     </div>
-<!--                    <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"-->
-<!--                         groups="analytic.group_analytic_accounting">-->
-<!--                        <div class="ml-2 pl-1">-->
-<!--                            <label for="magento_analytic_account_id" class="o_onboard_label"/>-->
-<!--                            <field name="magento_analytic_account_id" class="o_light_label o_onboard_input"/>-->
-<!--                        </div>-->
-<!--                    </div>-->
+
+                    <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box">
+                        <div class="ml-2 pl-1">
+                            <field name="is_order_base_currency"
+                                   class="o_onboard_boolean_toggle" widget="boolean_toggle"/>
+                            <label for="is_order_base_currency" class="o_onboard_label" string="Import Order with base currency"/>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
+                         groups="analytic.group_analytic_accounting">
+                        <div class="ml-2 pl-1">
+                            <label for="magento_analytic_account_id" class="o_onboard_label"/>
+                            <field name="magento_analytic_account_id" class="o_light_label w-50 o_onboard_select"/>
+                        </div>
+                    </div>
+
                 </div>
                 <div class="o_horizontal_separator font-weight-bold o_onboard_header"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">Customer
+                     invisible="magento_instance_id == False">Customer
                 </div>
                 <div name="order_configuration_instance"
                      class="row mt16 o_settings_container o_onboard_padding"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                     invisible="magento_instance_id == False">
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box">
                         <div class="ml-2 pl-1">
                             <field name="import_customer_as_company"
@@ -143,17 +153,17 @@
                     </div>
                 </div>
                 <div class="o_horizontal_separator font-weight-bold o_onboard_header"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">Tax
+                     invisible="magento_instance_id == False">Tax
                 </div>
                 <div name="order_configuration_instance"
                      class="row mt16 o_settings_container o_onboard_padding"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                     invisible="magento_instance_id == False">
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box">
                         <div class="ml-2 pl-1">
                             <label for="magento_apply_tax_in_order" string="Apply Tax" class="o_onboard_label"/>
                             <field name="magento_apply_tax_in_order"
                                    class="o_light_label w-50 o_onboard_input"
-                                   attrs="{'required':[('magento_instance_id','!=',False)]}"/>
+                                   required="magento_instance_id != False"/>
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box">
@@ -162,36 +172,36 @@
                                    class="o_onboard_label"/>
                             <field name="magento_tax_rounding_method"
                                    class="o_light_label w-50 o_onboard_t"
-                                   attrs="{'required':[('magento_instance_id','!=',False)]}"/>
+                                   required="magento_instance_id != False"/>
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box">
-                        <div class="ml-2 pl-1" attrs="{'invisible': [('magento_apply_tax_in_order', '=', 'odoo_tax')]}">
+                        <div class="ml-2 pl-1" invisible="magento_apply_tax_in_order == 'odoo_tax'">
                             <label for="magento_credit_tax_account_id" class="o_onboard_label"
                                    string="Credit Note Tax Account"/>
                             <field name="magento_credit_tax_account_id"
                                    class="o_light_label w-50 o_onboard_input"
-                                   attrs="{'required':[('magento_apply_tax_in_order','=','create_magento_tax')]}"/>
+                                   required="magento_apply_tax_in_order == 'create_magento_tax'"/>
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box">
-                        <div class="ml-2 pl-1" attrs="{'invisible': [('magento_apply_tax_in_order', '=', 'odoo_tax')]}">
+                        <div class="ml-2 pl-1" invisible="magento_apply_tax_in_order == 'odoo_tax'">
                             <label for="magento_invoice_tax_account_id" class="o_onboard_label"
                                    string="Invoice Tax Account"/>
                             <field name="magento_invoice_tax_account_id"
                                    class="o_light_label w-50 o_onboard_input"
-                                   attrs="{'required':[('magento_apply_tax_in_order','=','create_magento_tax')]}"/>
+                                   required="magento_apply_tax_in_order == 'create_magento_tax'"/>
                         </div>
                     </div>
                 </div>
                 <div class="o_horizontal_separator font-weight-bold o_onboard_header"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">Inventory
+                     invisible="magento_instance_id == False">Inventory
                 </div>
                 <div name="other_configuration_instance"
                      class="row mt16 o_settings_container o_onboard_padding"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                     invisible="magento_instance_id == False">
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
-                         attrs="{'invisible': [('magento_version', 'in', ['2.1','2.2'])]}">
+                         invisible="magento_version in ['2.1','2.2']">
                         <div class="ml-2 pl-1">
                             <field name="is_multi_warehouse_in_magento"
                                    class="o_onboard_boolean_toggle" widget="boolean_toggle"/>
@@ -200,12 +210,12 @@
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
-                         attrs="{'invisible': [('is_multi_warehouse_in_magento', '=', True)]}">
+                         invisible="is_multi_warehouse_in_magento == True">
                         <div class="ml-2 pl-1">
                             <label for="warehouse_ids" class="o_onboard_label" string="Export Stock Warehouses"/>
                             <field name="warehouse_ids"
                                    widget="many2many_tags"
-                                   attrs="{'required':[('magento_instance_id','!=',False), ('is_multi_warehouse_in_magento', '=', False)]}"
+                                   required="magento_instance_id != False and is_multi_warehouse_in_magento == False"
                                    options="{'no_create':True,'no_create_edit': True}"
                                    class="o_light_label o_onboard_input"/>
                         </div>
@@ -218,18 +228,18 @@
                                    string="Import Product stock from Magento?"/>
                         </div>
                         <div class="ml-2 pl-1 o_setting_box"
-                             attrs="{'invisible' : ['|',('is_import_product_stock','=',False),('is_multi_warehouse_in_magento', '=', True)]}">
+                             invisible="is_import_product_stock == False or is_multi_warehouse_in_magento == True">
                             <label for="import_stock_warehouse" class="o_onboard_label"
                                    string="Import Stock Warehouse"/>
                             <field name="import_stock_warehouse"
                                    options="{'no_open':True,'no_create':True,'no_create_edit':True}"
-                                   attrs="{'required':[('is_import_product_stock','=',True),('is_multi_warehouse_in_magento', '=', False)]}"
+                                   required="is_import_product_stock == True and is_multi_warehouse_in_magento == False"
                                    class="o_light_label w-50 o_onboard_select" widget="selection"
                             />
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
-                         attrs="{'invisible': [('is_multi_warehouse_in_magento', '=', False)]}">
+                         invisible="is_multi_warehouse_in_magento == False">
                         <div class="ml-2 pl-1">
                             <div class="text-muted" id="sale_coupon">
                                 Set Import and export warehouses of inventory locations.
@@ -243,17 +253,17 @@
                             <label for="magento_stock_field" class="o_onboard_label" string="Stock field"/>
                             <field name="magento_stock_field"
                                    options="{'no_open':True,'no_create':True,'no_create_edit':True}"
-                                   attrs="{'required':[('magento_instance_id','!=',False)]}"
+                                   required="magento_instance_id != False"
                                    class="o_light_label w-50 o_onboard_select" widget="selection"/>
                         </div>
                     </div>
                 </div>
                 <div class="o_horizontal_separator font-weight-bold o_onboard_header"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">Digest
+                     invisible="magento_instance_id == False">Digest
                 </div>
                 <div name="digest_configuration_instance"
                      class="row mt16 o_settings_container o_onboard_padding"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                     invisible="magento_instance_id == False">
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box">
                         <div class="ml-2 pl-1">
                             <field name="is_magento_digest"
@@ -263,11 +273,11 @@
                     </div>
                 </div>
                 <div class="o_horizontal_separator font-weight-bold o_onboard_header"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">Website
+                     invisible="magento_instance_id == False">Website
                 </div>
                 <div name="website_configuration_instance"
                      class="row mt16 o_settings_container o_onboard_padding"
-                     attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                     invisible="magento_instance_id == False">
                     <group>
                         <p colspan="2" class="alert alert-warning" role="alert">
                             <div style="color:#ff0000; font-size:15px;">
@@ -301,7 +311,7 @@
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
-                         attrs="{'invisible': [('magento_website_id', '=', False)]}">
+                         invisible="magento_website_id == False">
                         <div class="ml-2 pl-1 o_setting_box">
                             <label for="magento_website_warehouse_id" class="o_onboard_label" string="Warehouse"/>
                             <field name="magento_website_warehouse_id"
@@ -312,17 +322,17 @@
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
-                         attrs="{'invisible': [('magento_website_id', '=', False)]}">
+                         invisible="magento_website_id == False">
                         <div class="ml-2 pl-1">
                             <label for="magento_website_pricelist_id" class="o_onboard_label" string="Pricelist"/>
                             <field name="magento_website_pricelist_id"
-                                   attrs="{'required':[('magento_website_id','!=',False)]}"
+                                   required="magento_website_id != False"
                                    options="{'no_create':True,'no_create_edit': True}"
                                    class="o_light_label w-50 o_onboard_select" widget="selection"/>
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
-                         attrs="{'invisible': [('magento_website_id', '=', False)]}">
+                         invisible="magento_website_id == False">
                         <div class="ml-2 pl-1">
                             <label for="tax_calculation_method" class="o_onboard_label"
                                    string="Tax Calculation Method"/>
@@ -331,23 +341,31 @@
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
-                         attrs="{'invisible': [('magento_website_id', '=', False)]}">
+                         invisible="magento_website_id == False">
                         <div class="ml-2 pl-1">
                             <label for="magento_website_cost_pricelist_id" class="o_onboard_label"
                                    string="Cost Pricelist"/>
                             <field name="magento_website_cost_pricelist_id"
-                                   attrs="{'required':[('magento_website_id','!=',False)]}"
+                                   required="magento_website_id != False"
                                    options="{'no_create':True,'no_create_edit': True}"
                                    class="o_light_label w-50 o_onboard_select" widget="selection"/>
                         </div>
                     </div>
+                    <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
+                         groups="analytic.group_analytic_accounting"
+                         invisible="magento_website_id == False">
+                        <div class="ml-2 pl-1">
+                            <label for="m_website_analytic_account_id" class="o_onboard_label"/>
+                            <field name="m_website_analytic_account_id" class="o_light_label w-50 o_onboard_select"/>
+                        </div>
+                    </div>
                 </div>
                 <div class="o_horizontal_separator font-weight-bold o_onboard_header"
-                     attrs="{'invisible': [('magento_website_id', '=', False)]}">Store Views
+                     invisible="magento_website_id == False">Store Views
                 </div>
                 <div name="store_view_configuration_instance"
                      class="row mt16 o_settings_container o_onboard_padding"
-                     attrs="{'invisible': [('magento_website_id', '=', False)]}">
+                     invisible="magento_website_id == False">
                     <group>
                         <p colspan="2" class="alert alert-warning" role="alert">
                             <div style="color:#ff0000; font-size:15px;">
@@ -381,7 +399,7 @@
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
-                         attrs="{'invisible': [('magento_storeview_id', '=', False)]}">
+                         invisible="magento_storeview_id == False">
                         <div class="ml-2 pl-1 o_setting_box">
                             <label for="magento_team_id" class="o_onboard_label" string="Sales Team"/>
                             <field name="magento_team_id"
@@ -390,7 +408,7 @@
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
-                         attrs="{'invisible': [('magento_storeview_id', '=', False)]}">
+                         invisible="magento_storeview_id == False">
                         <div class="ml-2 pl-1">
                             <field name="is_use_odoo_order_sequence"
                                    class="o_onboard_boolean_toggle" widget="boolean_toggle"/>
@@ -402,7 +420,7 @@
                         </div>
                     </div>
                     <div class="col-xs-12 col-md-6 o_setting_box o_onboard_setting_box"
-                         attrs="{'invisible': ['|',('magento_storeview_id', '=', False),('is_use_odoo_order_sequence','=',True)]}">
+                         invisible="magento_storeview_id == False or is_use_odoo_order_sequence == True">
                         <div class="ml-2 pl-1">
                             <label for="magento_sale_prefix" class="o_onboard_label"/>
                             <field name="magento_sale_prefix" placeholder="Sale Order Prefix" class="w-50 pull-right"/>
@@ -414,7 +432,7 @@
                     <button string="Save Configurations" type="object"
                             name="magento_save_basic_configurations"
                             class="oe_highlight o_onboard_button"
-                            attrs="{'invisible': [('magento_instance_id', '=', False)]}"/>
+                            invisible="magento_instance_id == False"/>
                     <button class="oe_highlight o_onboard_button_white" special="cancel"
                             string="Cancel"/>
                 </footer>

@@ -30,9 +30,9 @@
         <field name="name">financial_status_tree_view</field>
         <field name="model">magento.financial.status.ept</field>
         <field eval="16" name="priority"/>
-        <field name="type">tree</field>
+        <field name="type">list</field>
         <field name="arch" type="xml">
-            <tree name="magento_financial_status_tree" editable="top" sample="1">
+            <list name="magento_financial_status_tree" editable="top" sample="1">
                 <field name="magento_instance_id" required="1" options="{'no_create':True}"
                        domain="[('active','=',True)]"/>
                 <field name="payment_method_id" options="{'no_create':True}" required="1"
@@ -40,7 +40,7 @@
                 <field name="payment_term_id" required="1"/>
                 <field name="auto_workflow_id" required="1"/>
                 <field name="financial_status" string="Finance Status" required="1"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -55,8 +55,8 @@
                 <filter name="archived" string="Archived" domain="[('active','=',False)]"/>
                 <separator/>
 
-                <group expand="0" string="Group By">
-                    <filter string="Instance" name="group_by_instance"
+                <group>
+                    <filter string="Instance" name="group_by_instance" domain="[]"
                             context="{'group_by': 'magento_instance_id'}"/>
                 </group>
             </search>
@@ -67,7 +67,7 @@
     <record id="act_magento_financial_status_form" model="ir.actions.act_window">
         <field name="name">Financial Status</field>
         <field name="res_model">magento.financial.status.ept</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
     </record>
 
     <!--Menu of Financial Status -->

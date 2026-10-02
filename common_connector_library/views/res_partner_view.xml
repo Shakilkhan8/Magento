@@ -9,8 +9,7 @@
             <xpath expr="//field[@name='category_id']" position="after">
                 <field name="company_name"/>
             </xpath>
-            <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='contact_addresses']/field[@name='child_ids']/form[1]/sheet[1]/group[1]/group[2]/field[@name='mobile']"
-                   position="after">
+            <xpath expr="//field[@name='child_ids']/form[1]/sheet[1]/group[1]/group[1]/div/field[@name='country_id']" position="after">
                 <field name="company_name"/>
             </xpath>
         </field>

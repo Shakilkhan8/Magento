@@ -8,7 +8,7 @@
             <field name="model">res.config.settings</field>
             <field name="inherit_id" ref="base.res_config_settings_view_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//div[hasclass('settings')]" position="inside">
+                <xpath expr="//form" position="inside">
                     <div class="app_settings_block"
                          string="Magento"
                          data-string="Magento"
@@ -108,35 +108,35 @@
                                                 class="btn-primary"/>
                                     </div>
                                 </div>
-<!--                                <div class="col-12 o_setting_box" id="show_magento_net_profit_report">-->
-<!--                                    <div class="o_setting_left_pane">-->
-<!--                                        <field name="magento_show_net_profit_report" widget="upgrade_boolean"/>-->
-<!--                                    </div>-->
-<!--                                    <div class="o_setting_right_pane" name="magento_show_net_profit_report_right_pane">-->
-<!--                                        <label for="magento_show_net_profit_report"/>-->
-<!--                                        <div class="text-muted">-->
-<!--                                            - If you enable this configuration, To show module download link and-->
-<!--                                            install.-->
-<!--                                            it will add net profit report for all instances-->
-<!--                                            <br/>-->
-<!--                                            - If you disable this configuration, it will remove net profit report-->
-<!--                                            automatically-->
-<!--                                            <br/>-->
-<!--                                            - You can find Magento net profit report from Magento > Reporting > Net-->
-<!--                                            profit-->
-<!--                                            <br/>-->
-<!--                                            - The Magento net profit report calculate based on instance level sets,-->
-<!--                                            analytics accounts-->
-<!--                                            <br/>-->
-<!--                                        </div>-->
-<!--                                        <button name="download_magento_net_profit_report_module"-->
-<!--                                                type="object"-->
-<!--                                                string="Download Magento Net Profit Report Module"-->
-<!--                                                class="oe_link"-->
-<!--                                                attrs="{'invisible':[('magento_show_net_profit_report','=',False)]}"-->
-<!--                                                help="Install this module if you are See Net profit report for all Instances."/>-->
-<!--                                    </div>-->
-<!--                                </div>-->
+                                <div class="col-12 o_setting_box" id="show_magento_net_profit_report">
+                                    <div class="o_setting_left_pane">
+                                        <field name="magento_show_net_profit_report" widget="upgrade_boolean"/>
+                                    </div>
+                                    <div class="o_setting_right_pane" name="magento_show_net_profit_report_right_pane">
+                                        <label for="magento_show_net_profit_report"/>
+                                        <div class="text-muted">
+                                            - If you enable this configuration, To show module download link and
+                                            install.
+                                            it will add net profit report for all instances
+                                            <br/>
+                                            - If you disable this configuration, it will remove net profit report
+                                            automatically
+                                            <br/>
+                                            - You can find Magento net profit report from Magento > Reporting > Net
+                                            profit
+                                            <br/>
+                                            - The Magento net profit report calculate based on instance level sets,
+                                            analytics accounts
+                                            <br/>
+                                        </div>
+                                        <button name="download_magento_net_profit_report_module"
+                                                type="object"
+                                                string="Download Magento Net Profit Report Module"
+                                                class="oe_link"
+                                                invisible="magento_show_net_profit_report == False"
+                                                help="Install this module if you are See Net profit report for all Instances."/>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <h2 style="font-size:25px;background-color:#e9ecef;">Magento Instances
@@ -147,7 +147,7 @@
                                 <div>
                                     <div>
                                         <field name="magento_instance_id" widget="selection"
-                                               attrs="{'required':[('magento_instance_id','!=',False)]}"
+                                               required="magento_instance_id != False"
                                                class="oe_inline"/>
                                         <button string="Create More Instances" icon="fa-arrow-right"
                                                 name="%(odoo_magento2_ept.res_config_action_magento_instance_ept)d"
@@ -160,15 +160,15 @@
 
                         <field name="magento_version" invisible="1"/>
                         <h2 style="font-size:25px;background-color:#e9ecef;"
-                            attrs="{'invisible': [('magento_instance_id', '=', False)]}">Product
+                            invisible="magento_instance_id == False">Product
                         </h2>
                         <div class="row mt16 o_settings_container"
-                             attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                             invisible="magento_instance_id == False">
                             <div class="col-12 col-lg-6 o_setting_box">
                                 <div class="o_setting_right_pane">
                                     <label for="catalog_price_scope" string="Catalog price scope"/>
                                     <field name="catalog_price_scope" class="oe_inline"
-                                           attrs="{'required':[('magento_instance_id','!=', False)]}"
+                                           required="magento_instance_id != False"
                                            readonly="1"/>
                                     <div class="text-muted" id="sale_coupon">
                                         Scope of Price in Magento
@@ -177,10 +177,10 @@
                             </div>
                             <div class="col-12 col-lg-6 o_setting_box">
                                 <div class="o_setting_right_pane"
-                                     attrs="{'invisible': [('catalog_price_scope', '=', 'website')]}">
+                                     invisible="catalog_price_scope == 'website'">
                                     <label for="pricelist_id" string="Pricelist"/>
                                     <field name="pricelist_id" class="oe_inline"
-                                           attrs="{'required':[('magento_instance_id','!=', False), ('catalog_price_scope', '!=', 'website')]}"/>
+                                           required="magento_instance_id != False and catalog_price_scope != 'website'"/>
                                     <div class="text-muted" id="sale_coupon">
                                         Product price will be taken/set from this pricelist if
                                         Catalog Price Scope is global
@@ -229,7 +229,7 @@
                                 <div class="o_setting_right_pane">
                                     <label for="import_product_category" string="Product Category"/>
                                     <field name="import_product_category"
-                                           attrs="{'required':[('magento_instance_id','!=',False)]}"
+                                                   required="magento_instance_id != False"
                                            class="oe_inline"/>
                                     <div class="text-muted" id="import_product_category">
                                         The selected category will set in that product.
@@ -239,10 +239,10 @@
                         </div>
 
                         <h2 style="font-size:25px;background-color:#e9ecef;"
-                            attrs="{'invisible': [('magento_instance_id', '=', False)]}">Order
+                            invisible="magento_instance_id == False">Order
                         </h2>
                         <div class="row mt16 o_settings_container"
-                             attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                             invisible="magento_instance_id == False">
                             <div class="col-12 col-lg-6 o_setting_box">
                                 <div class="o_setting_right_pane">
                                     <label for="import_magento_order_status_ids"/>
@@ -253,7 +253,7 @@
                                         <div class="mt16">
                                             <field name="import_magento_order_status_ids"
                                                    widget="many2many_tags"
-                                                   attrs="{'required':[('magento_instance_id','!=',False)]}"
+                                                   required="magento_instance_id != False"
                                                    options="{'no_create':True,'no_create_edit': True}"
                                                    class="oe_inline"/>
                                         </div>
@@ -286,44 +286,60 @@
                                     <div class="content-group">
                                         <div class="mt16">
                                             <field name="import_order_after_date"
-                                                   attrs="{'required':[('magento_instance_id','!=',False)]}"/>
+                                                   required="magento_instance_id != False"/>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-<!--                            <div class="col-xs-12 col-md-6 o_setting_box"-->
-<!--                                 groups="analytic.group_analytic_accounting">-->
-<!--                                <div class="o_setting_right_pane">-->
-<!--                                    <label for="magento_analytic_account_id" string="Analytic Account"/>-->
-<!--                                    <div class="text-muted">-->
-<!--                                        <li>-->
-<!--                                            The configuration of the analytic account for this-->
-<!--                                            instance will be applied to all sales orders created by-->
-<!--                                            the-->
-<!--                                            connector. With this configuration, the Analytic Default-->
-<!--                                            Rule configured in Odoo will not apply to Magento2-->
-<!--                                            orders.-->
-<!--                                        </li>-->
-<!--                                        <li>-->
-<!--                                            If you wish to use Odoo Analytic Default Rule, you will-->
-<!--                                            not have to configure any anaytic account here.-->
-<!--                                        </li>-->
-<!--                                    </div>-->
-<!--                                    <div class="content-group">-->
-<!--                                        <div class="mt16">-->
-<!--                                            <field name="magento_analytic_account_id"-->
-<!--                                                   class="o_light_label"-->
-<!--                                                   options="{'no_create':True,'no_create_edit': True}"/>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
-<!--                            </div>-->
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane">
+                                    <field name="is_order_base_currency"
+                                           widget="boolean_toggle"/>
+                                </div>
+                                <div class="o_setting_right_pane">
+                                    <label for="is_order_base_currency"
+                                           string="Import Order with base currency"/>
+                                    <div class="text-muted" id="sale_coupon">
+                                        if checked,it will create order as per base currency in Magento.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xs-12 col-md-6 o_setting_box"
+                                 groups="analytic.group_analytic_accounting">
+                                <div class="o_setting_right_pane">
+                                    <label for="magento_analytic_account_id" string="Analytic Account"/>
+                                    <div class="text-muted">
+                                        <li>
+                                            The configuration of the analytic account for this
+                                            instance will be applied to all sales orders created by
+                                            the
+                                            connector. With this configuration, the Analytic Default
+                                            Rule configured in Odoo will not apply to Magento2
+                                            orders.
+                                        </li>
+                                        <li>
+                                            If you wish to use Odoo Analytic Default Rule, you will
+                                            not have to configure any anaytic account here.
+                                        </li>
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="mt16">
+                                            <field name="magento_analytic_account_id"
+                                                   class="o_light_label"
+                                                   options="{'no_create':True,'no_create_edit': True}"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                         <h2 style="font-size:25px;background-color:#e9ecef;"
-                            attrs="{'invisible': [('magento_instance_id', '=', False)]}">Customer
+                            invisible="magento_instance_id == False">Customer
                         </h2>
                         <div class="row mt16 o_settings_container"
-                             attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                             invisible="magento_instance_id == False">
                             <div class="col-12 col-lg-6 o_setting_box">
                                 <div class="o_setting_left_pane">
                                     <field name="import_customer_as_company"
@@ -339,11 +355,11 @@
                             </div>
                         </div>
                         <h2 style="font-size:25px;background-color:#e9ecef;"
-                            attrs="{'invisible': [('magento_instance_id', '=', False)]}">Tax
+                            invisible="magento_instance_id == False">Tax
                             Configuration
                         </h2>
                         <div class="row mt16 o_settings_container"
-                             attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                             invisible="magento_instance_id == False">
                             <div class="col-xs-12 col-md-6 o_setting_box">
                                 <div class="o_setting_right_pane">
                                     <label for="magento_instance_id"
@@ -360,7 +376,7 @@
                                         <div class="mt16">
                                             <field name="magento_apply_tax_in_order"
                                                    class="o_light_label"
-                                                   attrs="{'required':[('magento_instance_id','!=',False)]}"/>
+                                                   required="magento_instance_id != False"/>
                                         </div>
                                     </div>
                                 </div>
@@ -398,7 +414,7 @@
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-6 o_setting_box"
-                                 attrs="{'invisible': [('magento_apply_tax_in_order', '=', 'odoo_tax')]}">
+                                 invisible="magento_apply_tax_in_order == 'odoo_tax'">
                                 <div class="o_setting_right_pane">
                                     <label for="magento_credit_tax_account_id" string="Credit Note Tax Account"/>
                                     <div class="text-muted">
@@ -409,13 +425,13 @@
                                         <div class="mt16">
                                             <field name="magento_credit_tax_account_id"
                                                    class="o_light_label"
-                                                   attrs="{'required':[('magento_instance_id','!=', False), ('magento_apply_tax_in_order','=','create_magento_tax')]}"/>
+                                                   required="magento_instance_id != False and magento_apply_tax_in_order == 'create_magento_tax'"/>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-xs-12 col-md-6 o_setting_box"
-                                 attrs="{'invisible': [('magento_apply_tax_in_order', '=', 'odoo_tax')]}">
+                                 invisible="magento_apply_tax_in_order == 'odoo_tax'">
                                 <div class="o_setting_right_pane">
                                     <label for="magento_invoice_tax_account_id" string="Invoice Tax Account"/>
                                     <div class="text-muted">
@@ -427,19 +443,19 @@
                                         <div class="mt16">
                                             <field name="magento_invoice_tax_account_id"
                                                    class="o_light_label"
-                                                   attrs="{'required':[('magento_instance_id','!=', False), ('magento_apply_tax_in_order','=','create_magento_tax')]}"/>
+                                                   required="magento_instance_id != False and magento_apply_tax_in_order == 'create_magento_tax'"/>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <h2 style="font-size:25px;background-color:#e9ecef;"
-                            attrs="{'invisible': [('magento_instance_id', '=', False)]}">Inventory
+                            invisible="magento_instance_id == False">Inventory
                         </h2>
                         <div class="row mt16 o_settings_container"
-                             attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                             invisible="magento_instance_id == False">
                             <div class="col-12 col-lg-6 o_setting_box"
-                                 attrs="{'invisible': [('magento_version', 'in', ['2.1','2.2'])]}">
+                                 invisible="magento_version in ['2.1','2.2']">
                                 <div class="o_setting_left_pane">
                                     <field name="is_multi_warehouse_in_magento"
                                            widget="boolean_toggle"/>
@@ -453,11 +469,11 @@
                                 </div>
                             </div>
                             <div class="col-12 col-lg-6 o_setting_box"
-                                 attrs="{'invisible': [('is_multi_warehouse_in_magento', '=', True)]}">
+                                 invisible="is_multi_warehouse_in_magento == True">
                                 <div class="o_setting_right_pane">
                                     <label for="warehouse_ids" string="Export Stock Warehouses"/>
                                     <field name="warehouse_ids" class="oe_inline"
-                                           attrs="{'required':[('magento_instance_id','!=', False), ('is_multi_warehouse_in_magento', '=', False)]}"
+                                           required="magento_instance_id != False and is_multi_warehouse_in_magento == False"
                                            widget="many2many_tags"/>
                                     <div class="text-muted" id="sale_coupon">
                                         Warehouses used to compute the stock quantities, when only
@@ -477,12 +493,12 @@
                                         If checked, import Product Stock from Magento to Odoo
                                     </div>
                                     <div class="content-group"
-                                         attrs="{'invisible' : ['|',('is_import_product_stock','=',False),('is_multi_warehouse_in_magento', '=', True)]}">
+                                         invisible="is_import_product_stock == False or is_multi_warehouse_in_magento == True">
                                         <div>
                                             <label for="import_stock_warehouse"
                                                    string="Import Stock Warehouse"/>
                                             <field name="import_stock_warehouse"
-                                                   attrs="{'required' : [('is_import_product_stock','=',True),('is_multi_warehouse_in_magento', '=', False)]}"/>
+                                                   required="is_import_product_stock == True and is_multi_warehouse_in_magento == False"/>
                                         </div>
                                         <div class="text-muted">
                                             Warehouse used to store stock quantities, when only
@@ -493,7 +509,7 @@
                                 </div>
                             </div>
                             <div class="col-12 col-lg-6 o_setting_box"
-                                 attrs="{'invisible': [('is_multi_warehouse_in_magento', '=', False)]}">
+                                 invisible="is_multi_warehouse_in_magento == False">
                                 <div class="o_setting_right_pane">
                                     <div class="text-muted" id="sale_coupon">
                                         Set Import and export warehouses of inventory locations.
@@ -508,7 +524,7 @@
                                 <div class="o_setting_right_pane">
                                     <label for="magento_stock_field" string="Stock field"/>
                                     <field name="magento_stock_field" class="oe_inline"
-                                           attrs="{'required':[('magento_instance_id','!=', False)]}"/>
+                                           required="magento_instance_id != False"/>
                                     <div class="text-muted">
                                         Select inventory field for magento products.
                                         <br/>
@@ -522,11 +538,11 @@
                             </div>
                         </div>
                         <h2 style="font-size:25px;background-color:#e9ecef;"
-                            attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                            invisible="magento_instance_id == False">
                             Digest
                         </h2>
                         <div class="row mt16 o_settings_container"
-                             attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                             invisible="magento_instance_id == False">
                             <div class="col-xs-12 col-md-6 o_setting_box">
                                 <div class="o_setting_left_pane">
                                     <field name="is_magento_digest" widget="boolean_toggle"/>
@@ -550,7 +566,7 @@
             <field name="model">res.config.settings</field>
             <field name="inherit_id" ref="base.res_config_settings_view_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//div[hasclass('settings')]" position="inside">
+                <xpath expr="//form" position="inside">
                     <div class="app_settings_block"
                          string="Magento Websites"
                          data-string="Magento Websites"
@@ -569,7 +585,7 @@
                         </div>
                         <!-- Magento Websites -->
                         <div name="magento_website_config"
-                             attrs="{'invisible':[('magento_instance_id','=',False)]}">
+                             invisible="magento_instance_id == False">
                             <h2 style="font-size:25px;background-color:#e9ecef;">Magento Website
                             </h2>
                             <div class="row mt16 o_settings_container">
@@ -584,7 +600,7 @@
                         </div>
 
                         <div name="magento_website_config"
-                             attrs="{'invisible':[('magento_website_id','=',False)]}">
+                             invisible="magento_website_id == False">
                             <div class="row mt16 o_settings_container">
                                 <div class="col-12 col-lg-6 o_setting_box">
                                     <div class="o_setting_right_pane">
@@ -601,7 +617,7 @@
                                         <label for="magento_website_pricelist_id"
                                                string="Pricelist"/>
                                         <field name="magento_website_pricelist_id" class="oe_inline"
-                                               attrs="{'required':[('magento_website_id','!=', False)]}"/>
+                                               required="magento_website_id != False"/>
                                         <div class="text-muted" id="sale_coupon">
                                             Product price will be taken/set from this pricelist if
                                             Catalog Price Scope is website.
@@ -630,33 +646,33 @@
                                         </div>
                                     </div>
                                 </div>
-<!--                                <div class="col-xs-12 col-md-6 o_setting_box"-->
-<!--                                     groups="analytic.group_analytic_accounting">-->
-<!--                                    <div class="o_setting_right_pane">-->
-<!--                                        <label for="m_website_analytic_account_id" string="Website Analytic Account"/>-->
-<!--                                        <div class="text-muted">-->
-<!--                                            <li>-->
-<!--                                                The configuration of the analytic account for this-->
-<!--                                                instance will be applied to all sales orders created by-->
-<!--                                                the-->
-<!--                                                connector. With this configuration, the Analytic Default-->
-<!--                                                Rule configured in Odoo will not apply to Magento2-->
-<!--                                                orders.-->
-<!--                                            </li>-->
-<!--                                            <li>-->
-<!--                                                If you wish to use Odoo Analytic Default Rule, you will-->
-<!--                                                not have to configure any anaytic account here.-->
-<!--                                            </li>-->
-<!--                                        </div>-->
-<!--                                        <div class="content-group">-->
-<!--                                            <div class="mt16">-->
-<!--                                                <field name="m_website_analytic_account_id"-->
-<!--                                                       class="o_light_label"-->
-<!--                                                       options="{'no_create':True,'no_create_edit': True}"/>-->
-<!--                                            </div>-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                </div>-->
+                                <div class="col-xs-12 col-md-6 o_setting_box"
+                                     groups="analytic.group_analytic_accounting">
+                                    <div class="o_setting_right_pane">
+                                        <label for="m_website_analytic_account_id" string="Website Analytic Account"/>
+                                        <div class="text-muted">
+                                            <li>
+                                                The configuration of the analytic account for this
+                                                instance will be applied to all sales orders created by
+                                                the
+                                                connector. With this configuration, the Analytic Default
+                                                Rule configured in Odoo will not apply to Magento2
+                                                orders.
+                                            </li>
+                                            <li>
+                                                If you wish to use Odoo Analytic Default Rule, you will
+                                                not have to configure any anaytic account here.
+                                            </li>
+                                        </div>
+                                        <div class="content-group">
+                                            <div class="mt16">
+                                                <field name="m_website_analytic_account_id"
+                                                       class="o_light_label"
+                                                       options="{'no_create':True,'no_create_edit': True}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -669,7 +685,7 @@
             <field name="model">res.config.settings</field>
             <field name="inherit_id" ref="base.res_config_settings_view_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//div[hasclass('settings')]" position="inside">
+                <xpath expr="//form" position="inside">
                     <div class="app_settings_block"
                          string="Magento Storeview"
                          data-string="Magento Storeview"
@@ -688,7 +704,7 @@
                         </div>
                         <!-- Magento Storeview -->
                         <div name="magento_storeview_config"
-                             attrs="{'invisible':[('magento_instance_id','=',False)]}">
+                             invisible="magento_instance_id == False">
                             <h2 style="font-size:25px;background-color:#e9ecef;">Magento Website
                             </h2>
                             <div class="row mt16 o_settings_container">
@@ -703,7 +719,7 @@
                         </div>
 
                         <div name="magento_storeview_config"
-                             attrs="{'invisible':[('magento_website_id','=',False)]}">
+                             invisible="magento_website_id == False">
                             <h2 style="font-size:25px;background-color:#e9ecef;">Magento Storeview
                             </h2>
                             <div class="row mt16 o_settings_container">
@@ -719,7 +735,7 @@
                         </div>
 
                         <div name="magento_storeviewe_config"
-                             attrs="{'invisible':[('magento_storeview_id','=',False)]}">
+                             invisible="magento_storeview_id == False">
                             <div class="row mt16 o_settings_container">
                                 <div class="col-12 col-lg-6 o_setting_box">
                                     <div class="o_setting_left_pane">
@@ -742,7 +758,7 @@
                                     </div>
                                 </div>
                                 <div class="col-12 col-lg-6 o_setting_box"
-                                     attrs="{'invisible':[('is_use_odoo_order_sequence','=',True)]}">
+                                     invisible="is_use_odoo_order_sequence == True">
                                     <div class="o_setting_right_pane">
                                         <label for="magento_sale_prefix"/>
                                         <field name="magento_sale_prefix" class="oe_inline"/>
@@ -761,7 +777,6 @@
             <field name="res_model">res.config.settings</field>
             <field name="view_id" ref="base.res_config_settings_view_form"/>
             <field name="view_mode">form</field>
-            <field name="target">inline</field>
             <field name="context">{'module' : 'odoo_magento2_ept'}</field>
         </record>
 

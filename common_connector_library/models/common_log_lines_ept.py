@@ -32,9 +32,10 @@ class CommonLogLineEpt(models.Model):
 
     def create_common_log_line_ept(self, **kwargs):
         """
-        It is use to create log lines.
-        @param : **kwargs, Pass the argument like, self.env['common.log.lines.ept'].create_common_log_line_ept(
-        log_book_id=1, message=message, mismatch=True, log_line_type='fail', model_name = 'sale.order')
+        Define this method for create common.log.lines.ept() model record as
+        per given values.
+        :param: kwargs: dict {}
+        :return: common.log.lines.ept()
         """
         values = {}
         for key, value in kwargs.items():
@@ -47,8 +48,10 @@ class CommonLogLineEpt(models.Model):
 
     def _get_model_id(self, model_name):
         """
-        It is use to get the model id
-        @param :  model_name : Name of the model
+        Define this method for get ir.model() record as per given
+        model name.
+        :param: model_name: model name - str
+        :return: ir.model()
         """
         ir_model_obj = self.env['ir.model']
         return ir_model_obj.sudo().search([('model', '=', model_name)])

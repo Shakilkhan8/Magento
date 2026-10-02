@@ -134,7 +134,7 @@ class SaleOrder(models.Model):
                                                 store=False)
 
     def create_sale_order_ept(self, item, instance, log_line, line_id):
-        is_processed = self._find_price_list(item, log_line, line_id)
+        is_processed = self._find_price_list(item, log_line, line_id, instance)
         order_line = self.env['sale.order.line']
         if is_processed:
             customers = self.__update_partner_dict(item, instance)
@@ -150,8 +150,8 @@ class SaleOrder(models.Model):
                         magento_order = self.create(vals)
                         item.update({'sale_order_id': magento_order})
                         order_line.create_order_line(item, instance, log_line, line_id)
-                        self.__create_discount_order_line(item)
-                        self.__create_shipping_order_line(item)
+                        self.__create_discount_order_line(item, instance)
+                        self.__create_shipping_order_line(item, instance)
                         self.__process_order_workflow(item, log_line)
         return is_processed
 
@@ -170,9 +170,10 @@ class SaleOrder(models.Model):
             is_processed = False
         return is_processed
 
-    def _find_price_list(self, item, log, line_id):
+    def _find_price_list(self, item, log, line_id, instance):
         is_processed = True
-        currency = item.get('order_currency_code')
+        currency = item.get('base_currency_code') if instance.is_order_base_currency else item.get(
+            'order_currency_code')
         currency_id = self._find_currency(currency)
         price_list = self.env['product.pricelist'].search([('currency_id', '=', currency_id.id)])
         if price_list:
@@ -182,7 +183,6 @@ class SaleOrder(models.Model):
             price_list = self.env['product.pricelist'].create({
                 'name': " Pricelist - " + currency,
                 'currency_id': currency_id.id,
-                'discount_policy': 'with_discount',
                 'company_id': self.company_id.id,
             })
             item.update({'price_list_id': price_list})
@@ -323,10 +323,12 @@ class SaleOrder(models.Model):
                     transaction_id = payment_info.get('value')
         return transaction_id
 
-    def __create_shipping_order_line(self, item):
+    def __create_shipping_order_line(self, item, instance):
         order_line = self.env['sale.order.line']
-        incl_amount = float(item.get('shipping_incl_tax', 0.0))
-        excl_amount = float(item.get('shipping_amount', 0.0))
+        incl_amount = float(item.get('base_shipping_incl_tax', 0.0)) if instance.is_order_base_currency else float(
+            item.get('shipping_incl_tax', 0.0))
+        excl_amount = float(item.get('base_shipping_amount', 0.0)) if instance.is_order_base_currency else float(
+            item.get('shipping_amount', 0.0))
         sale_order_id = item.get('sale_order_id')
         if incl_amount or excl_amount:
             tax_type = self.__find_tax_type(item.get('extension_attributes'),
@@ -334,7 +336,7 @@ class SaleOrder(models.Model):
             price = incl_amount if tax_type else excl_amount
             default_product = self.env.ref('odoo_magento2_ept.product_product_shipping')
             product = sale_order_id.magento_instance_id.shipping_product_id or default_product
-            shipping_line = order_line.prepare_order_line_vals(item, {}, product, price)
+            shipping_line = order_line.prepare_order_line_vals(item, {}, product, price, instance)
             shipping_line.update({'is_delivery': True})
             if item.get('shipping_tax'):
                 shipping_line.update({'tax_id': [(6, 0, item.get('shipping_tax'))]})
@@ -391,14 +393,15 @@ class SaleOrder(models.Model):
                 tax_type = True
         return tax_type
 
-    def __create_discount_order_line(self, item):
+    def __create_discount_order_line(self, item, instance):
         order_line = self.env['sale.order.line']
         sale_order_id = item.get('sale_order_id')
-        price = float(item.get('discount_amount') or 0.0) or False
+        price = float(item.get('base_discount_amount') or 0.0) or False if instance.is_order_base_currency else float(
+            item.get('discount_amount') or 0.0) or False
         if price:
             default_product = self.env.ref('odoo_magento2_ept.magento_product_product_discount')
             product = sale_order_id.magento_instance_id.discount_product_id or default_product
-            line = order_line.prepare_order_line_vals(item, {}, product, price)
+            line = order_line.prepare_order_line_vals(item, {}, product, price, instance)
             if item.get('discount_tax'):
                 line.update({'tax_id': [(6, 0, item.get('discount_tax'))]})
             order_line.create(line)
@@ -419,6 +422,7 @@ class SaleOrder(models.Model):
         account_tax_obj = self.env['account.tax']
         tax_details = self.__find_tax_percent_title(item, instance)
         tax_id_list = []
+        country_name = False
         shipping_details = item.get('extension_attributes').get('shipping_assignments')[0].get('shipping').get('address', False)
         if shipping_details:
             country_code = shipping_details.get('country_id')

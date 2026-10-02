@@ -235,7 +235,7 @@ class MagentoOrderDataQueueEpt(models.Model):
             for line in lines:
                 is_processed = line.process_order_queue_line(line, log_line)
                 if is_processed:
-                    line.write({'state': 'done', 'processed_at': datetime.now()})
+                    line.write({'state': 'done', 'processed_at': datetime.now(), 'data': False})
                 else:
                     line.write({'state': 'failed', 'processed_at': datetime.now()})
                 self._cr.commit()

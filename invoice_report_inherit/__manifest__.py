@@ -12,6 +12,6 @@
         'report/invoice_header.xml',
         'report/invoice_template.xml',
         'views/views.xml',
-        'views/templates.xml',
+        # 'views/templates.xml',
     ],
 }

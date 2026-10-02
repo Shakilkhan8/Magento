@@ -25,7 +25,7 @@ class MagentoProductQueueLine(models.Model):
     data = fields.Text(string="", help="Product Data imported from magento.", copy=False)
     processed_at = fields.Datetime(help="Shows Date and Time, When the data is processed",
                                    copy=False)
-    log_lines_ids = fields.One2many("common.log.lines.ept", "import_product_queue_line_id",
+    log_lines_ids = fields.One2many("common.log.lines.ept", "magento_import_product_queue_line_id",
                                     help="Log lines created against which line.")
     do_not_update_existing_product = fields.Boolean(string="Do not update existing Products?",
                                                     help="If checked and Product(s) found in "
@@ -76,7 +76,7 @@ class MagentoProductQueueLine(models.Model):
             item = json.loads(line.data)
             is_processed = self.import_products(item, line)
             if is_processed:
-                line.write({'state': 'done', 'processed_at': datetime.now()})
+                line.write({'state': 'done', 'processed_at': datetime.now(), 'data': False})
             else:
                 line.write({'state': 'failed', 'processed_at': datetime.now()})
             self._cr.commit()
@@ -87,7 +87,13 @@ class MagentoProductQueueLine(models.Model):
         m_product = self.env['magento.product.product']
         attribute = item.get('extension_attributes', {})
         if item.get('type_id') == 'simple':
-            if 'simple_parent_id' in list(attribute.keys()):
+            product = self.env['product.product']
+            m_product = self.env['magento.product.product']
+            product = product.search([('default_code', '=', item.get('sku'))], limit=1)
+            if product:
+                return m_product.search_product_in_layer(line, item)
+                # return m_product._map_product_in_layer(line, item, product)
+            elif 'simple_parent_id' in list(attribute.keys()):
                 m_product = m_product.search([('magento_product_id', '=', item.get('id'))], limit=1)
                 if not m_product or 'is_order' in list(self.env.context.keys()) or line.do_not_update_existing_product:
                     # This case only runs when we get the simple product which are used as an
@@ -133,7 +139,7 @@ class MagentoProductQueueLine(models.Model):
             else:
                 log_line.create_common_log_line_ept(message=message, order_ref=item.get('increment_id', ''),
                                                     res_id=line.id, model_name=line._name,
-                                                    import_product_queue_line_id=line.id,
+                                                    magento_import_product_queue_line_id=line.id,
                                                     default_code=item.get('sku'),
                                                     magento_instance_id=line.instance_id.id)
             line.queue_id.write({'is_process_queue': False})

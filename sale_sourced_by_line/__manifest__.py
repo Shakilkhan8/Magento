@@ -2,7 +2,7 @@
 {
     "name": "Sale Sourced by Line",
     "summary": "Multiple warehouse source locations for Sale order",
-    "version": "16.0.1.1.0",
+    'version': '19.0.2.1.3',
 
     "category": "Warehouse",
     "license": "AGPL-3",

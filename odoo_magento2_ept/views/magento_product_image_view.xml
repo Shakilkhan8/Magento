@@ -14,14 +14,14 @@
                         </h2>
                         <label for="url" />
                         <br />
-                        <field name="url" attrs="{'required': [('image', '=', False)]}" />
+                        <field name="url" required="image == False" />
                         <br />
                     </div>
 
                     <div class="col-md-6 col-xl-7 text-center o_website_sale_image_modal_container">
                         <div class="row">
                             <div class="col">
-                                <field name="image" widget="image" attrs="{'required': [('url', '=', '')]}" />
+                                <field name="image" widget="image" required="url == ''" />
                             </div>
                         </div>
                     </div>
@@ -46,10 +46,10 @@
                 <field name="image" />
                 <field name="sequence" widget="handle" />
                 <templates>
-                    <t t-name="kanban-box">
-                        <div class="card oe_kanban_global_click p-o">
-                            <div class="o_squared_image">
-                                <img alt="Product" class="card-img-top"
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <div class="o_kanban_image">
+                                <img alt="Product" class="o_image_64_contain"
                                     t-att-src="kanban_image('magento.product.image', 'image', record.id.raw_value)" />
                             </div>
                             <div class="oe_kanban_details">
@@ -58,8 +58,8 @@
                                 </strong>
                                 <br />
                                 <t t-set="size_status" t-value="'badge-success'" />
-                                <span t-attf-class="badge #{size_status} o_product_image_size"
-                                    t-esc="record.image.value" t-att-title="message" />
+                              <!--  <span t-attf-class="badge #{size_status} o_product_image_size"
+                                    t-esc="record.image.value" t-att-title="message" />-->
                             </div>
                         </div>
                     </t>

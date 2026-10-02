@@ -124,7 +124,7 @@ class MagentoProductProduct(models.Model):
                 'type': 'ir.actions.act_window',
                 'res_model': 'product.product',
                 'view_type': 'form',
-                'view_mode': 'tree,form',
+                'view_mode': 'list,form',
                 'domain': [('id', '=', self.odoo_product_id.id)],
             }
             return vals
@@ -227,7 +227,6 @@ class MagentoProductProduct(models.Model):
             'name': item.get('name'),
             'default_code': item.get('sku'),
             'type': 'product' if not self._context.get('product_type_service') else 'service',
-            'invoice_policy': 'order'
         }
         description = self.prepare_description(item)
         if description:
@@ -327,9 +326,9 @@ class MagentoProductProduct(models.Model):
             return m_template.create_configurable_template(line, item, template)
         # elif not template:
         #     return self.search_odoo_product_template_exists(magento_sku, item)
-        # else:
-        #     # Create log for do not update product
-        #     return self.verify_configuration(line, item)
+        else:
+            # Create log for do not update product
+            return self.verify_configuration(line, item)
     
     def search_odoo_product_template_exists(self, magento_sku, item):
         """
@@ -371,7 +370,7 @@ class MagentoProductProduct(models.Model):
             else:
                 log_line.create_common_log_line_ept(message=message, order_ref=item.get('increment_id', ''),
                                                     default_code=item.get('sku'),
-                                                    import_product_queue_line_id=line.id, model_name=self._name,
+                                                    magento_import_product_queue_line_id=line.id, model_name=self._name,
                                                     magento_instance_id=instance.id)
             line.queue_id.write({'is_process_queue': False})
             self._cr.commit()
@@ -430,7 +429,7 @@ class MagentoProductProduct(models.Model):
                 else:
                     log_line.create_common_log_line_ept(message=message,
                                                         default_code=line.product_sku, model_name=self._name,
-                                                        import_product_queue_line_id=line.id,
+                                                        magento_import_product_queue_line_id=line.id,
                                                         magento_instance_id=line.instance_id.id)
                 # log.write({'log_lines': [(0, 0, {
                 #     'message': message,
@@ -469,7 +468,7 @@ class MagentoProductProduct(models.Model):
                         f"Please create the product in Odoo with the same SKU to map the product "
                         f"in layer.")
             log_line.create_common_log_line_ept(message=message, default_code=item.get('sku', ''),
-                                                import_product_queue_line_id=line.id, model_name=self._name)
+                                                magento_import_product_queue_line_id=line.id, model_name=self._name)
             return False
         return True
 
@@ -608,8 +607,6 @@ class MagentoProductProduct(models.Model):
         consumable, product_qty = [], {}
         items = response.get('items', [])
         for item in items:
-            if item.get('product_id')==2493:
-                print('Product')
             m_product = self.search_magento_product(instance, item)
             if m_product:
                 if instance.is_multi_warehouse_in_magento:

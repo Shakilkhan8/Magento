@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <form string="Financial Status" class="o_magento_ept">
                 <div class="oe_title mb-2 ml-2"
-                     attrs="{'invisible': [('magento_instance_id', '!=', False)]}">
+                     invisible="magento_instance_id != False">
                     <h1 class="o_on_board_heading">
                         Currently, no instance configuration is underway.
                     </h1>
@@ -26,12 +26,12 @@
                         </b>
                     </div>
                 </div>
-                <div class="oe_title mb-2" attrs="{'invisible': [('magento_instance_id', '=', False)]}">
+                <div class="oe_title mb-2" invisible="magento_instance_id == False">
                     <h1 class="font-weight-bold o_on_board_heading">
                         <field name="magento_instance_id" readonly="1" options="{'no_open': True}"/>
                     </h1>
                 </div>
-                <notebook attrs="{'invisible': [('magento_instance_id', '=', False)]}"
+                <notebook invisible="magento_instance_id == False"
                           class="o_onboard_notebook">
                     <page string="Financial Status Configurations" name="financial_status_lines">
                         <field name="magento_financial_status_ids" class="o_onboard_padding"/>
@@ -41,7 +41,7 @@
                     <button string="Save Configuration" type="object"
                             name="magento_save_financial_status_configurations"
                             class="oe_highlight o_onboard_button"
-                            attrs="{'invisible': [('magento_instance_id', '=', False)]}"/>
+                            invisible="magento_instance_id == False"/>
                     <button class="oe_highlight o_onboard_button_white" special="cancel"
                             string="Cancel"/>
                 </footer>

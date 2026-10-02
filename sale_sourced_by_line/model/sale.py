@@ -1,9 +1,3 @@
-# Copyright 2013-2014 Camptocamp SA - Guewen Baconnier
-# © 2016 Eficent Business and IT Consulting Services S.L.
-# © 2016 Serpent Consulting Services Pvt. Ltd.
-# License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
-
-
 from odoo import fields, models
 
 
@@ -28,7 +22,6 @@ class SaleOrderLine(models.Model):
         "Source Warehouse",
         readonly=True,
         related="product_id.source_warehouse_id",  depends=['product_id'],
-        states={"draft": [("readonly", False)], "sent": [("readonly", False)]},
         help="If a source warehouse is selected, "
         "it will be used to define the route. "
         "Otherwise, it will get the warehouse of "

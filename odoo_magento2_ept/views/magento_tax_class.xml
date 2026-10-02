@@ -4,11 +4,11 @@
             <field name="name">magento.tax.class.tree</field>
             <field name="model">magento.tax.class</field>
             <field name="arch" type="xml">
-                <tree string="Magento Tax Class" create="false">
+                <list string="Magento Tax Class" create="false">
                     <field name="magento_tax_class_name"/>
                     <field name="magento_tax_class_type"/>
                     <field name="magento_instance_id"/>
-                </tree>
+                </list>
             </field>
         </record>
 
@@ -23,11 +23,11 @@
                             <group colspan="4">
                                 <group>
                                     <field name="magento_instance_id" readonly="1"/>
-                                    <field name="magento_tax_class_name" attrs="{'readonly': [('active', '=', True)]}"/>
+                                    <field name="magento_tax_class_name" readonly="active == True"/>
                                 </group>
                                 <group>
-                                    <field name="magento_tax_class_type" attrs="{'readonly': [('active', '=', True)]}"/>
-                                    <field name="magento_tax_class_id" attrs="{'readonly': [('active', '=', True)]}"/>
+                                    <field name="magento_tax_class_type" readonly="active == True"/>
+                                    <field name="magento_tax_class_id" readonly="active == True"/>
                                 </group>
                             </group>
                         </group>
@@ -42,9 +42,9 @@
             <field name="arch" type="xml">
                 <search string="Magento Tax Class Search View">
                     <field name="magento_tax_class_name"/>
-                    <group expand="0" string="Group By">
-                        <filter name = "Instance" string="Magento Instance" context="{'group_by' : 'magento_instance_id'}"/>
-                        <filter name = "Magento Tax Class Type" string="Tax Class Type" context="{'group_by' : 'magento_tax_class_type'}"/>
+                    <group>
+                        <filter name="Instance" string="Magento Instance" domain="[]" context="{'group_by' : 'magento_instance_id'}"/>
+                        <filter name="Magento Tax Class Type" string="Tax Class Type" domain="[]" context="{'group_by' : 'magento_tax_class_type'}"/>
                     </group>
                 </search>
             </field>
@@ -54,7 +54,7 @@
                 <field name="name">Tax Class</field>
                 <field name="type">ir.actions.act_window</field>
                 <field name="res_model">magento.tax.class</field>
-                <field name="view_mode">tree,form</field>
+                <field name="view_mode">list,form</field>
                 <field name="view_id" ref="view_magento_tax_class_tree"/>
                 <field name="help" type="html">
                 <p>

@@ -16,7 +16,7 @@
                         <button type="object" style="width:16% !important"
                                     name="open_reset_credentials_wizard" class="oe_stat_button"
                                     groups="base.group_system" icon="fa-undo"
-                                    attrs="{'invisible': [('active','=',False)]}">
+                                    invisible="active == False">
                                 <span class="o_stat_text">Reset Credentials</span>
                             </button>
                         <button class="oe_stat_button" name="list_of_delivery_method"
@@ -39,7 +39,7 @@
                         </button>
                         <button class="oe_stat_button" name="list_of_instance_cron"
                                 type="object" icon="fa-tasks"
-                                attrs="{'invisible': [('cron_count', '=',0)]}"
+                                invisible="cron_count == 0"
                                 style="width:14.5%" groups="base.group_system">
                             <div class="o_field_widget o_stat_info">
                                 <field string="Cron Scheduler" name="cron_count" widget="statinfo"/>
@@ -64,12 +64,12 @@
                         </button>
                         <button class="oe_stat_button"
                                 name="magento_action_open_deactive_wizard" icon="fa-lock"
-                                type="object" attrs="{'invisible': [('active','=',False)]}">
+                                type="object" invisible="active == False">
                             <span class="o_stat_text" style="color:#2dab2d">Active</span>
                         </button>
                         <button class="oe_stat_button"
                                 name="magento_action_open_deactive_wizard" icon="fa-unlock"
-                                type="object" attrs="{'invisible': [('active','=',True)]}">
+                                type="object" invisible="active == True">
                             <span class="o_stat_text" style="color:#da3434">Archive</span>
                         </button>
                     </div>
@@ -90,11 +90,11 @@
                             </group>
                             <group>
                                 <field name="magento_version"
-                                       attrs="{'readonly': [('active', '=', True)]}"/>
+                                       readonly="active == True"/>
                             </group>
                             <group>
                                 <field name="access_token" password="1"
-                                       attrs="{'invisible': [('active', '=', True)]}"/>
+                                       invisible="active == True"/>
                             </group>
                         </group>
                         <group colspan="2">
@@ -106,7 +106,7 @@
                             </group>
                             <group>
                                 <field name="magento_verify_ssl"
-                                       attrs="{'readonly': [('active', '=', True)]}"/>
+                                       readonly="active == True"/>
                             </group>
                         </group>
                     </group>
@@ -153,11 +153,11 @@
                             </group>
                         </page>
                         <page name="active_users" string="Users">
-                            <field name="active_user_ids">
-                                <tree create="false" editable="bottom">
+                            <field name="active_user_ids" nolabel="1">
+                                <list create="false" editable="bottom">
                                     <field name="user_id" readonly="1"/>
                                     <field name="magento_import_order_page_count"/>
-                                </tree>
+                                </list>
                             </field>
                         </page>
                         <page name="order_defaults" string="Order Defaults">
@@ -170,7 +170,7 @@
                         </page>
                         <page name="Notification"
                               string="Notification"
-                              attrs="{'invisible': [('is_create_activity', '=', False)]}">
+                              invisible="is_create_activity == False">
                             <group>
                                 <group>
                                     <field name="is_create_activity" invisible="1"/>
@@ -208,17 +208,17 @@
         <field name="name">Magento Instances</field>
         <field name="model">magento.instance</field>
         <field name="arch" type="xml">
-            <tree string="Magento Instance" create='false'>
+            <list string="Magento Instance" create='false'>
                 <field name="name"/>
                 <field name="magento_url"/>
-            </tree>
+            </list>
         </field>
     </record>
 
     <record id="action_magento_instance" model="ir.actions.act_window">
         <field name="name">Magento Instances</field>
         <field name="res_model">magento.instance</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_magento_instance_tree"/>
     </record>
 

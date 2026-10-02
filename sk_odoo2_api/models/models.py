@@ -156,7 +156,7 @@ class ProductProductInherit(models.Model):
         res['default_code'] = str(self.unique_sku_number() + 1)
 
         return res
-
+   
     def unique_sku_number(self):
         company_id = self.env['res.company'].search([
             ('is_api_allowed', '=', True)
@@ -164,9 +164,11 @@ class ProductProductInherit(models.Model):
 
         if not company_id:
             return 0
+
         products = self.env['product.product'].search([
             ('active', '=', True),
-            ('default_code', '!=', False)
+            ('default_code', '!=', False),
+            ('company_id', '=', company_id.id),
         ])
         numbers = []
 
@@ -487,6 +489,53 @@ class ProductVariantInherit(models.Model):
 
         return products
 
+    # @api.model_create_multi
+    # def create(self, vals_list):
+    #     products = super().create(vals_list)
+    #     next_no = self.unique_sku_number()
+    #     i = 1
+    #     is_api = []
+    #     for product in products:
+    #
+    #         if product.product_tmpl_id.sync_on:
+    #             product.sync_on = True
+    #         else:
+    #             product.sync_on = False
+    #
+    #         if not product.api_id:
+    #             is_api.append(True)
+    #
+    #         if not product.default_code:
+    #             product.default_code = next_no + i
+    #             i += 1
+    #
+    #         att_vals = []
+    #         for line in product.attribute_line_ids:
+    #             for attr in line.value_ids:
+    #                 att_vals.append({
+    #                     'attribute': attr.attribute_id.name,
+    #                     'value': attr.name
+    #                 })
+    #
+    #         payload = {
+    #             'data': {
+    #                 'api_id': product.product_tmpl_id.id,
+    #                 'attribute_values': att_vals,
+    #                 'variant_ids': sorted(products.ids),
+    #                 'ids_and_values': [{
+    #                     'id': rec.id,
+    #                     'default_code': rec.default_code,
+    #                     'sync_on': rec.sync_on,
+    #                     'weight': rec.weight,
+    #                 } for rec in sorted(products)],
+    #             }
+    #         }
+    #
+    #         if is_api:
+    #             self.product_tmpl_id.update_variants(data=payload)
+    #
+    #     return products
+
     def unique_sku_number(self):
         company_id = self.env['res.company'].search([
             ('is_api_allowed', '=', True)
@@ -494,9 +543,11 @@ class ProductVariantInherit(models.Model):
 
         if not company_id:
             return 0
+
         products = self.env['product.product'].search([
             ('active', '=', True),
-            ('default_code', '!=', False)
+            ('default_code', '!=', False),
+            ('company_id', '=', company_id.id),
         ])
         numbers = []
 

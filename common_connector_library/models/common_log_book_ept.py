@@ -31,8 +31,10 @@ class CommonLogBookEpt(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        """ To generate a sequence for a common logbook.
-            @param : vals : Dictionary of common log book create.
+        """
+        Inherited this method for generate a sequence for a common logbook.
+        :param: vals_list: list of dict{}
+        :return: common.log.book.ept()
         """
         for vals in vals_list:
             seq = self.env['ir.sequence'].next_by_code('common.log.book.ept') or '/'
@@ -41,10 +43,10 @@ class CommonLogBookEpt(models.Model):
 
     def create_common_log_book_ept(self, **kwargs):
         """
-        This method is use to create a log book.
-        @param : **kwargs, Pass the argument like,
-        log_book = self.env['common.log.book.ept'].create_common_log_book_ept (module='shopify_ept',
-        model_name='sale.order',type='import')
+        Define this method for create a log book as per given log book
+        record values.
+        :param: kwargs: dict {}
+        :return: common.log.book.ept()
         """
         values = {}
         for key, value in kwargs.items():
@@ -57,8 +59,9 @@ class CommonLogBookEpt(models.Model):
 
     def _get_model_id(self, model_name):
         """
-        It is use to get the model id
-        @param :  model_name : Name of the model
+        Define this method for get ir.model() record by using model name.
+        :param: model_name: model name - str
+        :return: ir.model()
         """
         model_id = self.env['ir.model']
         return model_id.sudo().search([('model', '=', model_name)])

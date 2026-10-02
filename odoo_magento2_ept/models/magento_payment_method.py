@@ -15,7 +15,6 @@ class MagentoPaymentMethod(models.Model):
     _rec_name = 'payment_method_name'
 
     @api.model
-    @api.returns('res.company')
     def _default_company_id(self):
         """
         Returns Default Company Id

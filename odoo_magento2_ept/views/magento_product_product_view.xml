@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <odoo>
         <record id="act_magento_product" model="ir.actions.act_window">
             <field name="name">Magento Product</field>
             <field name="res_model">magento.product.product</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="domain">[('odoo_product_id','=',active_id)]</field>
             <field name="context">{'search_default_product_id': active_id}</field>
         </record>
@@ -34,12 +33,12 @@
                         <div class="oe_button_box" name="button_box">
                             <button class="oe_stat_button"
                                     name="toggle_active" icon="fa-lock"
-                                    type="object" attrs="{'invisible': [('active','=',False)]}">
+                                    type="object" invisible="active == False">
                                 <span class="o_stat_text" style="color:#2dab2d">Active</span>
                             </button>
                             <button class="oe_stat_button"
                                     name="toggle_active" icon="fa-unlock"
-                                    type="object" attrs="{'invisible': [('active','=',True)]}">
+                                    type="object" invisible="active == True">
                                 <span class="o_stat_text" style="color:#da3434">Archived</span>
                             </button>
                             <button string="Odoo Product" type="object" name="view_odoo_product"  class="oe_stat_button" icon="fa-chain" />
@@ -70,7 +69,7 @@
 <!--                                            <div name="standard_price_uom">-->
 <!--                                                <field name="standard_price" attrs="{'readonly':['&amp;', ('valuation','=','real_time'), ('cost_method', 'in', ['standard', 'average'])]}" class="oe_inline" widget="monetary" options="{'currency_field': 'currency_id'}" modifiers="{'readonly': ['&amp;', ['valuation', '=', 'real_time'], ['cost_method', 'in', ['standard', 'average']]]}"/>-->
 <!--                                            </div>-->
-<!--                                             <button string="Set standard price" type="action" name="311" class="oe_link oe_read_only" colspan="2" invisible="1" modifiers="{'invisible': true}"/> -->
+<!--                                            <button string="Set standard price" type="action" name="311" class="oe_link oe_read_only" colspan="2" invisible="1" modifiers="{'invisible': true}"/>-->
 <!--                                            <button string="Set standard price" type="action" name="311" class="oe_link oe_read_only" colspan="2" invisible="1" modifiers="{'invisible': true}"/>-->
 <!--                                            <field name="company_id" options="{'no_create': True}" can_create="true" can_write="true" invisible="1" modifiers="{'invisible': true}"/>-->
 <!--                                            <field name="uom_id" options="{'no_create': True}" on_change="1" can_create="true" can_write="true" invisible="1" modifiers="{'invisible': true, 'required': true}"/>-->
@@ -114,7 +113,7 @@
                 <field name="name">magento.product.product.tree</field>
                 <field name="model">magento.product.product</field>
                 <field name="arch" type="xml">
-                    <tree string="Magento Product" create="false">
+                    <list string="Magento Product" create="false">
                         <field name="magento_product_id" string="Magento Product ID" invisible="1"/>
                         <field name="magento_sku"/>
                         <field name="magento_product_name"/>
@@ -122,7 +121,7 @@
                         <field name="product_type"/>
                         <field name="magento_instance_id"/>
                         <field name="sync_product_with_magento"/>
-                    </tree>
+                    </list>
                 </field>
             </record>
 
@@ -130,7 +129,7 @@
                 <field name="name">Product Variants</field>
                 <field name="type">ir.actions.act_window</field>
                 <field name="res_model">magento.product.product</field>
-                <field name="view_mode">form,tree</field>
+                <field name="view_mode">form,list</field>
                 <field name="view_id" ref="view_magento_product_tree"/>
                 <field name="help" type="html">
                 <p>
@@ -157,9 +156,9 @@
                     <field name="magento_sku" />
                     <field name="magento_product_name" />
                     <field name="magento_instance_id"/>
-                    <group expand="0" string="Group By">
-                        <filter name ="Instance"  string="Magento Instance" context="{'group_by' : 'magento_instance_id'}"/>
-                        <filter name ="Product Type" string="Product Type" context="{'group_by' : 'product_type'}"/>
+                    <group>
+                        <filter name="Instance" string="Magento Instance" domain="[]" context="{'group_by' : 'magento_instance_id'}"/>
+                        <filter name="Product Type" string="Product Type" domain="[]" context="{'group_by' : 'product_type'}"/>
                     </group>
                     <filter name="archive" string="Archived" domain="[('active','=',False)]"/>
                 </search>

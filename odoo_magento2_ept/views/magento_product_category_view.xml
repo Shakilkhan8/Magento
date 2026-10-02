@@ -4,10 +4,10 @@
             <field name="name">magento.product.category.tree</field>
             <field name="model">magento.product.category</field>
             <field name="arch" type="xml">
-                <tree string="Magento Product Category" create="false">
+                <list string="Magento Product Category" create="false">
                     <field name="complete_category_name"/>
                     <field name="instance_id"/>
-                </tree>
+                </list>
             </field>
         </record>
 
@@ -44,10 +44,10 @@
             <field name="arch" type="xml">
                 <search string="Magento Category search view">
                     <field name="name"/>
-                    <group expand="0" string="Group By">
-                        <filter name = "Instance" string="Magento Instance" context="{'group_by' : 'instance_id'}"/>
-                        <filter name = "Magento Parent Category" string="Magento Parent" context="{'group_by' : 'magento_parent_id'}"/>
-                        <filter name = "Magento Active Category" string="Magento Active Category" context="{'group_by' : 'is_active'}"/>
+                    <group>
+                        <filter name="Instance" string="Magento Instance" domain="[]" context="{'group_by' : 'instance_id'}"/>
+                        <filter name="Magento Parent Category" string="Magento Parent" domain="[]" context="{'group_by' : 'magento_parent_id'}"/>
+                        <filter name="Magento Active Category" string="Magento Active Category" domain="[]" context="{'group_by' : 'is_active'}"/>
                     </group>
                 </search>
             </field>
@@ -56,7 +56,7 @@
                 <field name="name">Product Category</field>
                 <field name="type">ir.actions.act_window</field>
                 <field name="res_model">magento.product.category</field>
-                <field name="view_mode">tree,form</field>
+                <field name="view_mode">list,form</field>
                 <field name="view_id" ref="view_magento_product_category_tree"/>
                 <field name="help" type="html">
                 <p>

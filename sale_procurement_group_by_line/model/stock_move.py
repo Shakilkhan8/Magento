@@ -9,11 +9,34 @@ class StockMove(models.Model):
 
     def _update_candidate_moves_list(self, candidate_moves_list):
         """
-        We want to merge stock moves within the procurement group only
+        Keep stock moves separated by Sales Order Line.
+
+        Odoo 19 no longer has procurement_group_id on stock moves,
+        so use the Sale Order Line / stock reference relationship.
         """
-        res = super()._update_candidate_moves_list(candidate_moves_list)
+
+        res = super()._update_candidate_moves_list(
+            candidate_moves_list
+        )
+
         if self.env.context.get("sale_group_by_line"):
-            candidate_moves_list.append(
-                self.sale_line_id.procurement_group_id.stock_move_ids
-            )
+            for move in self:
+                sale_line = move.sale_line_id
+
+                if not sale_line:
+                    continue
+
+                # Odoo 19:
+                # Get references associated with this SO.
+                references = sale_line.order_id.stock_reference_ids
+
+                if references:
+                    # Find stock moves connected with the same references.
+                    reference_moves = references.mapped("move_ids")
+
+                    if reference_moves:
+                        candidate_moves_list.append(
+                            reference_moves
+                        )
+
         return res

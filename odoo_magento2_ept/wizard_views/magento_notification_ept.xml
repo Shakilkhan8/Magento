@@ -35,17 +35,17 @@
                     </group>
                     <notebook>
                         <page string="Activity Configuration"
-                              attrs="{'invisible': [('is_enable', '=', False)]}">
+                              invisible="is_enable == False">
                             <group>
                                 <group>
                                     <field name="activity_type"
-                                           attrs="{'required': [('is_enable', '=', True)]}"/>
+                                           required="is_enable == True"/>
                                     <field name="lead_days"
-                                           attrs="{'required': [('is_enable', '=', True)]}"/>
+                                           required="is_enable == True"/>
                                 </group>
                                 <group>
                                     <field name="user_ids" widget="many2many_tags"
-                                           attrs="{'required': [('is_enable', '=', True)]}"/>
+                                           required="is_enable == True"/>
                                 </group>
                             </group>
                         </page>

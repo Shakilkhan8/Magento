@@ -41,10 +41,10 @@
                                         <li>
                                             Order items are mandatory for exporting refunds on Magento.
                                         </li>
-                                        <li attrs="{'invisible': [('refund_type', '=', 'offline')]}">
+                                        <li invisible="refund_type == 'offline'">
                                             Refund requests will be initiated through the Payment Gateway.
                                         </li>
-                                        <li attrs="{'invisible': [('is_return_stock', '=', False)]}">
+                                        <li invisible="is_return_stock == False">
                                             Magento increases the quantity of the refunded product in its stock.
                                         </li>
                                     </ol>

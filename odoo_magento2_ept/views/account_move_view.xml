@@ -5,13 +5,13 @@
         <field name="model">account.move</field>
         <field name="priority">100</field>
         <field name="arch" type="xml">
-            <tree create="0" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'"
+            <list create="0" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'"
                   string="Invoice">
                 <header>
                     <button name="%(odoo_magento2_ept.magento_export_credit_memo_wizard_action)d"
                             string="Export Credit Memo"
                             type="action" class="btn-primary"
-                            attrs="{'invisible':[('move_type','!=','out_invoice')]}"/>
+                            invisible="move_type != 'out_invoice'"/>
                 </header>
                 <field name="invoice_origin" string="Order Number"/>
                 <field name="partner_id" invisible="1"/>
@@ -28,7 +28,7 @@
                 <field name="magento_instance_id"/>
                 <field name="state"/>
                 <field name="move_type" invisible="context.get('move_type',True)"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -37,7 +37,7 @@
         <field name="model">account.move</field>
         <field name="priority">100</field>
         <field name="arch" type="xml">
-            <tree create="0" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'"
+            <list create="0" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'"
                   string="Invoice">
                 <header>
                     <button name="%(odoo_magento2_ept.magento_export_credit_memo_wizard_action)d"
@@ -59,7 +59,7 @@
                 <field name="magento_instance_id"/>
                 <field name="state"/>
                 <field name="move_type" invisible="context.get('move_type',True)"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -73,13 +73,13 @@
             <xpath expr="//header/button[5]" position="after">
                 <button name="export_invoice_magento" string="Export Invoice In Magento"
                         type="object" class="oe_highlight"
-                        attrs="{'invisible':['|','|','|','|','|',
+                        invisible="['|','|','|','|','|',
                             ('is_magento_invoice','=',False),
                             ('move_type','!=','out_invoice'),
                             ('is_exported_to_magento','=',True),
                             ('state', '!=', 'posted'),
                             ('magento_instance_id','=',False),
-                            ('max_no_of_attempts','&gt;',3)]}"/>
+                            ('max_no_of_attempts','&gt;',3)]"/>
             </xpath>
             <xpath expr="//page[@name='other_info']/group/group[@name='accounting_info_group']"
                    position="after">
@@ -91,7 +91,7 @@
                     <field name="is_exported_to_magento"/>
                     <field name="max_no_of_attempts" invisible="1"/>
                     <field name="magento_message"
-                           attrs="{'invisible':[('magento_message', '=', False)]}"/>
+                           invisible="magento_message == False"/>
                 </group>
             </xpath>
         </field>
@@ -113,7 +113,7 @@
     <record id="action_magento_invoice_tree1_ept" model="ir.actions.act_window">
         <field name="name">Customer Invoices</field>
         <field name="res_model">account.move</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="domain">[('move_type','=','out_invoice'),('magento_instance_id','!=',False)]
         </field>
         <field name="context">{'default_move_type':'out_invoice','move_type':'out_invoice',
@@ -152,7 +152,7 @@
                         type="action"
                         string="Create at Magento"
                         help="Issue Credit Note in Magento"
-                        attrs="{'invisible': ['|','|','|', ('magento_instance_id', '=', False), ('is_exported_to_magento', '=', True), ('move_type', '!=', 'out_refund'), ('state', '!=', 'posted')]}"/>
+                        invisible="['|','|','|', ('magento_instance_id', '=', False), ('is_exported_to_magento', '=', True), ('move_type', '!=', 'out_refund'), ('state', '!=', 'posted')]"/>
             </xpath>
         </field>
     </record>
@@ -160,7 +160,7 @@
     <record id="action_magento_refund_invoice_tree_ept" model="ir.actions.act_window">
         <field name="name">Customer Refunds</field>
         <field name="res_model">account.move</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="domain">[('move_type','=','out_refund'),('magento_instance_id','!=',False)]
         </field>
         <field name="context">{'default_move_type':'out_refund','move_type':'out_refund',

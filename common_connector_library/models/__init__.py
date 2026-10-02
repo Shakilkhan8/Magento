@@ -5,7 +5,7 @@ from . import sale_workflow_process
 from . import sale_order
 from . import product_product
 from . import stock_quant
-from . import stock_quant_package
+from . import stock_package
 from . import stock_picking
 from . import product_pricelist
 from . import product_attribute

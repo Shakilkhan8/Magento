@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        <template id="sale_order_report_template_id" inherit_id='web.external_layout_standard'>
+        <template id="sale_order_report_template_id" inherit_id='web.external_layout_bold'>
             <xpath expr="//div[@t-att-style='report_header_style']" position="replace">
                 <div t-attf-class="header o_company_#{company.id}_layout" t-att-style="report_header_style">
                     <div class="row">

@@ -37,7 +37,7 @@
                     </group>
                 </group>
                 <group class="o_onboard_padding"
-                       attrs="{'invisible': ['|', ('magento_version', '==', '2.1'),('magento_version', '==', '2.2')]}">
+                       invisible="magento_version == '2.1' or magento_version == '2.2'">
                     <group class="magento_is_export_update_images_alignment">
                         <field name='is_multi_warehouse_in_magento' widget="boolean_toggle"
                                class="o_onboard_boolean_toggle"

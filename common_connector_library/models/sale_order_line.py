@@ -8,12 +8,14 @@ class SaleOrderLine(models.Model):
 
     warehouse_id_ept = fields.Many2one('stock.warehouse')
 
-    def _prepare_procurement_values(self, group_id=False):
+    def _prepare_procurement_values(self):
         """
         This method sets a warehouse based on the sale order line warehouse.
         So it will create Delivery orders based on order line level sets warehouse-wise.
+        :param: group_id: res.groups()
+        :return: dict {}
         """
-        values = super(SaleOrderLine, self)._prepare_procurement_values(group_id)
+        values = super(SaleOrderLine, self)._prepare_procurement_values()
         if self.warehouse_id_ept:
             values['warehouse_id'] = self.warehouse_id_ept
         return values

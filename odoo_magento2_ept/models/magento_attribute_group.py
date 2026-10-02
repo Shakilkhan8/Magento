@@ -36,7 +36,7 @@ class MagentoAttributeGroup(models.Model):
         :param attr_set: attribute set list
         :return:
         """
-        filters = create_search_criteria({'attribute_set_id': int(attr_set.attribute_set_id)})
+        filters = create_search_criteria({'attribute_set_id': int(attr_set.get('attribute_set_id'))})
         query_str = Php.http_build_query(filters)
         url = f"/V1/products/attribute-sets/groups/list?{query_str}"
         groups = req(instance, url)
@@ -55,7 +55,7 @@ class MagentoAttributeGroup(models.Model):
             m_group = self.create({
                 'attribute_group_id': group_id,
                 'name': group.get('attribute_group_name', ''),
-                'attribute_set_id': attr_set.id,
+                'attribute_set_id': attr_set.get('id'),
                 'instance_id': instance.id
             })
         return m_group

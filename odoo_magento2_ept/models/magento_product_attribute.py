@@ -194,6 +194,6 @@ class MagentoProductAttribute(models.Model):
             'name': 'Attribute Value',
             'type': 'ir.actions.act_window',
             'res_model': 'magento.attribute.option',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('magento_attribute_id', '=', self.id)]
         }

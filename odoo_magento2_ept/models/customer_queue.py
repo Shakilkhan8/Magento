@@ -196,7 +196,7 @@ class MagentoCustomerQueueEpt(models.Model):
                 queue.write({'is_process_queue': False})
             for line in lines:
                 line.process_queue_line()
-                line.write({'state': 'done'})
+                line.write({'state': 'done', 'data': False})
             message = "Customer Queue #{} Processed!!".format(queue.name)
             queue.instance_id.show_popup_notification(message)
             # To maintain that current queue process are completed and new queue will be executed.

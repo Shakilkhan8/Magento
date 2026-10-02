@@ -10,17 +10,22 @@ class AccountFiscalPosition(models.Model):
                                          help="Warehouse country based on sales order warehouse country system will "
                                               "apply fiscal position")
 
-    @api.model
-    def _get_fpos_by_region(self, country_id=False, state_id=False, zipcode=False, vat_required=False):
-        """
-        Inherited this method for selecting fiscal position based on warehouse (origin country).
-        """
-        origin_country_id = self._context.get('origin_country_ept', False)
-        if not origin_country_id:
-            return super(AccountFiscalPosition, self)._get_fpos_by_region(country_id=country_id, state_id=state_id,
-                                                                          zipcode=zipcode, vat_required=vat_required)
-        return self.search_fiscal_position_based_on_origin_country(origin_country_id, country_id, state_id, zipcode,
-                                                                   vat_required)
+    # @api.model
+    # def _get_fpos_by_region(self, country_id=False, state_id=False, zipcode=False, vat_required=False):
+    #     """
+    #     Inherited this method for selecting fiscal position based on warehouse (origin country).
+    #     :param: res.country() id
+    #     :param: res.state() id
+    #     :param: zip code
+    #     :param: True/False
+    #     :return: account.fiscal.position()
+    #     """
+    #     origin_country_id = self.env.context.get('origin_country_ept', False)
+    #     if not origin_country_id:
+    #         return super(AccountFiscalPosition, self)._get_fpos_by_region(country_id=country_id, state_id=state_id,
+    #                                                                       zipcode=zipcode, vat_required=vat_required)
+    #     return self.search_fiscal_position_based_on_origin_country(origin_country_id, country_id, state_id, zipcode,
+    #                                                                vat_required)
 
     @api.model
     def search_fiscal_position_based_on_origin_country(self, origin_country_id, country_id, state_id, zipcode,
@@ -37,17 +42,17 @@ class AccountFiscalPosition(models.Model):
         """
         if not country_id:
             return False
-        if self._context.get('is_b2b_amz_order', False):
-            vat_required = self._context.get('is_b2b_amz_order', False)
+        if self.env.context.get('is_b2b_amz_order', False):
+            vat_required = self.env.context.get('is_b2b_amz_order', False)
         base_domain = [('vat_required', '=', vat_required), ('company_id', 'in', [self.env.company.id, False]),
                        ('origin_country_ept', 'in', [origin_country_id, False])]
         null_state_dom = state_domain = [('state_ids', '=', False)]
         null_zip_dom = zip_domain = [('zip_from', '=', False), ('zip_to', '=', False)]
         null_country_dom = [('country_id', '=', False), ('country_group_id', '=', False)]
-        is_amazon_fpos = self._context.get('is_amazon_fpos', False)
+        is_amazon_fpos = self.env.context.get('is_amazon_fpos', False)
         if is_amazon_fpos:
             base_domain.append(('is_amazon_fpos', '=', is_amazon_fpos))
-        is_bol_fpos = self._context.get('is_bol_fpos', False)
+        is_bol_fpos = self.env.context.get('is_bol_fpos', False)
         if is_bol_fpos:
             base_domain.append(('is_bol_fiscal_position', '=', is_bol_fpos))
         if zipcode:
@@ -73,3 +78,51 @@ class AccountFiscalPosition(models.Model):
             # Fallback on catchall (no country, no group)
             fpos = self.search(base_domain + null_country_dom, limit=1)
         return fpos
+
+    @api.model
+    def _get_fiscal_position(self, partner, delivery=None):
+        """
+        Override this method for apply common connector logic to find and set fiscal position in the
+        order as per connector wise request.
+        :migrated by: Shubham Kumar
+        :date: 18 Sep 2025
+        :param: partner: res.partner() (order partner)
+        :param: delivery: res.partner() (delivery partner)
+        :return: fiscal position found (recordset)
+        TODO : In future we need to improve the common connector apply fiscal position flow as per default v19 flow.
+        """
+        origin_country_id = self.env.context.get('origin_country_ept', False)
+        if not partner:
+            return self.env['account.fiscal.position']
+
+        company = self.env.company
+        intra_eu = vat_exclusion = False
+        if company.vat and partner.vat:
+            eu_country_codes = set(self.env.ref('base.europe').country_ids.mapped('code'))
+            intra_eu = company.vat[:2] in eu_country_codes and partner.vat[:2] in eu_country_codes
+            vat_exclusion = company.vat[:2] == partner.vat[:2]
+
+        # If company and partner have the same vat prefix (and are both within the EU), use invoicing
+        if not delivery or (intra_eu and vat_exclusion):
+            delivery = partner
+
+        # partner manually set fiscal position always win
+        manual_fiscal_position = (
+                delivery.with_company(company).property_account_position_id
+                or partner.with_company(company).property_account_position_id
+        )
+        if manual_fiscal_position:
+            return manual_fiscal_position
+
+        if not partner.country_id:
+            return self.env['account.fiscal.position']
+        # if we find origin_country_id then we consider the common connector flow for apply fiscal position
+        if origin_country_id:
+            return self.search_fiscal_position_based_on_origin_country(
+                origin_country_id, delivery.country_id.id, delivery.state_id.id, delivery.zip,
+                (bool(delivery.vat)))
+        else:
+            all_auto_apply_fpos = self.search(
+                self._check_company_domain(self.env.company) + [('auto_apply', '=', True)])
+
+            return all_auto_apply_fpos._get_first_matching_fpos(delivery)

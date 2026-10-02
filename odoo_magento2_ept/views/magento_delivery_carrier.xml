@@ -5,12 +5,12 @@
             <field name="name">magento.delivery.carrier.tree.view</field>
             <field name="model">magento.delivery.carrier</field>
             <field name="arch" type="xml">
-                <tree create="0">
+                <list create="0">
                     <field name="magento_instance_id" class="oe_inline" />
                     <field name="carrier_label" string="Label" class="oe_inline"/>
                     <field name="magento_carrier_title" string="Title" class="oe_inline"/>
                     <field name="carrier_code" string="Code" class="oe_inline"/>
-                </tree>
+                </list>
             </field>
         </record>
     </data>

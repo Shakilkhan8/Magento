@@ -4,11 +4,11 @@
             <field name="name">magento.attribute.option.tree</field>
             <field name="model">magento.attribute.option</field>
             <field name="arch" type="xml">
-                <tree string="Attribute Options" create="false">
+                <list string="Attribute Options" create="false">
                     <field name="magento_attribute_option_name" string="Attribute Options Name"/>
                     <field name="magento_attribute_id" string="Magento Attribute ID"/>
                     <field name="magento_attribute_option_id" string="Magento ID"/>
-                </tree>
+                </list>
             </field>
         </record>
 
@@ -23,13 +23,13 @@
                             <group colspan="4">
                                 <group>
                                     <field name="instance_id" readonly="1"/>
-                                    <field name="magento_attribute_option_name" attrs="{'readonly': [('active', '=', True)]}"/>
-                                    <field name="magento_attribute_option_id" attrs="{'readonly': [('active', '=', True)]}"/>
+                                    <field name="magento_attribute_option_name" readonly="active == True"/>
+                                    <field name="magento_attribute_option_id" readonly="active == True"/>
                                 </group>
                                 <group>
-                                    <field name="magento_attribute_id" attrs="{'readonly': [('active', '=', True)]}"/>
-                                    <field name="odoo_attribute_id" attrs="{'readonly': [('active', '=', True)]}"/>
-                                    <field name="odoo_option_id" attrs="{'readonly': [('active', '=', True)]}"/>
+                                    <field name="magento_attribute_id" readonly="active == True"/>
+                                    <field name="odoo_attribute_id" readonly="active == True"/>
+                                    <field name="odoo_option_id" readonly="active == True"/>
                                 </group>
                             </group>
                         </group>

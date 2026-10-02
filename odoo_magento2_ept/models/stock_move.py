@@ -18,7 +18,8 @@ class StockMove(models.Model):
         :return:
         """
         res = super(StockMove, self)._get_new_picking_values()
-        sale_order = self.group_id.sale_id
+        # sale_order = self.group_id.sale_id
+        sale_order = self.sale_id
         sale_line_id = sale_order.order_line
         if sale_order and sale_line_id and sale_order.magento_instance_id:
             res.update({
@@ -52,4 +53,3 @@ class StockMove(models.Model):
                     'is_magento_picking': True
                 })
         return res
-

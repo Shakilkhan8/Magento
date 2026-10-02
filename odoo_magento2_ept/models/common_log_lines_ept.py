@@ -16,7 +16,7 @@ class CommonLogLineEpt(models.Model):
                                           help="Magento Instance.")
     magento_order_data_queue_line_id = fields.Many2one(
         string="Order Queue Line", comodel_name="magento.order.data.queue.line.ept")
-    import_product_queue_line_id = fields.Many2one(
+    magento_import_product_queue_line_id = fields.Many2one(
         string="Product Queue Line", comodel_name="sync.import.magento.product.queue.line")
     magento_customer_data_queue_line_id = fields.Many2one(
         string="Customer Queue Line", comodel_name="magento.customer.data.queue.line.ept")

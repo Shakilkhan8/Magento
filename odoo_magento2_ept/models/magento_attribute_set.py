@@ -37,16 +37,15 @@ class MagentoAttributeSet(models.Model):
         :param instance: Magento Instance
         :return:
         """
-        # attr_group = self.env['magento.attribute.group']
+        attr_group = self.env['magento.attribute.group']
         m_attribute = self.env['magento.product.attribute']
         filters = create_search_criteria({'entity_type_id': {'gt': -1}})
         query_str = Php.http_build_query(filters)
         url = "/V1/products/attribute-sets/sets/list?{}".format(query_str)
         attr_sets = req(instance, url)
         attr_sets = self.create_attribute_set(instance, attr_sets)
-        # for attr_set in attr_sets.get('items', []):
-            # m_attr_set = Self Object/Magento Attribute Set
-            # attr_group.import_attribute_group(instance, m_attr_set)
+        for attr_set in attr_sets.get('items', []):
+            attr_group.import_attribute_group(instance, attr_set)
         m_attribute.import_magento_attributes(instance, attr_sets)
         return True
 
@@ -68,5 +67,5 @@ class MagentoAttributeSet(models.Model):
                     'instance_id': instance.id,
                     'sort_order': attr_set.get('sort_order', 0)
                 })
-            attr_set.update({'set_id': m_attr_set.id})
+            attr_set.update({'id': m_attr_set.id})
         return attr_sets

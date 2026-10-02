@@ -44,7 +44,7 @@ class MagentoOrderDataQueueLineEpt(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'sale.order',
             'view_type': 'form',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'domain': [('id', '=', self.sale_order_id.id)]
         }
 
